@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   Inbox, LayoutDashboard, Target, Building2, Users, FileText, Package,
   Briefcase, CalendarDays, Receipt, HardHat, Boxes, Truck, CreditCard, BarChart2,
-  Search, Plus, Settings, ChevronsLeft, Sparkles, Command as CommandIcon,
+  Search, Plus, Settings, PanelLeft, Sparkles, Command as CommandIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
@@ -92,24 +92,15 @@ export function AppShell() {
           collapsed ? "w-[60px]" : "w-[232px]",
         )}
       >
-        <div className="flex h-12 items-center gap-2 px-3 border-b border-sidebar-border">
+        <div className="flex min-h-14 items-center gap-2 px-3 py-3 border-b border-sidebar-border">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-primary to-chart-2 text-[10px] font-bold text-primary-foreground shadow-glow">
             PCSS
           </div>
           {!collapsed && (
-            <>
-              <div className="flex flex-col leading-tight">
-                <span className="text-[13px] font-semibold tracking-tight">Port City Sound & Security</span>
-                <span className="text-[10px] text-muted-foreground">AV & Security Systems</span>
-              </div>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="ml-auto text-muted-foreground hover:text-foreground"
-                aria-label="Collapse sidebar"
-              >
-                <ChevronsLeft className="h-3.5 w-3.5" />
-              </button>
-            </>
+            <div className="flex flex-col leading-tight">
+              <span className="text-[13px] font-semibold tracking-tight">Port City Sound & Security</span>
+              <span className="text-[10px] text-muted-foreground">AV & Security Systems</span>
+            </div>
           )}
         </div>
 
@@ -185,21 +176,19 @@ export function AppShell() {
           <div className={cn("mt-1 flex", collapsed ? "justify-center" : "px-0.5")}>
             <ThemeToggle />
           </div>
-          {collapsed && (
-            <button
-              onClick={() => setCollapsed(false)}
-              className="mt-1 flex h-6 w-full items-center justify-center text-muted-foreground hover:text-foreground"
-              aria-label="Expand sidebar"
-            >
-              <ChevronsLeft className="h-3.5 w-3.5 rotate-180" />
-            </button>
-          )}
         </div>
       </aside>
 
       {/* Main */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex h-12 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur">
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            aria-label="Toggle sidebar"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </button>
           <div className="flex items-center gap-1.5 text-[13px]">
             <span className="text-muted-foreground">Workspace</span>
             <span className="text-muted-foreground/40">/</span>
