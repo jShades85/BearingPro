@@ -1,3 +1,5 @@
+import { Building2, CalendarDays } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DealStage, Priority } from "@/lib/demo-data";
 
@@ -111,5 +113,47 @@ export function Sparkline({ data, className }: { data: number[]; className?: str
     <svg viewBox={`0 0 ${w} ${h}`} className={cn("h-9 w-full", className)} preserveAspectRatio="none">
       <polyline points={pts.join(" ")} fill="none" stroke="currentColor" strokeWidth="1.5" />
     </svg>
+  );
+}
+
+export interface JobCardProps {
+  id: string;
+  title: string;
+  customer: string;
+  status: DealStage;
+  date: string;
+  assignee: string;
+  value: string;
+  onClick: () => void;
+}
+
+export function JobCard({ id: _id, title, customer, status, date, assignee, value, onClick }: JobCardProps) {
+  return (
+    <Card
+      onClick={onClick}
+      className="cursor-pointer px-3 py-2.5 hover:bg-elevated transition-colors"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-[12.5px] font-semibold">{title}</span>
+        <StageChip stage={status} />
+      </div>
+      <div className="mt-1.5 flex items-center gap-3 text-[11.5px] text-muted-foreground">
+        <span className="flex items-center gap-1 truncate">
+          <Building2 className="h-3 w-3 shrink-0" />
+          {customer}
+        </span>
+        <span className="flex items-center gap-1 shrink-0">
+          <CalendarDays className="h-3 w-3 shrink-0" />
+          {date}
+        </span>
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="flex items-center gap-1.5 text-[11.5px]">
+          <Avatar initials={assignee} />
+          <span className="text-muted-foreground">{assignee}</span>
+        </span>
+        <span className="font-mono text-[11px] text-muted-foreground tabular-nums">{value}</span>
+      </div>
+    </Card>
   );
 }

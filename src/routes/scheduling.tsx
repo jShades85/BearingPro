@@ -3,9 +3,9 @@ import { workOrders, ownerNames } from "@/lib/demo-data";
 import { PageHeader, Tab, Avatar, PriorityDot } from "@/components/ui-bits";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
-export const Route = createFileRoute("/dispatch")({
-  head: () => ({ meta: [{ title: "Dispatch · Crosscurrent" }] }),
-  component: DispatchPage,
+export const Route = createFileRoute("/scheduling")({
+  head: () => ({ meta: [{ title: "Scheduling · Crosscurrent" }] }),
+  component: Scheduling,
 });
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -18,8 +18,7 @@ const typeColor: Record<string, string> = {
   training: "border-l-status-won bg-status-won/10",
 };
 
-function DispatchPage() {
-  // group orders by weekday index
+function Scheduling() {
   const byDay = days.map((_, dayIdx) =>
     workOrders.filter((w) => {
       const d = new Date(w.start);
@@ -31,7 +30,7 @@ function DispatchPage() {
   return (
     <div>
       <PageHeader
-        title="Dispatch"
+        title="Scheduling"
         subtitle={`${workOrders.length} work orders this week`}
         actions={
           <>

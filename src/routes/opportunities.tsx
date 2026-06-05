@@ -4,18 +4,18 @@ import { PageHeader, Tab, StageChip, Avatar, PriorityDot } from "@/components/ui
 import { Filter, ArrowDownUp, LayoutGrid, List, Plus } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/deals")({
-  head: () => ({ meta: [{ title: "Deals · Crosscurrent" }] }),
-  component: DealsPage,
+export const Route = createFileRoute("/opportunities")({
+  head: () => ({ meta: [{ title: "Opportunities · Crosscurrent" }] }),
+  component: Opportunities,
 });
 
-function DealsPage() {
+function Opportunities() {
   const [view, setView] = useState<"board" | "list">("board");
 
   return (
     <div>
       <PageHeader
-        title="Deals"
+        title="Opportunities"
         subtitle={`${deals.length} deals · ${currency(deals.reduce((s,d)=>s+d.value,0))} pipeline`}
         actions={
           <>
@@ -34,11 +34,11 @@ function DealsPage() {
               </button>
             </div>
             <button className="flex h-7 items-center gap-1 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground">
-              <Plus className="h-3.5 w-3.5" /> New deal
+              <Plus className="h-3.5 w-3.5" /> New opportunity
             </button>
           </>
         }
-        tabs={<><Tab active>All deals</Tab><Tab>Mine</Tab><Tab>Closing this month</Tab><Tab>Stalled</Tab></>}
+        tabs={<><Tab active>All</Tab><Tab>Mine</Tab><Tab>Closing this month</Tab><Tab>Stalled</Tab></>}
       />
 
       {view === "board" ? (
