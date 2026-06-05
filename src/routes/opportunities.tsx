@@ -143,8 +143,8 @@ function KanbanView({
   const [openId, setOpenId] = useState<number | null>(null);
 
   return (
-    <div className="overflow-x-auto w-full">
-      <div className="relative flex gap-3 p-4" style={{ minWidth: "max-content" }}>
+    <div style={{ overflowX: "auto", width: "100%", paddingBottom: "12px", paddingRight: "24px" }}>
+      <div className="relative flex flex-row gap-3 p-4" style={{ minWidth: "max-content" }}>
         {openId !== null && (
           <div className="fixed inset-0 z-10" onClick={() => setOpenId(null)} />
         )}
