@@ -112,8 +112,8 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
+      {/* AppShell renders its own <Outlet /> for nested route content */}
       <AppShell />
-      <Outlet />
     </QueryClientProvider>
   );
 }
