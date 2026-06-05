@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Tab, Avatar } from "@/components/ui-bits";
+import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { activityItems, requestItems } from "@/data/inbox-data";
 import type { ActivityCategory, RequestBadgeType } from "@/data/inbox-data";
@@ -38,15 +38,16 @@ function InboxPage() {
   const { setMeta } = useMeta();
   useEffect(() => { setMeta({ title: "Inbox" }); }, [setMeta]);
 
-  const [activeTab, setActiveTab] = useState<"activity" | "requests">("activity");
-
   return (
-    <div>
-      <div className="border-b border-border px-5 pt-3 pb-0 flex gap-1">
-        <Tab active={activeTab === "activity"} onClick={() => setActiveTab("activity")}>Activity</Tab>
-        <Tab active={activeTab === "requests"} onClick={() => setActiveTab("requests")}>Requests</Tab>
-      </div>
-      {activeTab === "activity" ? <ActivityFeed /> : <RequestsPanel />}
+    <div className="grid grid-cols-1 gap-6 p-5 lg:grid-cols-2">
+      <section>
+        <div className="mb-3 px-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">Requests</div>
+        <RequestsPanel />
+      </section>
+      <section>
+        <div className="mb-3 px-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">Activity</div>
+        <ActivityFeed />
+      </section>
     </div>
   );
 }
@@ -55,8 +56,7 @@ function InboxPage() {
 
 function ActivityFeed() {
   return (
-    <div className="p-4 max-w-3xl">
-      <ul className="space-y-2">
+    <ul className="space-y-2">
         {activityItems.map((item) => {
           const { icon: Icon, border, iconColor } = categoryMeta[item.category];
           return (
@@ -76,8 +76,7 @@ function ActivityFeed() {
             </li>
           );
         })}
-      </ul>
-    </div>
+    </ul>
   );
 }
 
@@ -102,7 +101,7 @@ function RequestsPanel() {
     setStates((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
 
   return (
-    <div className="p-4 max-w-3xl space-y-3">
+    <div className="space-y-3">
       {requestItems.map((req) => {
         const s = states[req.id];
         const done = s.status !== "pending";
