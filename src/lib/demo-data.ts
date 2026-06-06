@@ -35,15 +35,38 @@ export interface Deal {
   updated: string;
 }
 
+export interface QuoteLineItem {
+  id: string;
+  sku: string;
+  name: string;
+  brand: string;
+  category: "equipment" | "labor" | "miscellaneous";
+  qty: number;
+  unitPrice: number;
+  cost: number;
+}
+
+export interface QuoteActivity {
+  type: "created" | "sent" | "viewed" | "accepted" | "note";
+  description: string;
+  date: string;
+}
+
 export interface Quote {
   id: string;
   number: string;
   project: string;
   company: string;
+  contactName: string;
+  linkedOpportunity: string;
   total: number;
   margin: number;
   status: "draft" | "sent" | "viewed" | "accepted" | "expired";
   sent: string;
+  expiryDate: string;
+  createdDate: string;
+  lineItems: QuoteLineItem[];
+  activityFeed: QuoteActivity[];
 }
 
 export interface CatalogItem {
@@ -144,13 +167,150 @@ export const stages: { id: DealStage; label: string; }[] = [
 ];
 
 export const quotes: Quote[] = [
-  { id: "q1", number: "Q-2026-0418", project: "Boardroom AV refresh — 14F", company: "Vertex Capital Partners", total: 84500, margin: 32, status: "sent", sent: "Jun 02" },
-  { id: "q2", number: "Q-2026-0417", project: "Lobby video wall", company: "Pinecrest Hospitality Group", total: 212000, margin: 28, status: "viewed", sent: "May 31" },
-  { id: "q3", number: "Q-2026-0415", project: "Penthouse cinema build", company: "Northbeam Architects", total: 184500, margin: 41, status: "accepted", sent: "May 22" },
-  { id: "q4", number: "Q-2026-0412", project: "Surgical center overhaul", company: "Helio Health Systems", total: 148000, margin: 26, status: "sent", sent: "May 18" },
-  { id: "q5", number: "Q-2026-0410", project: "Sound stage 3 control room", company: "Arden & Loom Studios", total: 142800, margin: 34, status: "draft", sent: "—" },
-  { id: "q6", number: "Q-2026-0407", project: "Trading floor latency upgrade", company: "Vertex Capital Partners", total: 234400, margin: 22, status: "draft", sent: "—" },
-  { id: "q7", number: "Q-2026-0402", project: "Restaurant POS + audio zones", company: "Cinder & Oak Hospitality", total: 38400, margin: 30, status: "expired", sent: "Apr 28" },
+  {
+    id: "q1", number: "Q-2026-0418", project: "Boardroom AV refresh — 14F",
+    company: "Vertex Capital Partners", contactName: "Iris Wang",
+    linkedOpportunity: "AV-241 · Boardroom AV refresh — 14F",
+    total: 53610, margin: 34, status: "sent", sent: "Jun 02",
+    expiryDate: "Jul 15, 2026", createdDate: "May 28, 2026",
+    lineItems: [
+      { id: "q1-1", sku: "CRE-MX-150", name: "Crestron MX-150 Control Processor", brand: "Crestron", category: "equipment", qty: 1, unitPrice: 2750, cost: 1820 },
+      { id: "q1-2", sku: "POL-X70",    name: "Poly Studio X70 Video Bar",          brand: "Poly",     category: "equipment", qty: 2, unitPrice: 8240, cost: 5980 },
+      { id: "q1-3", sku: "SHU-MXA920", name: "Shure MXA920 Ceiling Array Mic",    brand: "Shure",    category: "equipment", qty: 2, unitPrice: 6480, cost: 4520 },
+      { id: "q1-4", sku: "BIA-NPL-60", name: "Biamp Nexia PL-60 DSP",             brand: "Biamp",    category: "equipment", qty: 1, unitPrice: 3380, cost: 2240 },
+      { id: "q1-5", sku: "ATX-OMNI-21",name: "Atlona OmniStream 2.1 Encoder",     brand: "Atlona",   category: "equipment", qty: 4, unitPrice: 2480, cost: 1640 },
+      { id: "q1-6", sku: "LAB-LB-300", name: "Labor — AV Tech (per hour)",        brand: "Internal", category: "labor",     qty: 56, unitPrice: 145, cost: 65 },
+    ],
+    activityFeed: [
+      { type: "created",  description: "Quote created by Eli Moreno",          date: "May 28, 2026" },
+      { type: "sent",     description: "Quote sent to Iris Wang",              date: "Jun 02, 2026" },
+      { type: "viewed",   description: "Quote viewed by Iris Wang",            date: "Jun 04, 2026" },
+      { type: "note",     description: "Follow-up call scheduled for Jun 10",  date: "Jun 05, 2026" },
+    ],
+  },
+  {
+    id: "q2", number: "Q-2026-0417", project: "Lobby video wall",
+    company: "Pinecrest Hospitality Group", contactName: "Marcus Bell",
+    linkedOpportunity: "AV-238 · Lobby video wall (7×3 LED)",
+    total: 211610, margin: 34, status: "viewed", sent: "May 31",
+    expiryDate: "Jun 30, 2026", createdDate: "May 15, 2026",
+    lineItems: [
+      { id: "q2-1", sku: "SAM-IFR-110", name: "Samsung The Wall 110\" 4K LED",     brand: "Samsung",        category: "equipment",     qty: 3, unitPrice: 56200, cost: 38400 },
+      { id: "q2-2", sku: "CRE-MX-150",  name: "Crestron MX-150 Control Processor", brand: "Crestron",       category: "equipment",     qty: 1, unitPrice: 2750,  cost: 1820 },
+      { id: "q2-3", sku: "ATX-OMNI-21", name: "Atlona OmniStream 2.1 Encoder",     brand: "Atlona",         category: "equipment",     qty: 6, unitPrice: 2480,  cost: 1640 },
+      { id: "q2-4", sku: "MID-CAB-44U", name: "Middle Atlantic 44U AV Rack",        brand: "Middle Atlantic", category: "equipment",    qty: 2, unitPrice: 2690,  cost: 1820 },
+      { id: "q2-5", sku: "MTG-STRCT-HD","name": "LED Wall Steel Mount Structure",   brand: "Chief",          category: "miscellaneous", qty: 3, unitPrice: 2800,  cost: 1200 },
+      { id: "q2-6", sku: "LAB-LB-300",  name: "Labor — AV Tech (per hour)",        brand: "Internal",       category: "labor",         qty: 80, unitPrice: 145,  cost: 65 },
+    ],
+    activityFeed: [
+      { type: "created", description: "Quote created by Jess Kim",       date: "May 15, 2026" },
+      { type: "sent",    description: "Quote sent to Marcus Bell",       date: "May 31, 2026" },
+      { type: "viewed",  description: "Quote viewed by Marcus Bell",     date: "Jun 03, 2026" },
+    ],
+  },
+  {
+    id: "q3", number: "Q-2026-0415", project: "Penthouse cinema build",
+    company: "Northbeam Architects", contactName: "Audrey Chen",
+    linkedOpportunity: "AV-226 · Penthouse cinema build",
+    total: 135350, margin: 37, status: "accepted", sent: "May 22",
+    expiryDate: "—", createdDate: "May 10, 2026",
+    lineItems: [
+      { id: "q3-1",  sku: "SAM-IFR-110", name: "Samsung The Wall 110\" 4K LED",       brand: "Samsung",        category: "equipment",     qty: 1,   unitPrice: 56200, cost: 38400 },
+      { id: "q3-2",  sku: "CRE-MX-150",  name: "Crestron MX-150 Control Processor",   brand: "Crestron",       category: "equipment",     qty: 1,   unitPrice: 2750,  cost: 1820 },
+      { id: "q3-3",  sku: "QSC-CX-Q8",   name: "QSC CX-Q 8K8 Amplifier",              brand: "QSC",            category: "equipment",     qty: 2,   unitPrice: 4690,  cost: 3120 },
+      { id: "q3-4",  sku: "SHU-MXA920",  name: "Shure MXA920 Ceiling Array Mic",      brand: "Shure",          category: "equipment",     qty: 1,   unitPrice: 6480,  cost: 4520 },
+      { id: "q3-5",  sku: "EXT-DTP3-T",  name: "Extron DTP3 T 232 Twisted Pair TX",   brand: "Extron",         category: "equipment",     qty: 6,   unitPrice: 1450,  cost: 980 },
+      { id: "q3-6",  sku: "BIA-NPL-60",  name: "Biamp Nexia PL-60 DSP",               brand: "Biamp",          category: "equipment",     qty: 1,   unitPrice: 3380,  cost: 2240 },
+      { id: "q3-7",  sku: "SON-ARC-G2",  name: "Sonance Architectural Series IW",     brand: "Sonance",        category: "equipment",     qty: 12,  unitPrice: 590,   cost: 380 },
+      { id: "q3-8",  sku: "LUT-RA3-HUB", name: "Lutron RA3 Main Repeater",            brand: "Lutron",         category: "equipment",     qty: 2,   unitPrice: 1790,  cost: 1180 },
+      { id: "q3-9",  sku: "ATX-OMNI-21", name: "Atlona OmniStream 2.1 Encoder",       brand: "Atlona",         category: "equipment",     qty: 4,   unitPrice: 2480,  cost: 1640 },
+      { id: "q3-10", sku: "MID-CAB-44U", name: "Middle Atlantic 44U AV Rack",          brand: "Middle Atlantic", category: "equipment",    qty: 2,   unitPrice: 2690,  cost: 1820 },
+      { id: "q3-11", sku: "MISC-CABLE",  name: "Custom AV Cabling Package",            brand: "Belden",         category: "miscellaneous", qty: 1,   unitPrice: 4200,  cost: 1200 },
+      { id: "q3-12", sku: "MISC-PROG",   name: "Control System Programming",           brand: "Internal",       category: "miscellaneous", qty: 1,   unitPrice: 3800,  cost: 800 },
+      { id: "q3-13", sku: "LAB-LB-300",  name: "Labor — AV Tech (per hour)",          brand: "Internal",       category: "labor",         qty: 100, unitPrice: 145,   cost: 65 },
+    ],
+    activityFeed: [
+      { type: "created",  description: "Quote created by Maya Okafor",       date: "May 10, 2026" },
+      { type: "sent",     description: "Quote sent to Audrey Chen",          date: "May 22, 2026" },
+      { type: "viewed",   description: "Quote viewed by Audrey Chen",        date: "May 23, 2026" },
+      { type: "accepted", description: "Quote accepted by Audrey Chen",      date: "May 28, 2026" },
+    ],
+  },
+  {
+    id: "q4", number: "Q-2026-0412", project: "Surgical center overhaul",
+    company: "Helio Health Systems", contactName: "Priya Anand",
+    linkedOpportunity: "AV-235 · Surgical center A/V overhaul",
+    total: 95250, margin: 34, status: "sent", sent: "May 18",
+    expiryDate: "Jul 31, 2026", createdDate: "May 04, 2026",
+    lineItems: [
+      { id: "q4-1", sku: "POL-X70",    name: "Poly Studio X70 Video Bar",     brand: "Poly",           category: "equipment",     qty: 8, unitPrice: 8240, cost: 5980 },
+      { id: "q4-2", sku: "CRE-MX-150", name: "Crestron MX-150 Control Processor", brand: "Crestron", category: "equipment",     qty: 1, unitPrice: 2750, cost: 1820 },
+      { id: "q4-3", sku: "MID-CAB-44U","name": "Middle Atlantic 44U AV Rack",   brand: "Middle Atlantic", category: "equipment", qty: 2, unitPrice: 2690, cost: 1820 },
+      { id: "q4-4", sku: "MISC-CART",  name: "AV Cart Enclosure",              brand: "Middle Atlantic", category: "miscellaneous", qty: 8, unitPrice: 1200, cost: 550 },
+      { id: "q4-5", sku: "LAB-LB-300", name: "Labor — AV Tech (per hour)",    brand: "Internal",       category: "labor",         qty: 80, unitPrice: 145, cost: 65 },
+    ],
+    activityFeed: [
+      { type: "created", description: "Quote created by Ravi Tate",      date: "May 04, 2026" },
+      { type: "sent",    description: "Quote sent to Priya Anand",       date: "May 18, 2026" },
+      { type: "viewed",  description: "Quote viewed by Priya Anand",     date: "May 20, 2026" },
+    ],
+  },
+  {
+    id: "q5", number: "Q-2026-0410", project: "Sound stage 3 control room",
+    company: "Arden & Loom Studios", contactName: "Lena Romero",
+    linkedOpportunity: "AV-230 · Sound stage 3 — control room",
+    total: 85990, margin: 35, status: "draft", sent: "—",
+    expiryDate: "Aug 15, 2026", createdDate: "Jun 03, 2026",
+    lineItems: [
+      { id: "q5-1", sku: "QSC-CX-Q8",   name: "QSC CX-Q 8K8 Amplifier",          brand: "QSC",    category: "equipment", qty: 4,  unitPrice: 4690, cost: 3120 },
+      { id: "q5-2", sku: "SHU-MXA920",  name: "Shure MXA920 Ceiling Array Mic",  brand: "Shure",  category: "equipment", qty: 4,  unitPrice: 6480, cost: 4520 },
+      { id: "q5-3", sku: "BIA-NPL-60",  name: "Biamp Nexia PL-60 DSP",           brand: "Biamp",  category: "equipment", qty: 2,  unitPrice: 3380, cost: 2240 },
+      { id: "q5-4", sku: "ATX-OMNI-21", name: "Atlona OmniStream 2.1 Encoder",   brand: "Atlona", category: "equipment", qty: 6,  unitPrice: 2480, cost: 1640 },
+      { id: "q5-5", sku: "MID-CAB-44U", name: "Middle Atlantic 44U AV Rack",     brand: "Middle Atlantic", category: "equipment", qty: 3, unitPrice: 2690, cost: 1820 },
+      { id: "q5-6", sku: "LAB-LB-300",  name: "Labor — AV Tech (per hour)",     brand: "Internal", category: "labor",    qty: 80, unitPrice: 145, cost: 65 },
+    ],
+    activityFeed: [
+      { type: "created", description: "Quote drafted by Aman Verma",  date: "Jun 03, 2026" },
+    ],
+  },
+  {
+    id: "q6", number: "Q-2026-0407", project: "Trading floor latency upgrade",
+    company: "Vertex Capital Partners", contactName: "Iris Wang",
+    linkedOpportunity: "AV-218 · Trading floor latency upgrade",
+    total: 188620, margin: 35, status: "draft", sent: "—",
+    expiryDate: "Sep 01, 2026", createdDate: "May 28, 2026",
+    lineItems: [
+      { id: "q6-1", sku: "SAM-IFR-110",  name: "Samsung The Wall 110\" 4K LED",     brand: "Samsung",        category: "equipment",     qty: 2,   unitPrice: 56200, cost: 38400 },
+      { id: "q6-2", sku: "ATX-OMNI-21",  name: "Atlona OmniStream 2.1 Encoder",     brand: "Atlona",         category: "equipment",     qty: 12,  unitPrice: 2480,  cost: 1640 },
+      { id: "q6-3", sku: "CRE-MX-150",   name: "Crestron MX-150 Control Processor", brand: "Crestron",       category: "equipment",     qty: 2,   unitPrice: 2750,  cost: 1820 },
+      { id: "q6-4", sku: "MID-CAB-44U",  name: "Middle Atlantic 44U AV Rack",        brand: "Middle Atlantic", category: "equipment",    qty: 4,   unitPrice: 2690,  cost: 1820 },
+      { id: "q6-5", sku: "MISC-NET-48",  name: "48-Port Managed Network Switch",    brand: "Cisco",          category: "miscellaneous", qty: 4,   unitPrice: 3200,  cost: 1800 },
+      { id: "q6-6", sku: "LAB-LB-300",   name: "Labor — AV Tech (per hour)",        brand: "Internal",       category: "labor",         qty: 120, unitPrice: 145,   cost: 65 },
+    ],
+    activityFeed: [
+      { type: "created", description: "Quote drafted by Ravi Tate",  date: "May 28, 2026" },
+    ],
+  },
+  {
+    id: "q7", number: "Q-2026-0402", project: "Restaurant POS + audio zones",
+    company: "Cinder & Oak Hospitality", contactName: "Hugo Albright",
+    linkedOpportunity: "AV-222 · Restaurant POS + audio zones",
+    total: 29790, margin: 43, status: "expired", sent: "Apr 28",
+    expiryDate: "May 30, 2026", createdDate: "Apr 15, 2026",
+    lineItems: [
+      { id: "q7-1", sku: "QSC-CX-Q8",  name: "QSC CX-Q 8K8 Amplifier",        brand: "QSC",      category: "equipment",     qty: 1,  unitPrice: 4690, cost: 3120 },
+      { id: "q7-2", sku: "SON-ARC-G2", name: "Sonance Architectural Series IW", brand: "Sonance",  category: "equipment",     qty: 8,  unitPrice: 590,  cost: 380 },
+      { id: "q7-3", sku: "BIA-NPL-60", name: "Biamp Nexia PL-60 DSP",          brand: "Biamp",    category: "equipment",     qty: 1,  unitPrice: 3380, cost: 2240 },
+      { id: "q7-4", sku: "MISC-POS",   name: "POS Terminal",                   brand: "Toast",    category: "miscellaneous", qty: 4,  unitPrice: 2800, cost: 1500 },
+      { id: "q7-5", sku: "LAB-LB-300", name: "Labor — AV Tech (per hour)",    brand: "Internal", category: "labor",         qty: 40, unitPrice: 145,  cost: 65 },
+    ],
+    activityFeed: [
+      { type: "created", description: "Quote created by Jess Kim",       date: "Apr 15, 2026" },
+      { type: "sent",    description: "Quote sent to Hugo Albright",     date: "Apr 28, 2026" },
+      { type: "viewed",  description: "Quote viewed by Hugo Albright",   date: "Apr 30, 2026" },
+      { type: "note",    description: "No response — quote expired",     date: "May 30, 2026" },
+    ],
+  },
 ];
 
 export const catalog: CatalogItem[] = [

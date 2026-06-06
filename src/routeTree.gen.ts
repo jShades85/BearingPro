@@ -29,7 +29,9 @@ import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CompaniesRouteImport } from './routes/companies'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as QuotesIndexRouteImport } from './routes/quotes/index'
 import { Route as CompaniesIndexRouteImport } from './routes/companies/index'
+import { Route as QuotesQuoteIdRouteImport } from './routes/quotes/$quoteId'
 import { Route as CompaniesCompanyIdRouteImport } from './routes/companies/$companyId'
 
 const WorkOrdersRoute = WorkOrdersRouteImport.update({
@@ -132,10 +134,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QuotesIndexRoute = QuotesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => QuotesRoute,
+} as any)
 const CompaniesIndexRoute = CompaniesIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => CompaniesRoute,
+} as any)
+const QuotesQuoteIdRoute = QuotesQuoteIdRouteImport.update({
+  id: '/$quoteId',
+  path: '/$quoteId',
+  getParentRoute: () => QuotesRoute,
 } as any)
 const CompaniesCompanyIdRoute = CompaniesCompanyIdRouteImport.update({
   id: '/$companyId',
@@ -156,7 +168,7 @@ export interface FileRoutesByFullPath {
   '/payments': typeof PaymentsRoute
   '/projects': typeof ProjectsRoute
   '/purchase-orders': typeof PurchaseOrdersRoute
-  '/quotes': typeof QuotesRoute
+  '/quotes': typeof QuotesRouteWithChildren
   '/reports': typeof ReportsRoute
   '/scheduling': typeof SchedulingRoute
   '/service-plans': typeof ServicePlansRoute
@@ -165,7 +177,9 @@ export interface FileRoutesByFullPath {
   '/vendors': typeof VendorsRoute
   '/work-orders': typeof WorkOrdersRoute
   '/companies/$companyId': typeof CompaniesCompanyIdRoute
+  '/quotes/$quoteId': typeof QuotesQuoteIdRoute
   '/companies/': typeof CompaniesIndexRoute
+  '/quotes/': typeof QuotesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -179,7 +193,6 @@ export interface FileRoutesByTo {
   '/payments': typeof PaymentsRoute
   '/projects': typeof ProjectsRoute
   '/purchase-orders': typeof PurchaseOrdersRoute
-  '/quotes': typeof QuotesRoute
   '/reports': typeof ReportsRoute
   '/scheduling': typeof SchedulingRoute
   '/service-plans': typeof ServicePlansRoute
@@ -188,7 +201,9 @@ export interface FileRoutesByTo {
   '/vendors': typeof VendorsRoute
   '/work-orders': typeof WorkOrdersRoute
   '/companies/$companyId': typeof CompaniesCompanyIdRoute
+  '/quotes/$quoteId': typeof QuotesQuoteIdRoute
   '/companies': typeof CompaniesIndexRoute
+  '/quotes': typeof QuotesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -204,7 +219,7 @@ export interface FileRoutesById {
   '/payments': typeof PaymentsRoute
   '/projects': typeof ProjectsRoute
   '/purchase-orders': typeof PurchaseOrdersRoute
-  '/quotes': typeof QuotesRoute
+  '/quotes': typeof QuotesRouteWithChildren
   '/reports': typeof ReportsRoute
   '/scheduling': typeof SchedulingRoute
   '/service-plans': typeof ServicePlansRoute
@@ -213,7 +228,9 @@ export interface FileRoutesById {
   '/vendors': typeof VendorsRoute
   '/work-orders': typeof WorkOrdersRoute
   '/companies/$companyId': typeof CompaniesCompanyIdRoute
+  '/quotes/$quoteId': typeof QuotesQuoteIdRoute
   '/companies/': typeof CompaniesIndexRoute
+  '/quotes/': typeof QuotesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -239,7 +256,9 @@ export interface FileRouteTypes {
     | '/vendors'
     | '/work-orders'
     | '/companies/$companyId'
+    | '/quotes/$quoteId'
     | '/companies/'
+    | '/quotes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -253,7 +272,6 @@ export interface FileRouteTypes {
     | '/payments'
     | '/projects'
     | '/purchase-orders'
-    | '/quotes'
     | '/reports'
     | '/scheduling'
     | '/service-plans'
@@ -262,7 +280,9 @@ export interface FileRouteTypes {
     | '/vendors'
     | '/work-orders'
     | '/companies/$companyId'
+    | '/quotes/$quoteId'
     | '/companies'
+    | '/quotes'
   id:
     | '__root__'
     | '/'
@@ -286,7 +306,9 @@ export interface FileRouteTypes {
     | '/vendors'
     | '/work-orders'
     | '/companies/$companyId'
+    | '/quotes/$quoteId'
     | '/companies/'
+    | '/quotes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -302,7 +324,7 @@ export interface RootRouteChildren {
   PaymentsRoute: typeof PaymentsRoute
   ProjectsRoute: typeof ProjectsRoute
   PurchaseOrdersRoute: typeof PurchaseOrdersRoute
-  QuotesRoute: typeof QuotesRoute
+  QuotesRoute: typeof QuotesRouteWithChildren
   ReportsRoute: typeof ReportsRoute
   SchedulingRoute: typeof SchedulingRoute
   ServicePlansRoute: typeof ServicePlansRoute
@@ -454,12 +476,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/quotes/': {
+      id: '/quotes/'
+      path: '/'
+      fullPath: '/quotes/'
+      preLoaderRoute: typeof QuotesIndexRouteImport
+      parentRoute: typeof QuotesRoute
+    }
     '/companies/': {
       id: '/companies/'
       path: '/'
       fullPath: '/companies/'
       preLoaderRoute: typeof CompaniesIndexRouteImport
       parentRoute: typeof CompaniesRoute
+    }
+    '/quotes/$quoteId': {
+      id: '/quotes/$quoteId'
+      path: '/$quoteId'
+      fullPath: '/quotes/$quoteId'
+      preLoaderRoute: typeof QuotesQuoteIdRouteImport
+      parentRoute: typeof QuotesRoute
     }
     '/companies/$companyId': {
       id: '/companies/$companyId'
@@ -485,6 +521,19 @@ const CompaniesRouteWithChildren = CompaniesRoute._addFileChildren(
   CompaniesRouteChildren,
 )
 
+interface QuotesRouteChildren {
+  QuotesQuoteIdRoute: typeof QuotesQuoteIdRoute
+  QuotesIndexRoute: typeof QuotesIndexRoute
+}
+
+const QuotesRouteChildren: QuotesRouteChildren = {
+  QuotesQuoteIdRoute: QuotesQuoteIdRoute,
+  QuotesIndexRoute: QuotesIndexRoute,
+}
+
+const QuotesRouteWithChildren =
+  QuotesRoute._addFileChildren(QuotesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CatalogRoute: CatalogRoute,
@@ -498,7 +547,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentsRoute: PaymentsRoute,
   ProjectsRoute: ProjectsRoute,
   PurchaseOrdersRoute: PurchaseOrdersRoute,
-  QuotesRoute: QuotesRoute,
+  QuotesRoute: QuotesRouteWithChildren,
   ReportsRoute: ReportsRoute,
   SchedulingRoute: SchedulingRoute,
   ServicePlansRoute: ServicePlansRoute,
