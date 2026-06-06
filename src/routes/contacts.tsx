@@ -526,21 +526,14 @@ function ContactDrawer({ contact: c }: { contact: Contact }) {
           <Avatar initials={getInitials(c.name)} className="!h-11 !w-11 !text-[15px] !rounded-xl" />
           <div>
             <SheetTitle className="text-[15px] font-semibold leading-tight">{c.name}</SheetTitle>
-            {isResidential ? (
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[10.5px] font-medium text-rose-600 dark:text-rose-400">
-                  <Home className="h-3 w-3" />
-                  Residential
-                </span>
-              </div>
-            ) : (
-              <p className="text-[12px] text-muted-foreground">{c.title} · {c.company}</p>
-            )}
+            <p className="text-[12px] text-muted-foreground">
+              {c.title}{!isResidential && c.company ? ` · ${c.company}` : ""}
+            </p>
           </div>
         </div>
-        {c.tags.length > 0 && (
+        {c.tags.filter((tag) => tag !== "Commercial" && tag !== "Residential").length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {c.tags.map((tag) => <TagPill key={tag} tag={tag} />)}
+            {c.tags.filter((tag) => tag !== "Commercial" && tag !== "Residential").map((tag) => <TagPill key={tag} tag={tag} />)}
           </div>
         )}
       </SheetHeader>
