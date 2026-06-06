@@ -58,7 +58,7 @@ function marginColor(m: number): string {
 function QuoteDetailPage() {
   const { quoteId } = Route.useParams();
   const { setMeta } = useMeta();
-  const [view, setView] = useState<"flat" | "grouped">("flat");
+  const [view, setView] = useState<"flat" | "grouped">("grouped");
 
   const quote = quotes.find((q) => q.id === quoteId);
 
@@ -132,7 +132,7 @@ function QuoteDetailPage() {
             </p>
             {/* Flat / Grouped toggle */}
             <div className="flex items-center rounded-md border border-border overflow-hidden">
-              {(["flat", "grouped"] as const).map((v, i) => (
+              {(["grouped", "flat"] as const).map((v, i) => (
                 <button
                   key={v}
                   type="button"
