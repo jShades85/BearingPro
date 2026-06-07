@@ -263,18 +263,38 @@ function categoryChip(cat: Category) {
   );
 }
 
+function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
+      <span className="text-[11.5px] text-muted-foreground">{label}</span>
+      <span className={cn("text-[12.5px] font-medium", mono && "font-mono")}>{value}</span>
+    </div>
+  );
+}
+
+function PriceStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="flex flex-col items-center rounded-lg border border-border bg-surface/50 py-3 px-2 gap-1">
+      <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{label}</span>
+      <span className={cn("text-[15px] font-semibold tabular-nums", highlight && "text-status-won")}>{value}</span>
+    </div>
+  );
+}
+
 // ─── ItemDrawer ───────────────────────────────────────────────────────────────
 
 interface ItemDrawerProps {
   open: boolean;
   item: CatalogItem | null;
+  mode: "view" | "edit";
   mfrPreset: string | null;
   manufacturers: Manufacturer[];
   onClose: () => void;
+  onSwitchToEdit: () => void;
   onSave: (item: CatalogItem, newMfr: Manufacturer | null) => void;
 }
 
-function ItemDrawer({ open, item, mfrPreset, manufacturers, onClose, onSave }: ItemDrawerProps) {
+function ItemDrawer({ open, item, mode, mfrPreset, manufacturers, onClose, onSwitchToEdit, onSave }: ItemDrawerProps) {
   const idRef = useRef(0);
 
   const defaultValues: ItemFormValues = item
@@ -368,236 +388,331 @@ function ItemDrawer({ open, item, mfrPreset, manufacturers, onClose, onSave }: I
     );
   }
 
-  return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent side="right" className="w-[480px] flex flex-col p-0 gap-0">
-        <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
-          <SheetTitle className="text-[15px]">
-            {item ? "Edit Item" : "New Catalog Item"}
-          </SheetTitle>
-        </SheetHeader>
+  // ── View mode ────────────────────────────────────────────────────────────────
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+  function renderViewContent() {
+    if (!item) return null;
+    const margin = item.msrp > 0 ? ((item.msrp - item.cost) / item.msrp * 100) : 0;
+    const mfr = manufacturers.find((m) => m.id === item.manufacturerId);
+    const colorCls = mfrColor(item.manufacturerId);
 
-              {/* ── Basic Info ─────────────────────────────────────── */}
-              <fieldset className="space-y-4">
-                <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Basic Info</legend>
+    return (
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
 
-                <FormField control={form.control} name="name" render={({ field }) => (
+          {/* Manufacturer + badges */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded text-[11px] font-bold", colorCls)}>
+              {mfr?.logoInitials ?? item.manufacturerName.slice(0, 2).toUpperCase()}
+            </div>
+            <span className="text-[12.5px] text-muted-foreground">{item.manufacturerName}</span>
+            <span className="ml-auto">{categoryChip(item.category)}</span>
+            <span className={cn(
+              "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium",
+              item.isActive
+                ? "bg-status-won/15 text-status-won"
+                : "bg-muted text-muted-foreground",
+            )}>
+              {item.isActive ? "Active" : "Inactive"}
+            </span>
+          </div>
+
+          {/* Description */}
+          {item.description && (
+            <p className="text-[12.5px] text-muted-foreground leading-relaxed">{item.description}</p>
+          )}
+
+          {/* Details */}
+          <fieldset className="space-y-0">
+            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Details</legend>
+            <div className="rounded-lg border border-border bg-surface/30 px-3 py-1">
+              <DetailRow label="SKU" value={item.sku || "—"} mono />
+              <DetailRow label="Unit of Measure" value={item.unitOfMeasure} />
+            </div>
+          </fieldset>
+
+          {/* Pricing */}
+          <fieldset className="space-y-2">
+            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Pricing</legend>
+            <div className="grid grid-cols-3 gap-2">
+              <PriceStat label="Your Cost" value={currency(item.cost)} />
+              <PriceStat label="MSRP" value={currency(item.msrp)} />
+              <PriceStat label="Margin" value={`${margin.toFixed(1)}%`} highlight={margin > 0} />
+            </div>
+          </fieldset>
+
+          {/* Labor */}
+          {item.hasLabor && (
+            <fieldset className="space-y-2">
+              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Labor</legend>
+              <div className="rounded-lg border border-border bg-surface/30 px-3 py-1">
+                <DetailRow
+                  label="Labor Hours"
+                  value={item.laborHours != null ? `${item.laborHours} hr` : "—"}
+                />
+                <DetailRow
+                  label="Rate Override"
+                  value={item.laborRateOverride ? `${currency(item.laborRateOverride)}/hr` : "Default rate"}
+                />
+              </div>
+            </fieldset>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
+          <button type="button" onClick={onClose}
+            className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+            Close
+          </button>
+          <button type="button" onClick={onSwitchToEdit}
+            className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
+            <Pencil className="h-3 w-3" />
+            Edit Item
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Edit mode ────────────────────────────────────────────────────────────────
+
+  function renderEditContent() {
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+
+            {/* ── Basic Info ─────────────────────────────────────── */}
+            <fieldset className="space-y-4">
+              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Basic Info</legend>
+
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11.5px]">Name *</FormLabel>
+                  <FormControl><Input {...field} placeholder="e.g. Axis P3245-V Fixed Dome" className="h-8 text-[13px]" /></FormControl>
+                  <FormMessage className="text-[11px]" />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="manufacturerId" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11.5px]">Manufacturer *</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+                    >
+                      <option value="">Select manufacturer…</option>
+                      {manufacturers.map((m) => (
+                        <option key={m.id} value={m.id}>{m.name}</option>
+                      ))}
+                      <option value="__new__">+ Add new manufacturer…</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage className="text-[11px]" />
+                </FormItem>
+              )} />
+
+              {mfrId === "__new__" && (
+                <FormField control={form.control} name="newManufacturerName" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Name *</FormLabel>
-                    <FormControl><Input {...field} placeholder="e.g. Axis P3245-V Fixed Dome" className="h-8 text-[13px]" /></FormControl>
+                    <FormLabel className="text-[11.5px]">New Manufacturer Name *</FormLabel>
+                    <FormControl><Input {...field} autoFocus placeholder="e.g. Hanwha Vision" className="h-8 text-[13px]" /></FormControl>
+                    <FormMessage className="text-[11px]" />
+                  </FormItem>
+                )} />
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <FormField control={form.control} name="sku" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[11.5px]">SKU</FormLabel>
+                    <FormControl><Input {...field} placeholder="e.g. AX-P3245-V" className="h-8 text-[13px]" /></FormControl>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
                 )} />
 
-                <FormField control={form.control} name="manufacturerId" render={({ field }) => (
+                <FormField control={form.control} name="category" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Manufacturer *</FormLabel>
+                    <FormLabel className="text-[11.5px]">Category *</FormLabel>
                     <FormControl>
                       <select
                         {...field}
                         className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
                       >
-                        <option value="">Select manufacturer…</option>
-                        {manufacturers.map((m) => (
-                          <option key={m.id} value={m.id}>{m.name}</option>
+                        {CATEGORIES.map((c) => (
+                          <option key={c} value={c}>{categoryMeta[c].label}</option>
                         ))}
-                        <option value="__new__">+ Add new manufacturer…</option>
                       </select>
                     </FormControl>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
                 )} />
+              </div>
 
-                {mfrId === "__new__" && (
-                  <FormField control={form.control} name="newManufacturerName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[11.5px]">New Manufacturer Name *</FormLabel>
-                      <FormControl><Input {...field} autoFocus placeholder="e.g. Hanwha Vision" className="h-8 text-[13px]" /></FormControl>
-                      <FormMessage className="text-[11px]" />
-                    </FormItem>
-                  )} />
-                )}
+              <FormField control={form.control} name="description" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11.5px]">Description</FormLabel>
+                  <FormControl><Textarea {...field} rows={3} placeholder="Brief product description…" className="text-[13px] resize-none" /></FormControl>
+                  <FormMessage className="text-[11px]" />
+                </FormItem>
+              )} />
 
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField control={form.control} name="sku" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[11.5px]">SKU</FormLabel>
-                      <FormControl><Input {...field} placeholder="e.g. AX-P3245-V" className="h-8 text-[13px]" /></FormControl>
-                      <FormMessage className="text-[11px]" />
-                    </FormItem>
-                  )} />
+              <FormField control={form.control} name="isActive" render={({ field }) => (
+                <FormItem className="flex items-center gap-3">
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <FormLabel className="text-[12.5px] font-normal cursor-pointer mt-0!">Active</FormLabel>
+                </FormItem>
+              )} />
+            </fieldset>
 
-                  <FormField control={form.control} name="category" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[11.5px]">Category *</FormLabel>
-                      <FormControl>
-                        <select
-                          {...field}
-                          className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
-                        >
-                          {CATEGORIES.map((c) => (
-                            <option key={c} value={c}>{categoryMeta[c].label}</option>
-                          ))}
-                        </select>
-                      </FormControl>
-                      <FormMessage className="text-[11px]" />
-                    </FormItem>
-                  )} />
-                </div>
+            {/* ── Pricing ──────────────────────────────────────────── */}
+            <fieldset className="space-y-4">
+              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Pricing</legend>
 
-                <FormField control={form.control} name="description" render={({ field }) => (
+              <div className="grid grid-cols-2 gap-3">
+                <FormField control={form.control} name="cost" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Description</FormLabel>
-                    <FormControl><Textarea {...field} rows={3} placeholder="Brief product description…" className="text-[13px] resize-none" /></FormControl>
+                    <FormLabel className="text-[11.5px]">Your Cost *</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
+                        <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-[13px]" />
+                      </div>
+                    </FormControl>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
                 )} />
 
-                <FormField control={form.control} name="isActive" render={({ field }) => (
-                  <FormItem className="flex items-center gap-3">
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormLabel className="text-[12.5px] font-normal cursor-pointer !mt-0">Active</FormLabel>
-                  </FormItem>
-                )} />
-              </fieldset>
-
-              {/* ── Pricing ──────────────────────────────────────────── */}
-              <fieldset className="space-y-4">
-                <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Pricing</legend>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField control={form.control} name="cost" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[11.5px]">Your Cost *</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                          <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-[13px]" />
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-[11px]" />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={form.control} name="msrp" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[11.5px]">MSRP / List Price</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                          <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-[13px]" />
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-[11px]" />
-                    </FormItem>
-                  )} />
-                </div>
-
-                <FormField control={form.control} name="unitOfMeasure" render={({ field }) => (
+                <FormField control={form.control} name="msrp" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Unit of Measure *</FormLabel>
+                    <FormLabel className="text-[11.5px]">MSRP / List Price</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="ea" list="uom-suggestions" className="h-8 text-[13px] w-36" />
+                      <div className="relative">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
+                        <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-[13px]" />
+                      </div>
                     </FormControl>
-                    <datalist id="uom-suggestions">
-                      {UNIT_SUGGESTIONS.map((u) => <option key={u} value={u} />)}
-                    </datalist>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
                 )} />
-              </fieldset>
+              </div>
 
-              {/* ── Product Image ─────────────────────────────────────── */}
-              <fieldset className="space-y-3">
-                <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Product Image</legend>
-                <div className="flex cursor-default items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface/50 px-6 py-8">
-                  <div className="flex flex-col items-center gap-2 text-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                      <Camera className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-[12.5px] font-medium text-foreground">Click to upload or drag & drop</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG up to 5MB</p>
-                    </div>
-                    <p className="text-[10.5px] text-muted-foreground/60 italic">
-                      Image storage will be enabled when Supabase is connected
-                    </p>
+              <FormField control={form.control} name="unitOfMeasure" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[11.5px]">Unit of Measure *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="ea" list="uom-suggestions" className="h-8 text-[13px] w-36" />
+                  </FormControl>
+                  <datalist id="uom-suggestions">
+                    {UNIT_SUGGESTIONS.map((u) => <option key={u} value={u} />)}
+                  </datalist>
+                  <FormMessage className="text-[11px]" />
+                </FormItem>
+              )} />
+            </fieldset>
+
+            {/* ── Product Image ─────────────────────────────────────── */}
+            <fieldset className="space-y-3">
+              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Product Image</legend>
+              <div className="flex cursor-default items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface/50 px-6 py-8">
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                    <Camera className="h-5 w-5 text-muted-foreground" />
                   </div>
-                </div>
-              </fieldset>
-
-              {/* ── Labor ──────────────────────────────────────────────── */}
-              <fieldset className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <FormField control={form.control} name="hasLabor" render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          id="hasLabor"
-                        />
-                      </FormControl>
-                      <FormLabel htmlFor="hasLabor" className="text-[11.5px] font-medium cursor-pointer !mt-0">
-                        Attach Labor
-                      </FormLabel>
-                    </FormItem>
-                  )} />
-                </div>
-
-                {hasLabor && (
-                  <div className="rounded-lg border border-border bg-surface/50 p-4 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormField control={form.control} name="laborHours" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[11.5px]">Labor Hours *</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="number" min="0" step="0.25" placeholder="e.g. 1.5" className="h-8 text-[13px]" />
-                          </FormControl>
-                          <FormMessage className="text-[11px]" />
-                        </FormItem>
-                      )} />
-
-                      <FormField control={form.control} name="laborRateOverride" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[11.5px]">Rate Override</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                              <Input {...field} type="number" min="0" step="1" placeholder="85" className="h-8 pl-5 text-[13px]" />
-                            </div>
-                          </FormControl>
-                          <FormMessage className="text-[11px]" />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Leave Rate Override blank to use the tenant default ($85/hr). When added to a quote, this item will generate a separate labor line below it.
-                    </p>
+                  <div>
+                    <p className="text-[12.5px] font-medium text-foreground">Click to upload or drag & drop</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG up to 5MB</p>
                   </div>
-                )}
-              </fieldset>
-            </div>
+                  <p className="text-[10.5px] text-muted-foreground/60 italic">
+                    Image storage will be enabled when Supabase is connected
+                  </p>
+                </div>
+              </div>
+            </fieldset>
 
-            {/* Footer */}
-            <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
-              <button type="button" onClick={onClose}
-                className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
-                Cancel
-              </button>
-              <button type="submit"
-                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                {item ? "Save Changes" : "Add Item"}
-              </button>
-            </div>
-          </form>
-        </Form>
+            {/* ── Labor ──────────────────────────────────────────────── */}
+            <fieldset className="space-y-3">
+              <div className="flex items-center gap-2">
+                <FormField control={form.control} name="hasLabor" render={({ field }) => (
+                  <FormItem className="flex items-center gap-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        id="hasLabor"
+                      />
+                    </FormControl>
+                    <FormLabel htmlFor="hasLabor" className="text-[11.5px] font-medium cursor-pointer mt-0!">
+                      Attach Labor
+                    </FormLabel>
+                  </FormItem>
+                )} />
+              </div>
+
+              {hasLabor && (
+                <div className="rounded-lg border border-border bg-surface/50 p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField control={form.control} name="laborHours" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[11.5px]">Labor Hours *</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="number" min="0" step="0.25" placeholder="e.g. 1.5" className="h-8 text-[13px]" />
+                        </FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="laborRateOverride" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[11.5px]">Rate Override</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
+                            <Input {...field} type="number" min="0" step="1" placeholder="85" className="h-8 pl-5 text-[13px]" />
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Leave Rate Override blank to use the tenant default ($85/hr). When added to a quote, this item will generate a separate labor line below it.
+                  </p>
+                </div>
+              )}
+            </fieldset>
+          </div>
+
+          {/* Footer */}
+          <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
+            <button type="button" onClick={onClose}
+              className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+              Cancel
+            </button>
+            <button type="submit"
+              className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+              {item ? "Save Changes" : "Add Item"}
+            </button>
+          </div>
+        </form>
+      </Form>
+    );
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+      <SheetContent side="right" className="w-120 flex flex-col p-0 gap-0">
+        <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
+          <SheetTitle className="text-[15px] pr-8">
+            {mode === "view" && item ? item.name : item ? "Edit Item" : "New Catalog Item"}
+          </SheetTitle>
+        </SheetHeader>
+
+        {mode === "view" && item ? renderViewContent() : renderEditContent()}
       </SheetContent>
     </Sheet>
   );
@@ -649,10 +764,11 @@ function ManufacturerCard({ mfr, itemCount, onClick }: ManufacturerCardProps) {
 interface ItemsTableProps {
   items: CatalogItem[];
   showManufacturer: boolean;
+  onView: (item: CatalogItem) => void;
   onEdit: (item: CatalogItem) => void;
 }
 
-function ItemsTable({ items, showManufacturer, onEdit }: ItemsTableProps) {
+function ItemsTable({ items, showManufacturer, onView, onEdit }: ItemsTableProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center py-16 text-center">
@@ -684,11 +800,15 @@ function ItemsTable({ items, showManufacturer, onEdit }: ItemsTableProps) {
         </thead>
         <tbody>
           {items.map((item) => (
-            <tr key={item.id} className="group border-b border-border/60 last:border-0 hover:bg-surface/40 transition-colors">
+            <tr
+              key={item.id}
+              onClick={() => onView(item)}
+              className="group border-b border-border/60 last:border-0 hover:bg-surface/40 transition-colors cursor-pointer"
+            >
               <td className="py-2.5 px-3">
                 <p className="font-medium leading-snug">{item.name}</p>
                 {item.description && (
-                  <p className="text-[10.5px] text-muted-foreground truncate max-w-[220px]">{item.description}</p>
+                  <p className="text-[10.5px] text-muted-foreground truncate max-w-55">{item.description}</p>
                 )}
               </td>
               {showManufacturer && (
@@ -715,7 +835,7 @@ function ItemsTable({ items, showManufacturer, onEdit }: ItemsTableProps) {
               <td className="py-2.5 pr-3 text-right">
                 <button
                   type="button"
-                  onClick={() => onEdit(item)}
+                  onClick={(e) => { e.stopPropagation(); onEdit(item); }}
                   className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-[11px] text-muted-foreground hover:text-foreground transition-all"
                 >
                   <Pencil className="h-3 w-3" />
@@ -751,9 +871,11 @@ function CatalogPage() {
   // Drawer
   const [drawerOpen,  setDrawerOpen]  = useState(false);
   const [drawerItem,  setDrawerItem]  = useState<CatalogItem | null>(null);
+  const [drawerMode,  setDrawerMode]  = useState<"view" | "edit">("view");
 
   const openNew = useCallback(() => {
     setDrawerItem(null);
+    setDrawerMode("edit");
     setDrawerOpen(true);
   }, []);
 
@@ -795,7 +917,7 @@ function CatalogPage() {
     if (catFilter !== "all") result = result.filter((i) => i.category === catFilter);
     if (statusFilter === "active")   result = result.filter((i) => i.isActive);
     if (statusFilter === "inactive") result = result.filter((i) => !i.isActive);
-    const q = (drillMfr ? listSearch : listSearch).toLowerCase().trim();
+    const q = listSearch.toLowerCase().trim();
     if (q) result = result.filter((i) =>
       i.name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q),
     );
@@ -932,16 +1054,6 @@ function CatalogPage() {
           </div>
         )}
 
-        {/* New Item (when in drill view — topbar button also works) */}
-        {drillMfr && (
-          <button
-            type="button"
-            onClick={openNew}
-            className="flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground hover:opacity-90 transition-opacity ml-1"
-          >
-            + New Item
-          </button>
-        )}
       </div>
 
       {/* ── Body ─────────────────────────────────────────────────── */}
@@ -971,7 +1083,8 @@ function CatalogPage() {
           <ItemsTable
             items={filteredItems}
             showManufacturer={view === "list" && !drillMfr}
-            onEdit={(item) => { setDrawerItem(item); setDrawerOpen(true); }}
+            onView={(item) => { setDrawerItem(item); setDrawerMode("view"); setDrawerOpen(true); }}
+            onEdit={(item) => { setDrawerItem(item); setDrawerMode("edit"); setDrawerOpen(true); }}
           />
         )}
       </div>
@@ -979,9 +1092,11 @@ function CatalogPage() {
       <ItemDrawer
         open={drawerOpen}
         item={drawerItem}
+        mode={drawerMode}
         mfrPreset={drillMfr}
         manufacturers={manufacturers}
         onClose={() => setDrawerOpen(false)}
+        onSwitchToEdit={() => setDrawerMode("edit")}
         onSave={handleSave}
       />
     </div>

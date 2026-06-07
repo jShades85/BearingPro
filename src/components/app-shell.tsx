@@ -62,7 +62,6 @@ const sections: { title?: string; items: NavItem[] }[] = [
     items: [
       { to: "/inventory/catalog", label: "Catalog", icon: Package },
       { to: "/inventory/stock", label: "Stock", icon: Boxes },
-      { to: "/inventory", label: "Parts & Materials", icon: Boxes },
       { to: "/purchase-orders", label: "Purchase Orders", icon: ShoppingCart },
       { to: "/vendors", label: "Vendors", icon: Truck },
     ],

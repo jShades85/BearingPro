@@ -18,12 +18,106 @@ Before writing any code in a new session, read these files:
 ## Current Status
 
 **Phase:** Frontend UI Build
-**Last Updated:** Session 010
-**Last Session:** Session 010
+**Last Updated:** Session 012
+**Last Session:** Session 012
 
 ---
 
 ## Session Log
+
+---
+
+### Session 012 — Purchase Orders & Vendors
+
+**Date:** June 7, 2026
+**Focus:** Complete Inventory module — Purchase Orders page and Vendors page
+
+**Completed:**
+
+- **Purchase Orders page (`/purchase-orders`):** Stat bar (Total POs / Open / Overdue / Total Value), status tabs (All / Draft / Sent / Partial / Received / Cancelled), filter bar with search + vendor + job filters, list table with tracking number links (carrier auto-detected from number format), view drawer with status timeline + receipt progress bar + line items, edit/new drawer with full form and line item editor
+- **Tracking number links:** Carrier auto-detected — `1Z…` prefix → UPS, 12–22 digits → FedEx, otherwise Google search. `stopPropagation` on link click prevents row drawer from opening.
+- **Linked job field:** Connects a PO to a project or work order. All line items on the PO are considered attached to that job. Filter bar includes a Job filter with "General Stock" option for unlinked POs.
+- **Autocomplete comboboxes:** Replaced both the linked job `<select>` and the catalog `<select>` with `Popover + Command` comboboxes. Job combobox searches by code, name, and customer with Projects / Work Orders groups. Catalog combobox searches by name and SKU, includes "Add custom item…" at the bottom.
+- **`src/data/purchase-orders.ts`:** Types (`POStatus`, `POLineItem`, `Vendor`, `PurchaseOrder`) and 11 demo POs covering all statuses with realistic line items and linked jobs.
+- **Vendors page (`/vendors`):** Stat bar (Total Vendors / Preferred / Active POs / YTD Spend), card + list view toggle, category and status filters, Sheet drawer with view mode (stats, contact info, rep info, notes) and edit mode, New Vendor modal.
+- **`src/data/vendors.ts`:** 7 vendor records (ADI, Anixter/Wesco, Axis, Verkada, Biamp, Leviton, Middle Atlantic) with full contact, account rep, payment terms, and YTD stats.
+
+**Design Decisions Made:**
+
+- Tracking carrier auto-detected from number format — no need to store carrier separately
+- Linked job stores only `linkedJobId` — `findJob()` helper looks up from `PROJECTS` at render time, no denormalization
+- Cancelled jobs excluded from the linked job selector
+- Vendors uses a Sheet drawer (not a full detail page) — vendor detail is simpler than a company record
+- Stat bar pattern (icon chip + label + value, right-bordered blocks) established on both POs and Vendors — user wants this applied to other list pages going forward
+- `__clear__` sentinel in job combobox always shown by the custom filter function regardless of search input
+
+**Next Session Goal:**
+
+- Finance module — Invoices polish (Lovable baseline needs PCSS rebrand + detail page), Payments page
+- Or Settings — Service Plan Tier Features config page
+
+**Open Questions:**
+
+- Supabase project status — still needed before backend session
+- Demo data consolidation into single demo-data.ts before backend work
+- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
+
+**Future / Deferred:**
+
+- When a PO is linked to a job, line items should auto-populate from the job's unallocated parts list — deferred until projects have a `parts[]` field in demo data
+
+**Schema Notes:**
+
+- purchase_orders: id, tenant_id, vendor_id, po_number, status, order_date, expected_date, received_date, vendor_order_number, tracking_number, linked_job_id, notes
+- po_line_items: id, po_id, catalog_item_id, description, sku, qty_ordered, qty_received, unit_cost
+- vendors: id, tenant_id, name, category, status, account_number, payment_terms, website, phone, email, city, state, rep_name, rep_phone, rep_email, notes
+
+**Schema Changes This Session:** None (UI only)
+**New Env Variables This Session:** None
+
+---
+
+### Session 011 — Catalog & Stock Polish
+
+**Date:** June 7, 2026
+**Focus:** Second pass on Catalog and Stock pages — view mode, nav cleanup, bug fixes
+
+**Completed:**
+
+- **Catalog — view mode:** Row click now opens a read-only view panel (manufacturer badge, category chip, active status, description, 3-stat pricing bar with Cost / MSRP / Margin %). Edit button in view panel footer switches to edit form in-place. Hover Edit button on row stays as a direct shortcut to edit mode.
+- **Catalog — duplicate button fix:** Removed inline `+ New Item` button from drill-in toolbar (global topbar button handles it)
+- **Stock — removed Parts & Materials:** Removed nav entry, replaced `/inventory` index route with a redirect to `/inventory/stock`
+- **Stock — view mode:** Row click opens view panel with on-hand qty as the dominant element (large colored number, status badge), stock level bar with min/max markers, location, SKU, unit cost, value on hand, and movement log. Edit button switches to edit form.
+- **Stock — Needs Attention filter fix:** `needs_attention` was being set by the alert banner but wasn't in the status dropdown — select showed blank. Added as first option in the dropdown.
+- **Stock — Value on Hand column:** Added `qty × unit cost` column to the table as secondary context alongside On Hand qty.
+- **Stock — movement log:** Moved from edit form to view panel where it belongs as read-only audit history.
+- **Stock — duplicate button fix:** Removed inline `+ New Item` button from drill-in toolbar.
+- **Stock — adjust popover bug:** Clicks inside the AdjustCell popover content were bubbling up to the row and opening the view drawer. Fixed with `stopPropagation` on `PopoverContent`.
+
+**Design Decisions Made:**
+
+- View-before-edit is now the standard pattern across list pages — row click = view, hover Edit = shortcut to edit
+- On-hand qty is the primary reason someone opens the Stock page — it's the dominant element in the view panel, not value
+- Value on Hand is useful secondary context in the table and view panel, not the primary driver
+- Parts & Materials was a leftover nav entry from Session 004 IA — Stock supersedes it entirely
+
+**Next Session Goal:**
+
+- Purchase Orders page (Inventory module)
+
+**Open Questions:**
+
+- Supabase project status — still needed before backend session
+- Demo data consolidation into single demo-data.ts before backend work
+- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
+
+**Schema Notes:**
+
+- purchase_orders: id, tenant_id, vendor_id, po_number, status, order_date, expected_date, received_date, notes, line_items[]
+- po_line_items: id, po_id, catalog_item_id, stock_item_id, description, qty_ordered, qty_received, unit_cost
+
+**Schema Changes This Session:** None (UI only)
+**New Env Variables This Session:** None
 
 ---
 
@@ -553,7 +647,10 @@ Before writing any code in a new session, read these files:
 | Team                                  | Placeholder                 | Coming soon page                                    |
 | Service Tickets                       | Placeholder                 | New — coming soon page                              |
 | Service Plans                         | Placeholder                 | New — coming soon page                              |
-| Inventory (Catalog/Parts/POs/Vendors) | Placeholder                 | Catalog moved here from Sales                       |
+| Inventory — Catalog                   | Complete                    | Manufacturer grid, drill-in list, view/edit drawer  |
+| Inventory — Stock                     | Complete                    | Manufacturer grid, drill-in, adjust qty, movement log |
+| Inventory — Purchase Orders           | Complete                    | Full page — stat bar, table, view/edit drawer, comboboxes |
+| Inventory — Vendors                   | Complete                    | Stat bar, card/list view, Sheet drawer, new modal   |
 | Finance (Invoices/Payments)           | Lovable baseline (invoices) | Payments is placeholder                             |
 | Reports                               | Placeholder                 | Coming soon page                                    |
 
