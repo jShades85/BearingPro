@@ -1,0 +1,125 @@
+# PROJECT_CONTEXT.md
+## HandyHustle Hub — Trade Service SaaS
+
+> **New chat? Read this file and PROGRESS_LOG.md before doing anything.**
+
+---
+
+## What We're Building
+
+A **multi-tenant SaaS platform** for trade service businesses (contractors, field service companies, etc.). Each company that signs up is an isolated tenant. The platform covers the full sales and operations lifecycle.
+
+### Modules (Planned)
+- **CRM** — Contacts, leads, customers, communication history
+- **Project Builder** — Estimate/quote creation, line items, pricing
+- **Project Management** — Job scheduling, status tracking, assignments
+- **Inventory Management** — Parts, materials, stock levels
+- *(More TBD — update this list as modules are confirmed)*
+
+---
+
+## Tech Stack (Confirmed from repo)
+
+| Layer | Technology | Notes |
+|---|---|---|
+| Frontend | React 19 + TypeScript | Confirmed from package.json |
+| Build Tool | Vite 7 | Confirmed from package.json |
+| Framework | **TanStack Start** | SSR-capable full-stack framework — affects data loading, auth, routing |
+| Router | **TanStack Router** | File-based routing via @tanstack/react-router |
+| Data Fetching | **TanStack Query** | @tanstack/react-query v5 |
+| UI Components | Radix UI + shadcn/ui | Full Radix UI primitive set installed |
+| Styling | **Tailwind CSS v4** | No tailwind.config.js — config is CSS-based |
+| Forms | React Hook Form + Zod | @hookform/resolvers + zod |
+| Charts | Recharts | Already installed |
+| Package Manager | **Bun** | Use `bun add` NOT `npm install` |
+| Backend / DB | Supabase | Auth, Postgres, RLS, Storage, Edge Functions |
+| Deployment | Vercel | Frontend hosting |
+| Email | Resend | Transactional email (planned) |
+| Issue Tracking | Linear | Bugs, features, sprints |
+| Version Control | GitHub | https://github.com/jShades85/handyhustle-hub |
+
+> ⚠️ **TanStack Start is not plain Vite + React Router.** It is a full-stack SSR framework. Data loading, auth redirects, and Supabase integration must follow TanStack Start patterns (loaders, server functions). Confirm approach before building any data-connected feature.
+
+---
+
+## Architecture Decisions
+
+### Multi-Tenancy
+- Every tenant (company) gets a row in the `tenants` table
+- Every data table carries a `tenant_id` UUID foreign key
+- Supabase **Row Level Security (RLS)** enforces isolation at the DB level — no tenant can see another's data
+- Auth is via Supabase Auth; users belong to a tenant via a `user_profiles` or `tenant_users` join table
+
+### Database
+- Postgres hosted on Supabase
+- Schema design exists — **review and confirm before building any module**
+- All changes made via versioned migration files (never manual dashboard edits)
+- Types auto-generated via `supabase gen types typescript` after every schema change
+
+### Frontend
+- Follows the file/folder structure established by Lovable / TanStack Start — do not reorganize without discussion
+- Use shadcn/ui components before building custom ones
+- TypeScript strict mode throughout
+- **Tailwind v4** — use CSS variables and v4 syntax, not v3 config patterns
+
+---
+
+## Repository
+
+- **GitHub repo:** https://github.com/jShades85/handyhustle-hub
+- **Lovable UI baseline** is already committed on `main`
+- Branch strategy: TBD — confirm before first feature branch
+
+---
+
+## Environment Variables
+
+*(Update this section as variables are added)*
+
+| Variable | Purpose | Where Set |
+|---|---|---|
+| `VITE_SUPABASE_URL` | Supabase project URL | Vercel + local `.env` |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon key | Vercel + local `.env` |
+| `RESEND_API_KEY` | Resend email sending | Supabase Edge Function secrets |
+
+---
+
+## Services & Integrations
+
+| Service | Purpose | Status |
+|---|---|---|
+| Supabase | DB, Auth, Storage, Edge Functions | Active |
+| Vercel | Frontend deployment | Active |
+| Resend | Transactional email | Planned |
+| Linear | Issue tracking | Active |
+| GitHub | Source control | Active |
+
+---
+
+## Key Conventions
+
+- DB columns: `snake_case`
+- TS/React: `PascalCase` components, `camelCase` functions
+- No `any` in TypeScript without an explanatory comment
+- All Supabase queries use the typed client
+- RLS policies required on every tenant-scoped table
+- Package installs: `bun add <package>` (never `npm install`)
+- Tailwind: v4 CSS-based config only — no `tailwind.config.js` patterns
+
+---
+
+## Open Decisions / TBD
+
+- [ ] Review and finalize database schema (share before next module work)
+- [ ] Define branch strategy (main / dev / feature branches)
+- [ ] Confirm Resend integration approach (TanStack Start server functions vs. Supabase Edge Functions)
+- [ ] Define user roles per tenant (admin, manager, field tech, etc.)
+- [ ] Confirm TanStack Start auth pattern with Supabase (server-side session handling)
+- [ ] Decide on project name (repo is "handyhustle-hub" — confirm if this is final)
+
+---
+
+## Notes
+
+- Repo name is `handyhustle-hub` (auto-generated by Lovable) — confirm if this is the final product name
+- TanStack Start uses server functions and loaders — Supabase client setup will differ from standard Vite/React patterns. Research and confirm before building auth or any data-fetching feature.

@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, MapPin, Clock } from "lucide-react";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { ownerNames } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export const Route = createFileRoute("/scheduling")({
   head: () => ({ meta: [{ title: "Scheduling · Crosscurrent" }] }),
@@ -80,6 +85,13 @@ const STATUS_LABELS: Record<JobStatus, string> = {
   in_progress: "In Progress",
   completed: "Completed",
   cancelled: "Cancelled",
+};
+
+const STATUS_BADGE_CLASSES: Record<JobStatus, string> = {
+  scheduled:   "bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300",
+  in_progress: "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300",
+  completed:   "bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-300",
+  cancelled:   "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300",
 };
 
 // ─── Demo Data ────────────────────────────────────────────────────────────────
@@ -299,6 +311,47 @@ function currentTimeOffset(): number {
   return (now.getHours() + now.getMinutes() / 60 - HOUR_START) * CELL_H;
 }
 
+// ─── Overlap layout ───────────────────────────────────────────────────────────
+
+interface JobLayout { left: number; width: number }
+
+function techInitials(name: string): string {
+  return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function computeOverlapLayout(jobs: ScheduledJob[]): Map<string, JobLayout> {
+  const result = new Map<string, JobLayout>();
+  if (jobs.length === 0) return result;
+
+  const sorted = [...jobs].sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const colEnds: string[] = [];
+  const jobCol = new Map<string, number>();
+
+  for (const job of sorted) {
+    let col = colEnds.findIndex((end) => end <= job.startTime);
+    if (col === -1) {
+      col = colEnds.length;
+      colEnds.push(job.endTime);
+    } else {
+      colEnds[col] = job.endTime;
+    }
+    jobCol.set(job.id, col);
+  }
+
+  for (const job of sorted) {
+    const concurrent = sorted.filter(
+      (o) => o.startTime < job.endTime && o.endTime > job.startTime,
+    ).length;
+    const col = jobCol.get(job.id)!;
+    result.set(job.id, {
+      left: (col / concurrent) * 100,
+      width: (1 / concurrent) * 100,
+    });
+  }
+
+  return result;
+}
+
 // ─── Multi-select dropdown ────────────────────────────────────────────────────
 
 function MultiSelect({
@@ -360,22 +413,163 @@ function MultiSelect({
   );
 }
 
-// ─── Job block (placeholder) ──────────────────────────────────────────────────
+// ─── Job block ───────────────────────────────────────────────────────────────
 
-function JobBlock({ job, style }: { job: ScheduledJob; style: React.CSSProperties }) {
+function JobBlock({
+  job,
+  style,
+  isDayView = false,
+  onEditSchedule,
+}: {
+  job: ScheduledJob;
+  style: React.CSSProperties;
+  isDayView?: boolean;
+  onEditSchedule: (job: ScheduledJob) => void;
+}) {
   const colors = CATEGORY_COLORS[job.category];
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  const height =
+    typeof style.height === "number"
+      ? style.height
+      : parseFloat(style.height as string);
+  const compact = height < 46;
+
+  const handleViewJob = () => {
+    setOpen(false);
+    if (job.jobType === "work_order") {
+      navigate({ to: "/work-orders/$workOrderId", params: { workOrderId: job.id } });
+    } else {
+      navigate({ to: "/projects/$projectId", params: { projectId: job.id } });
+    }
+  };
+
   return (
-    <div
-      className={cn(
-        "absolute left-0.5 right-0.5 rounded border-l-2 px-1.5 py-0.5 overflow-hidden",
-        colors.bg,
-        colors.border,
-        colors.text,
-      )}
-      style={style}
-    >
-      <div className="truncate text-[10.5px] font-medium leading-snug">{job.title}</div>
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div
+          role="button"
+          tabIndex={0}
+          className={cn(
+            "absolute rounded border-l-[3px] px-1.5 py-0.5 overflow-hidden cursor-pointer",
+            "hover:brightness-95 dark:hover:brightness-110 transition-[filter] select-none",
+            colors.bg,
+            colors.border,
+            colors.text,
+          )}
+          style={style}
+        >
+          <div className="truncate text-[10.5px] font-semibold leading-snug">{job.title}</div>
+          {!compact && (
+            <div className="truncate text-[9.5px] opacity-70 leading-snug">{job.customer}</div>
+          )}
+          {!compact && (
+            <div className="truncate text-[9.5px] opacity-70 leading-snug font-mono">
+              {job.startTime} – {job.endTime}
+            </div>
+          )}
+          {isDayView && !compact && (
+            <div className="mt-1 flex flex-wrap items-center gap-1">
+              {job.assignedTechs.map((tech) => (
+                <span
+                  key={tech}
+                  title={tech}
+                  className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/30 dark:bg-black/20 border border-current/30 text-[8px] font-bold"
+                >
+                  {techInitials(tech)}
+                </span>
+              ))}
+              <span className={cn("ml-0.5 rounded border border-current/20 px-1 py-px text-[9px] font-semibold", colors.bg, colors.text)}>
+                {CATEGORY_LABELS[job.category]}
+              </span>
+            </div>
+          )}
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-0" side="right" align="start" sideOffset={8}>
+        <div className="px-4 pt-4 pb-3">
+          <div className="text-[13px] font-semibold leading-snug">{job.title}</div>
+          <div className="mt-0.5 text-[10.5px] text-muted-foreground">{job.jobReference}</div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10.5px] font-semibold border-current/20",
+                colors.bg,
+                colors.text,
+              )}
+            >
+              <span className={cn("h-1.5 w-1.5 rounded-full", colors.dot)} />
+              {CATEGORY_LABELS[job.category]}
+            </span>
+            <span
+              className={cn(
+                "inline-flex items-center rounded-md border px-2 py-0.5 text-[10.5px] font-semibold",
+                STATUS_BADGE_CLASSES[job.status],
+              )}
+            >
+              {STATUS_LABELS[job.status]}
+            </span>
+          </div>
+        </div>
+        <div className="border-t border-border px-4 py-3 flex flex-col gap-2.5 text-[11.5px]">
+          <div className="flex items-start gap-2">
+            <MapPin className="mt-px h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <div>
+              <div className="font-medium leading-snug">{job.customer}</div>
+              <div className="text-muted-foreground leading-snug">{job.address}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="h-3.5 w-3.5 shrink-0" />
+            <span>
+              {new Date(job.date + "T00:00:00").toLocaleDateString("en-US", {
+                weekday: "short", month: "short", day: "numeric",
+              })}
+              {" · "}
+              {job.startTime} – {job.endTime}
+            </span>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="mt-1 h-3.5 w-3.5 shrink-0 flex items-center justify-center">
+              <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {job.assignedTechs.map((tech) => (
+                <span
+                  key={tech}
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-accent/60 px-2 py-0.5 text-[10.5px]"
+                >
+                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[7.5px] font-bold">
+                    {techInitials(tech)}
+                  </span>
+                  {tech}
+                </span>
+              ))}
+            </div>
+          </div>
+          {job.notes && (
+            <p className="pl-5 italic text-[11px] leading-snug text-muted-foreground">{job.notes}</p>
+          )}
+        </div>
+        <div className="flex gap-2 border-t border-border px-4 py-3">
+          <button
+            type="button"
+            onClick={handleViewJob}
+            className="flex-1 h-7 rounded-md bg-primary text-primary-foreground text-[11.5px] font-medium hover:opacity-90 transition-opacity"
+          >
+            View Job
+          </button>
+          <button
+            type="button"
+            onClick={() => { setOpen(false); onEditSchedule(job); }}
+            className="flex-1 h-7 rounded-md border border-border text-[11.5px] font-medium text-foreground hover:bg-accent/40 transition-colors"
+          >
+            Edit Schedule
+          </button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -400,16 +594,25 @@ function WeekView({
   jobs,
   today,
   onDayClick,
+  onEditSchedule,
 }: {
   weekStart: Date;
   jobs: ScheduledJob[];
   today: string;
   onDayClick: (dateStr: string) => void;
+  onEditSchedule: (job: ScheduledJob) => void;
 }) {
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = addDays(weekStart, i);
     return { date: d, dateStr: toDateStr(d) };
   });
+
+  const dayLayouts = new Map(
+    days.map(({ dateStr }) => [
+      dateStr,
+      computeOverlapLayout(jobs.filter((j) => j.date === dateStr)),
+    ]),
+  );
 
   const todayOffset = currentTimeOffset();
   const showTimeLine =
@@ -473,16 +676,22 @@ function WeekView({
                     <div className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
                   </div>
                 )}
-                {dayJobs.map((job) => (
-                  <JobBlock
-                    key={job.id}
-                    job={job}
-                    style={{
-                      top: timeToOffset(job.startTime),
-                      height: durationToHeight(job.startTime, job.endTime),
-                    }}
-                  />
-                ))}
+                {dayJobs.map((job) => {
+                  const layout = dayLayouts.get(dateStr)?.get(job.id) ?? { left: 0, width: 100 };
+                  return (
+                    <JobBlock
+                      key={job.id}
+                      job={job}
+                      style={{
+                        top: timeToOffset(job.startTime),
+                        height: durationToHeight(job.startTime, job.endTime),
+                        left: `calc(${layout.left}% + 1px)`,
+                        width: `calc(${layout.width}% - 2px)`,
+                      }}
+                      onEditSchedule={onEditSchedule}
+                    />
+                  );
+                })}
               </div>
             );
           })}
@@ -494,9 +703,20 @@ function WeekView({
 
 // ─── Day View ─────────────────────────────────────────────────────────────────
 
-function DayView({ dateStr, jobs, today }: { dateStr: string; jobs: ScheduledJob[]; today: string }) {
+function DayView({
+  dateStr,
+  jobs,
+  today,
+  onEditSchedule,
+}: {
+  dateStr: string;
+  jobs: ScheduledJob[];
+  today: string;
+  onEditSchedule: (job: ScheduledJob) => void;
+}) {
   const isToday = dateStr === today;
   const dayJobs = jobs.filter((j) => j.date === dateStr);
+  const layout = computeOverlapLayout(dayJobs);
   const todayOffset = currentTimeOffset();
   const showTimeLine = isToday && todayOffset >= 0 && todayOffset <= HOURS.length * CELL_H;
 
@@ -540,16 +760,23 @@ function DayView({ dateStr, jobs, today }: { dateStr: string; jobs: ScheduledJob
                 <div className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
               </div>
             )}
-            {dayJobs.map((job) => (
-              <JobBlock
-                key={job.id}
-                job={job}
-                style={{
-                  top: timeToOffset(job.startTime),
-                  height: durationToHeight(job.startTime, job.endTime),
-                }}
-              />
-            ))}
+            {dayJobs.map((job) => {
+              const jl = layout.get(job.id) ?? { left: 0, width: 100 };
+              return (
+                <JobBlock
+                  key={job.id}
+                  job={job}
+                  isDayView
+                  style={{
+                    top: timeToOffset(job.startTime),
+                    height: durationToHeight(job.startTime, job.endTime),
+                    left: `calc(${jl.left}% + 1px)`,
+                    width: `calc(${jl.width}% - 2px)`,
+                  }}
+                  onEditSchedule={onEditSchedule}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
@@ -584,10 +811,12 @@ function ScheduleDrawer({
   open,
   onOpenChange,
   onSave,
+  editingJob = null,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onSave: (job: ScheduledJob) => void;
+  editingJob?: ScheduledJob | null;
 }) {
   const {
     register,
@@ -604,6 +833,27 @@ function ScheduleDrawer({
   const assignedTechs = watch("assignedTechs");
   const selectedCategory = watch("category") as JobCategory | undefined;
 
+  useEffect(() => {
+    if (!open) return;
+    if (editingJob) {
+      reset({
+        jobReference: editingJob.jobReference,
+        title: editingJob.title,
+        jobType: editingJob.jobType,
+        category: editingJob.category,
+        customer: editingJob.customer,
+        address: editingJob.address,
+        date: editingJob.date,
+        startTime: editingJob.startTime,
+        endTime: editingJob.endTime,
+        assignedTechs: editingJob.assignedTechs,
+        notes: editingJob.notes ?? "",
+      });
+    } else {
+      reset({ jobType: "work_order", assignedTechs: [], notes: "" });
+    }
+  }, [open, editingJob, reset]);
+
   const toggleTech = (name: string) => {
     const current = assignedTechs ?? [];
     setValue(
@@ -615,7 +865,7 @@ function ScheduleDrawer({
 
   const onSubmit = (data: FormData) => {
     const job: ScheduledJob = {
-      id: `sj-${Date.now()}`,
+      id: editingJob?.id ?? `sj-${Date.now()}`,
       title: data.title,
       jobType: data.jobType,
       jobReference: data.jobReference,
@@ -626,7 +876,7 @@ function ScheduleDrawer({
       date: data.date,
       startTime: data.startTime,
       endTime: data.endTime,
-      status: "scheduled",
+      status: editingJob?.status ?? "scheduled",
       notes: data.notes ?? null,
     };
     onSave(job);
@@ -638,7 +888,7 @@ function ScheduleDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full max-w-md overflow-y-auto p-0">
         <SheetHeader className="border-b border-border px-5 py-4">
-          <SheetTitle className="text-[14px]">Schedule Job</SheetTitle>
+          <SheetTitle className="text-[14px]">{editingJob ? "Edit Schedule" : "Schedule Job"}</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 px-5 py-4">
@@ -786,7 +1036,15 @@ function SchedulingPage() {
   const { setMeta } = useMeta();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<ScheduledJob | null>(null);
   const [jobs, setJobs] = useState<ScheduledJob[]>(INITIAL_JOBS);
+
+  // Auto-refresh current-time indicator every 60 s
+  const [, setTimeTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTimeTick((t) => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const [view, setView] = useState<"week" | "day">(() => {
     try {
@@ -822,6 +1080,7 @@ function SchedulingPage() {
   const goToday = () => {
     setWeekStart(getWeekStart(new Date()));
     setSelectedDate(todayStr());
+    changeView("week");
   };
 
   const navPrev = () => {
@@ -871,7 +1130,26 @@ function SchedulingPage() {
     return filteredJobs.filter((j) => j.date === selectedDate);
   }, [filteredJobs, view, weekStart, selectedDate]);
 
-  const addJob = (job: ScheduledJob) => setJobs((prev) => [...prev, job]);
+  const saveJob = (job: ScheduledJob) =>
+    setJobs((prev) => {
+      const idx = prev.findIndex((j) => j.id === job.id);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = job;
+        return updated;
+      }
+      return [...prev, job];
+    });
+
+  const openEditDrawer = (job: ScheduledJob) => {
+    setEditingJob(job);
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerOpenChange = (v: boolean) => {
+    setDrawerOpen(v);
+    if (!v) setEditingJob(null);
+  };
 
   const selectCls =
     "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
@@ -970,17 +1248,24 @@ function SchedulingPage() {
             jobs={visibleJobs}
             today={todayStr()}
             onDayClick={onDayClick}
+            onEditSchedule={openEditDrawer}
           />
         ) : (
-          <DayView dateStr={selectedDate} jobs={visibleJobs} today={todayStr()} />
+          <DayView
+            dateStr={selectedDate}
+            jobs={visibleJobs}
+            today={todayStr()}
+            onEditSchedule={openEditDrawer}
+          />
         )}
       </div>
 
       {/* Schedule Job drawer */}
       <ScheduleDrawer
         open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onSave={addJob}
+        onOpenChange={handleDrawerOpenChange}
+        onSave={saveJob}
+        editingJob={editingJob}
       />
     </div>
   );
