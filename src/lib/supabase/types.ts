@@ -179,32 +179,53 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          availability: string
+          certifications: string[]
           created_at: string
           email: string | null
           full_name: string | null
           id: string
           is_active: boolean
+          pay_rate: number
+          pay_type: string
+          phone: string | null
           role_id: string | null
+          skills: string[]
+          start_date: string | null
           tenant_id: string
           vehicle_id: string | null
         }
         Insert: {
+          availability?: string
+          certifications?: string[]
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
           is_active?: boolean
+          pay_rate?: number
+          pay_type?: string
+          phone?: string | null
           role_id?: string | null
+          skills?: string[]
+          start_date?: string | null
           tenant_id: string
           vehicle_id?: string | null
         }
         Update: {
+          availability?: string
+          certifications?: string[]
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
           is_active?: boolean
+          pay_rate?: number
+          pay_type?: string
+          phone?: string | null
           role_id?: string | null
+          skills?: string[]
+          start_date?: string | null
           tenant_id?: string
           vehicle_id?: string | null
         }

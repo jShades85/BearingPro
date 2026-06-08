@@ -1,10 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import type { Database } from "@/lib/supabase/types";
 import {
   Briefcase, ChevronDown, Mail, Pencil, Phone, TriangleAlert, X,
 } from "lucide-react";
@@ -12,63 +15,40 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/operations/team")({
-  head: () => ({ meta: [{ title: "Team · Port City Sound & Security" }] }),
+  head: () => ({ meta: [{ title: "Team · BearingPro" }] }),
   component: TeamPage,
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type MemberRole = "field_tech" | "lead_tech" | "project_manager" | "admin" | "subcontractor";
-type PayType = "hourly" | "salary";
+type Role   = Database["public"]["Tables"]["roles"]["Row"];
+type Member = Database["public"]["Tables"]["user_profiles"]["Row"] & {
+  roles: Pick<Role, "id" | "name" | "color"> | null;
+};
+
 type Availability = "full_time" | "part_time" | "on_call" | "inactive";
-
-interface AssignedJob {
-  id: string;
-  name: string;
-  type: "project" | "work_order";
-  status: string;
-}
-
-interface TeamMember {
-  id: string;
-  name: string;
-  role: MemberRole;
-  email: string;
-  phone: string;
-  avatarInitials: string;
-  skills: string[];
-  certifications: string[];
-  payRate: number;
-  payType: PayType;
-  availability: Availability;
-  assignedJobsCount: number;
-  startDate: string;
-  isActive: boolean;
-  assignedJobs: AssignedJob[];
-}
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const roleMeta: Record<MemberRole, { label: string; cls: string; gradient: string }> = {
-  admin:           { label: "Admin",          cls: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",    gradient: "135deg, oklch(0.52 0.20 264), oklch(0.40 0.22 280)" },
-  lead_tech:       { label: "Lead Tech",      cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400",    gradient: "135deg, oklch(0.52 0.20 290), oklch(0.40 0.22 306)" },
-  project_manager: { label: "Project Mgr",    cls: "bg-sky-500/15 text-sky-600 dark:text-sky-400",             gradient: "135deg, oklch(0.52 0.16 218), oklch(0.40 0.18 234)" },
-  field_tech:      { label: "Field Tech",     cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400", gradient: "135deg, oklch(0.52 0.16 162), oklch(0.40 0.18 178)" },
-  subcontractor:   { label: "Subcontractor",  cls: "bg-orange-500/15 text-orange-600 dark:text-orange-400",    gradient: "135deg, oklch(0.60 0.18 46), oklch(0.46 0.20 62)"   },
+const availabilityMeta: Record<Availability, { label: string; cls: string }> = {
+  full_time: { label: "Full Time", cls: "bg-green-500/15 text-green-600 dark:text-green-400"   },
+  part_time: { label: "Part Time", cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400"     },
+  on_call:   { label: "On Call",   cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400"  },
+  inactive:  { label: "Inactive",  cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400"  },
 };
 
-const availabilityMeta: Record<Availability, { label: string; cls: string }> = {
-  full_time: { label: "Full Time", cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
-  part_time: { label: "Part Time", cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
-  on_call:   { label: "On Call",   cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
-  inactive:  { label: "Inactive",  cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
-};
+const AVAIL_OPTIONS = [
+  { value: "all",       label: "All Availability" },
+  { value: "full_time", label: "Full Time" },
+  { value: "part_time", label: "Part Time" },
+  { value: "on_call",   label: "On Call" },
+  { value: "inactive",  label: "Inactive" },
+];
 
 const SKILL_SUGGESTIONS = [
   "CCTV", "Access Control", "Low Voltage", "Networking",
@@ -80,168 +60,88 @@ const CERT_SUGGESTIONS = [
   "CompTIA Network+", "Manufacturer Certifications",
 ];
 
-const ROLE_OPTIONS: Array<{ value: MemberRole | "all"; label: string }> = [
-  { value: "all",            label: "All Roles" },
-  { value: "admin",          label: "Admin" },
-  { value: "lead_tech",      label: "Lead Tech" },
-  { value: "project_manager", label: "Project Manager" },
-  { value: "field_tech",     label: "Field Tech" },
-  { value: "subcontractor",  label: "Subcontractor" },
+// ─── Supabase helpers ─────────────────────────────────────────────────────────
+
+async function fetchMembers() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("*, roles(id, name, color)")
+    .eq("is_active", true)
+    .order("full_name");
+  if (error) throw error;
+  return data as Member[];
+}
+
+async function fetchRoles() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("roles")
+    .select("id, name, color")
+    .order("created_at");
+  if (error) throw error;
+  return data as Pick<Role, "id" | "name" | "color">[];
+}
+
+async function updateMember(id: string, patch: {
+  full_name?: string; role_id?: string | null; phone?: string | null;
+  availability?: string; skills?: string[]; certifications?: string[];
+  pay_type?: string; pay_rate?: number; start_date?: string | null;
+}) {
+  const supabase = createClient();
+  const { error } = await supabase.from("user_profiles").update(patch).eq("id", id);
+  if (error) throw error;
+}
+
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+
+const AVATAR_GRADIENTS = [
+  "linear-gradient(135deg, #6366f1, #8b5cf6)",
+  "linear-gradient(135deg, #3b82f6, #06b6d4)",
+  "linear-gradient(135deg, #10b981, #3b82f6)",
+  "linear-gradient(135deg, #f59e0b, #ef4444)",
+  "linear-gradient(135deg, #ec4899, #8b5cf6)",
+  "linear-gradient(135deg, #14b8a6, #6366f1)",
+  "linear-gradient(135deg, #f97316, #eab308)",
+  "linear-gradient(135deg, #8b5cf6, #ec4899)",
 ];
 
-const AVAIL_OPTIONS: Array<{ value: Availability | "all"; label: string }> = [
-  { value: "all",       label: "All Availability" },
-  { value: "full_time", label: "Full Time" },
-  { value: "part_time", label: "Part Time" },
-  { value: "on_call",   label: "On Call" },
-  { value: "inactive",  label: "Inactive" },
-];
+function avatarGradient(name: string) {
+  const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return AVATAR_GRADIENTS[hash % AVATAR_GRADIENTS.length];
+}
 
-const jobTypeMeta: Record<"project" | "work_order", { label: string; cls: string }> = {
-  project:    { label: "Project",    cls: "bg-primary/10 text-primary" },
-  work_order: { label: "Work Order", cls: "bg-slate-500/10 text-slate-500 dark:text-slate-400" },
-};
-
-// ─── Demo data ────────────────────────────────────────────────────────────────
-
-const INITIAL_MEMBERS: TeamMember[] = [
-  {
-    id: "tm1", name: "Justin Shader", role: "admin",
-    email: "justin@portcitysecurity.com", phone: "(618) 555-0100",
-    avatarInitials: "JS",
-    skills: ["CCTV", "Access Control", "Low Voltage", "Networking", "Audio/Video"],
-    certifications: ["ESA Level 1", "OSHA 10"],
-    payRate: 0, payType: "salary",
-    availability: "full_time", assignedJobsCount: 6,
-    startDate: "2019-01-15", isActive: true,
-    assignedJobs: [
-      { id: "pr1", name: "Penthouse Cinema Build",            type: "project",    status: "In Progress" },
-      { id: "pr2", name: "Surgical Center A/V Overhaul",      type: "project",    status: "In Progress" },
-      { id: "wo1", name: "Access Panel Repair — Metro Loft",  type: "work_order", status: "Scheduled"   },
-    ],
-  },
-  {
-    id: "tm2", name: "Marcus Okafor", role: "lead_tech",
-    email: "mokafor@portcitysecurity.com", phone: "(618) 555-0212",
-    avatarInitials: "MO",
-    skills: ["CCTV", "Access Control", "Fire Alarm", "Structured Cabling"],
-    certifications: ["NICET Level II", "ESA Level 1", "OSHA 10"],
-    payRate: 38, payType: "hourly",
-    availability: "full_time", assignedJobsCount: 4,
-    startDate: "2021-03-08", isActive: true,
-    assignedJobs: [
-      { id: "pr1", name: "Penthouse Cinema Build",                type: "project",    status: "In Progress" },
-      { id: "wo2", name: "Camera System — Ridgeline Warehouse",   type: "work_order", status: "In Progress" },
-      { id: "wo3", name: "Access Control — Harbor Office",        type: "work_order", status: "Scheduled"   },
-    ],
-  },
-  {
-    id: "tm3", name: "Rachel Torres", role: "lead_tech",
-    email: "rtorres@portcitysecurity.com", phone: "(618) 555-0334",
-    avatarInitials: "RT",
-    skills: ["Audio/Video", "Networking", "Low Voltage", "Intercoms"],
-    certifications: ["ESA Level 1", "CompTIA Network+"],
-    payRate: 36, payType: "hourly",
-    availability: "full_time", assignedJobsCount: 3,
-    startDate: "2022-06-20", isActive: true,
-    assignedJobs: [
-      { id: "pr2", name: "Surgical Center A/V Overhaul",       type: "project",    status: "In Progress" },
-      { id: "wo4", name: "Intercom Upgrade — Elm Street Plaza", type: "work_order", status: "Scheduled"   },
-    ],
-  },
-  {
-    id: "tm4", name: "Devon Parks", role: "field_tech",
-    email: "dparks@portcitysecurity.com", phone: "(618) 555-0445",
-    avatarInitials: "DP",
-    skills: ["CCTV", "Structured Cabling", "Low Voltage"],
-    certifications: ["OSHA 10"],
-    payRate: 28, payType: "hourly",
-    availability: "full_time", assignedJobsCount: 2,
-    startDate: "2023-09-11", isActive: true,
-    assignedJobs: [
-      { id: "pr1", name: "Penthouse Cinema Build",             type: "project",    status: "In Progress" },
-      { id: "wo2", name: "Camera System — Ridgeline Warehouse", type: "work_order", status: "In Progress" },
-    ],
-  },
-  {
-    id: "tm5", name: "Sierra Nash", role: "field_tech",
-    email: "snash@portcitysecurity.com", phone: "(618) 555-0556",
-    avatarInitials: "SN",
-    skills: ["Access Control", "Audio/Video", "Networking"],
-    certifications: ["ESA Level 1", "Manufacturer Certifications"],
-    payRate: 26, payType: "hourly",
-    availability: "part_time", assignedJobsCount: 1,
-    startDate: "2024-02-26", isActive: true,
-    assignedJobs: [
-      { id: "pr3", name: "Smart Home — Quay Residence", type: "project", status: "In Progress" },
-    ],
-  },
-  {
-    id: "tm6", name: "Tony Ricci Electric", role: "subcontractor",
-    email: "tony@riccielectric.com", phone: "(618) 555-0667",
-    avatarInitials: "TR",
-    skills: ["Low Voltage", "Structured Cabling", "Fire Alarm"],
-    certifications: ["NICET Level II"],
-    payRate: 95, payType: "hourly",
-    availability: "on_call", assignedJobsCount: 1,
-    startDate: "2023-04-03", isActive: true,
-    assignedJobs: [
-      { id: "pr4", name: "Sound Stage 3 Control Room", type: "project", status: "Scheduled" },
-    ],
-  },
-];
-
-// ─── Zod schema ───────────────────────────────────────────────────────────────
-
-const MemberFormSchema = z.object({
-  name:           z.string().min(1, "Required"),
-  role:           z.enum(["field_tech", "lead_tech", "project_manager", "admin", "subcontractor"]),
-  email:          z.string().email("Invalid email").or(z.literal("")),
-  phone:          z.string(),
-  avatarInitials: z.string().min(1, "Required").max(3, "Max 3 characters"),
-  isActive:       z.boolean(),
-  skills:         z.array(z.string()),
-  certifications: z.array(z.string()),
-  payType:        z.enum(["hourly", "salary"]),
-  payRate:        z.coerce.number().min(0),
-  availability:   z.enum(["full_time", "part_time", "on_call", "inactive"]),
-  startDate:      z.string(),
-});
-
-type MemberFormValues = z.infer<typeof MemberFormSchema>;
-
-const DEFAULT_VALUES: MemberFormValues = {
-  name: "", role: "field_tech", email: "", phone: "",
-  avatarInitials: "", isActive: true,
-  skills: [], certifications: [],
-  payType: "hourly", payRate: 0,
-  availability: "full_time", startDate: "",
-};
-
-// ─── TeamAvatar ───────────────────────────────────────────────────────────────
-
-function TeamAvatar({
-  initials, role, className,
-}: { initials: string; role: MemberRole; className?: string }) {
+function TeamAvatar({ name, className }: { name: string; className?: string }) {
+  const initials = name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
   return (
     <span
       className={cn("inline-flex items-center justify-center rounded-full font-semibold text-white/95 shrink-0", className)}
-      style={{ background: `linear-gradient(${roleMeta[role].gradient})` }}
+      style={{ background: avatarGradient(name) }}
     >
       {initials}
     </span>
   );
 }
 
+// ─── RoleBadge ────────────────────────────────────────────────────────────────
+
+function RoleBadge({ role }: { role: Pick<Role, "name" | "color"> | null }) {
+  if (!role) return <span className="rounded px-1.5 py-0.5 text-[10.5px] bg-muted text-muted-foreground">No role</span>;
+  return (
+    <span
+      className="rounded px-1.5 py-0.5 text-[10.5px] font-medium text-white"
+      style={{ backgroundColor: role.color + "cc" }}
+    >
+      {role.name}
+    </span>
+  );
+}
+
 // ─── TagInput ─────────────────────────────────────────────────────────────────
 
-function TagInput({
-  value, onChange, suggestions, placeholder,
-}: {
-  value: string[];
-  onChange: (v: string[]) => void;
-  suggestions: string[];
-  placeholder?: string;
+function TagInput({ value, onChange, suggestions, placeholder }: {
+  value: string[]; onChange: (v: string[]) => void;
+  suggestions: string[]; placeholder?: string;
 }) {
   const [input, setInput] = useState("");
   const [showSugg, setShowSugg] = useState(false);
@@ -285,12 +185,8 @@ function TagInput({
       {showSugg && filtered.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {filtered.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); add(s); }}
-              className="rounded-full border border-border px-2 py-0.5 text-[10.5px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
-            >
+            <button key={s} type="button" onMouseDown={(e) => { e.preventDefault(); add(s); }}
+              className="rounded-full border border-border px-2 py-0.5 text-[10.5px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors">
               + {s}
             </button>
           ))}
@@ -300,7 +196,7 @@ function TagInput({
   );
 }
 
-// ─── Section header ───────────────────────────────────────────────────────────
+// ─── Section label ────────────────────────────────────────────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -310,52 +206,52 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ─── MemberFormSchema ─────────────────────────────────────────────────────────
+
+const MemberFormSchema = z.object({
+  full_name:      z.string().min(1, "Required"),
+  role_id:        z.string().nullable(),
+  phone:          z.string(),
+  skills:         z.array(z.string()),
+  certifications: z.array(z.string()),
+  pay_type:       z.enum(["hourly", "salary"]),
+  pay_rate:       z.coerce.number().min(0),
+  availability:   z.enum(["full_time", "part_time", "on_call", "inactive"]),
+  start_date:     z.string(),
+});
+
+type MemberFormValues = z.infer<typeof MemberFormSchema>;
+
 // ─── MemberDrawer ─────────────────────────────────────────────────────────────
 
-interface MemberDrawerProps {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  member: TeamMember | null;
-  onSave: (data: MemberFormValues, id: string | null) => void;
-}
-
-function MemberDrawer({ open, onOpenChange, member, onSave }: MemberDrawerProps) {
-  const isNew = member === null;
-
+function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
+  open: boolean; onOpenChange: (v: boolean) => void;
+  member: Member | null; roles: Pick<Role, "id" | "name" | "color">[];
+  onSave: (id: string, data: MemberFormValues) => void;
+}) {
   const form = useForm<MemberFormValues>({
     resolver: zodResolver(MemberFormSchema),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: { full_name: "", role_id: null, phone: "", skills: [], certifications: [], pay_type: "hourly", pay_rate: 0, availability: "full_time", start_date: "" },
   });
 
   useEffect(() => {
-    if (!open) return;
-    form.reset(
-      member
-        ? {
-            name: member.name, role: member.role,
-            email: member.email, phone: member.phone,
-            avatarInitials: member.avatarInitials, isActive: member.isActive,
-            skills: [...member.skills], certifications: [...member.certifications],
-            payType: member.payType, payRate: member.payRate,
-            availability: member.availability, startDate: member.startDate,
-          }
-        : DEFAULT_VALUES,
-    );
+    if (!open || !member) return;
+    form.reset({
+      full_name:      member.full_name ?? "",
+      role_id:        member.role_id ?? null,
+      phone:          member.phone ?? "",
+      skills:         member.skills ?? [],
+      certifications: member.certifications ?? [],
+      pay_type:       (member.pay_type as "hourly" | "salary") ?? "hourly",
+      pay_rate:       member.pay_rate ?? 0,
+      availability:   (member.availability as Availability) ?? "full_time",
+      start_date:     member.start_date ?? "",
+    });
   }, [open, member, form]);
 
-  const watchedName = form.watch("name");
-  useEffect(() => {
-    if (!isNew) return;
-    const parts = watchedName.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return;
-    const gen = parts.length >= 2
-      ? ((parts[0][0] ?? "") + (parts[parts.length - 1][0] ?? "")).toUpperCase()
-      : parts[0].slice(0, 2).toUpperCase();
-    form.setValue("avatarInitials", gen, { shouldValidate: false });
-  }, [watchedName, isNew]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleSubmit = form.handleSubmit((data) => {
-    onSave(data, member?.id ?? null);
+    if (!member) return;
+    onSave(member.id, data);
     onOpenChange(false);
   });
 
@@ -364,22 +260,17 @@ function MemberDrawer({ open, onOpenChange, member, onSave }: MemberDrawerProps)
   const labelCls = "mb-1 block text-[11.5px] font-medium text-foreground";
   const errorCls = "mt-0.5 text-[11px] text-destructive";
 
+  if (!member) return null;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-[480px] flex flex-col p-0 gap-0">
-        {/* Header */}
         <SheetHeader className="border-b border-border px-5 py-4">
           <div className="flex items-center gap-3">
-            {member && (
-              <TeamAvatar initials={member.avatarInitials} role={member.role} className="h-10 w-10 text-[14px]" />
-            )}
+            <TeamAvatar name={member.full_name ?? "?"} className="h-10 w-10 text-[14px]" />
             <div>
-              <SheetTitle className="text-[15px] font-semibold leading-tight">
-                {isNew ? "Add Team Member" : member.name}
-              </SheetTitle>
-              {!isNew && (
-                <p className="text-[12px] text-muted-foreground">{roleMeta[member.role].label}</p>
-              )}
+              <SheetTitle className="text-[15px] font-semibold leading-tight">{member.full_name ?? "Unknown"}</SheetTitle>
+              <p className="text-[12px] text-muted-foreground">{member.roles?.name ?? "No role"}</p>
             </div>
           </div>
         </SheetHeader>
@@ -388,271 +279,171 @@ function MemberDrawer({ open, onOpenChange, member, onSave }: MemberDrawerProps)
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
 
-              {/* 1 · Identity */}
+              {/* Identity */}
               <div>
                 <SectionLabel>Identity</SectionLabel>
                 <div className="space-y-3">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelCls}>Name <span className="text-destructive">*</span></FormLabel>
+                  <FormField control={form.control} name="full_name" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Name <span className="text-destructive">*</span></FormLabel>
+                      <FormControl><Input {...field} className={fieldCls} placeholder="Full name" /></FormControl>
+                      <FormMessage className={errorCls} />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="role_id" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Role</FormLabel>
+                      <div className="relative">
                         <FormControl>
-                          <Input {...field} className={fieldCls} placeholder="Full name" />
+                          <select
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value || null)}
+                            className={selectCls}
+                          >
+                            <option value="">No role</option>
+                            {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                          </select>
                         </FormControl>
-                        <FormMessage className={errorCls} />
-                      </FormItem>
-                    )}
-                  />
+                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                    </FormItem>
+                  )} />
 
-                  <FormField
-                    control={form.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelCls}>Role <span className="text-destructive">*</span></FormLabel>
-                        <div className="relative">
-                          <FormControl>
-                            <select {...field} className={selectCls}>
-                              <option value="field_tech">Field Tech</option>
-                              <option value="lead_tech">Lead Tech</option>
-                              <option value="project_manager">Project Manager</option>
-                              <option value="admin">Admin</option>
-                              <option value="subcontractor">Subcontractor</option>
-                            </select>
-                          </FormControl>
-                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className={labelCls}>Email <span className="text-destructive">*</span></FormLabel>
-                          <FormControl>
-                            <Input {...field} type="email" className={fieldCls} placeholder="email@domain.com" />
-                          </FormControl>
-                          <FormMessage className={errorCls} />
-                        </FormItem>
-                      )}
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Email</label>
+                    <input
+                      readOnly
+                      value={member.email ?? ""}
+                      className={cn(fieldCls, "opacity-60 cursor-not-allowed")}
                     />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className={labelCls}>Phone</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="tel" className={fieldCls} placeholder="(555) 000-0000" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                    <p className="text-[10.5px] text-muted-foreground">Email changes require the member to update their account.</p>
                   </div>
 
-                  <div className="flex items-end gap-3">
-                    <FormField
-                      control={form.control}
-                      name="avatarInitials"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel className={labelCls}>Initials <span className="text-destructive">*</span></FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              maxLength={3}
-                              className={cn(fieldCls, "uppercase")}
-                              placeholder="JS"
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                            />
-                          </FormControl>
-                          <FormMessage className={errorCls} />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="isActive"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center gap-2 pb-1 space-y-0">
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                          <FormLabel className="text-[12.5px] text-foreground cursor-pointer select-none m-0">
-                            Active
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField control={form.control} name="phone" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Phone</FormLabel>
+                      <FormControl><Input {...field} type="tel" className={fieldCls} placeholder="(555) 000-0000" /></FormControl>
+                    </FormItem>
+                  )} />
                 </div>
               </div>
 
               <Separator />
 
-              {/* 2 · Skills & Certifications */}
+              {/* Skills & Certifications */}
               <div>
                 <SectionLabel>Skills &amp; Certifications</SectionLabel>
                 <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="skills"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelCls}>Skills</FormLabel>
-                        <FormControl>
-                          <TagInput value={field.value} onChange={field.onChange} suggestions={SKILL_SUGGESTIONS} placeholder="Add skill…" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="certifications"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelCls}>Certifications</FormLabel>
-                        <FormControl>
-                          <TagInput value={field.value} onChange={field.onChange} suggestions={CERT_SUGGESTIONS} placeholder="Add certification…" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="skills" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Skills</FormLabel>
+                      <FormControl>
+                        <TagInput value={field.value} onChange={field.onChange} suggestions={SKILL_SUGGESTIONS} placeholder="Add skill…" />
+                      </FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="certifications" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Certifications</FormLabel>
+                      <FormControl>
+                        <TagInput value={field.value} onChange={field.onChange} suggestions={CERT_SUGGESTIONS} placeholder="Add certification…" />
+                      </FormControl>
+                    </FormItem>
+                  )} />
                 </div>
               </div>
 
               <Separator />
 
-              {/* 3 · Compensation */}
+              {/* Compensation */}
               <div>
                 <SectionLabel>Compensation</SectionLabel>
                 <div className="mb-3 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-[11.5px] text-amber-700 dark:text-amber-400">
                   <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  <span>This section is visible to Admin roles only. Role-based visibility will be enforced when authentication is implemented.</span>
+                  <span>Visible to Admin and Owner roles only. Role-based visibility enforced when permissions are wired up.</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="payType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelCls}>Pay Type <span className="text-destructive">*</span></FormLabel>
-                        <div className="relative">
-                          <FormControl>
-                            <select {...field} className={selectCls}>
-                              <option value="hourly">Hourly</option>
-                              <option value="salary">Salary</option>
-                            </select>
-                          </FormControl>
-                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="payRate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelCls}>Pay Rate <span className="text-destructive">*</span></FormLabel>
-                        <div className="relative">
-                          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                          <FormControl>
-                            <Input {...field} type="number" min={0} step={0.01} className={cn(fieldCls, "pl-5")} placeholder="0.00" />
-                          </FormControl>
-                        </div>
-                        <FormMessage className={errorCls} />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="pay_type" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Pay Type</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <select {...field} className={selectCls}>
+                            <option value="hourly">Hourly</option>
+                            <option value="salary">Salary</option>
+                          </select>
+                        </FormControl>
+                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="pay_rate" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Pay Rate</FormLabel>
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
+                        <FormControl>
+                          <Input {...field} type="number" min={0} step={0.01} className={cn(fieldCls, "pl-5")} placeholder="0.00" />
+                        </FormControl>
+                      </div>
+                      <FormMessage className={errorCls} />
+                    </FormItem>
+                  )} />
                 </div>
               </div>
 
               <Separator />
 
-              {/* 4 · Schedule & Availability */}
+              {/* Schedule & Availability */}
               <div>
                 <SectionLabel>Schedule &amp; Availability</SectionLabel>
                 <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="availability"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelCls}>Availability <span className="text-destructive">*</span></FormLabel>
-                        <div className="relative">
-                          <FormControl>
-                            <select {...field} className={selectCls}>
-                              <option value="full_time">Full Time</option>
-                              <option value="part_time">Part Time</option>
-                              <option value="on_call">On Call</option>
-                              <option value="inactive">Inactive</option>
-                            </select>
-                          </FormControl>
-                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="startDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={labelCls}>Start Date</FormLabel>
+                  <FormField control={form.control} name="availability" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Availability</FormLabel>
+                      <div className="relative">
                         <FormControl>
-                          <Input {...field} type="date" className={fieldCls} />
+                          <select {...field} className={selectCls}>
+                            <option value="full_time">Full Time</option>
+                            <option value="part_time">Part Time</option>
+                            <option value="on_call">On Call</option>
+                            <option value="inactive">Inactive</option>
+                          </select>
                         </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="start_date" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelCls}>Start Date</FormLabel>
+                      <FormControl><Input {...field} type="date" className={fieldCls} /></FormControl>
+                    </FormItem>
+                  )} />
                 </div>
               </div>
 
-              {/* 5 · Assigned Jobs (edit only) */}
-              {!isNew && member.assignedJobs.length > 0 && (
-                <>
-                  <Separator />
-                  <div>
-                    <SectionLabel>Assigned Jobs</SectionLabel>
-                    <ul className="space-y-2">
-                      {member.assignedJobs.map((job) => {
-                        const tm = jobTypeMeta[job.type];
-                        return (
-                          <li key={job.id} className="flex items-center gap-2.5 rounded-md border border-border bg-surface/40 px-3 py-2">
-                            <Briefcase className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                            <span className="min-w-0 flex-1 truncate text-[12.5px]">{job.name}</span>
-                            <span className={cn("shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium", tm.cls)}>{tm.label}</span>
-                            <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">{job.status}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                </>
-              )}
+              {/* Assigned Jobs placeholder */}
+              <Separator />
+              <div>
+                <SectionLabel>Assigned Jobs</SectionLabel>
+                <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-3">
+                  <Briefcase className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                  <span className="text-[12px] text-muted-foreground">Job assignments available after projects are wired up.</span>
+                </div>
+              </div>
+
             </div>
 
-            {/* Footer */}
             <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-3">
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="h-8 rounded-md border border-border px-4 text-[12.5px] hover:bg-accent transition-colors"
-              >
+              <button type="button" onClick={() => onOpenChange(false)}
+                className="h-8 rounded-md border border-border px-4 text-[12.5px] hover:bg-accent transition-colors">
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
-              >
-                {isNew ? "Add Member" : "Save Changes"}
+              <button type="submit"
+                className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                Save Changes
               </button>
             </div>
           </form>
@@ -664,31 +455,26 @@ function MemberDrawer({ open, onOpenChange, member, onSave }: MemberDrawerProps)
 
 // ─── MemberCard ───────────────────────────────────────────────────────────────
 
-function MemberCard({ member, onEdit }: { member: TeamMember; onEdit: () => void }) {
-  const rm = roleMeta[member.role];
-  const am = availabilityMeta[member.availability];
-  const visibleSkills = member.skills.slice(0, 3);
-  const extraSkills = member.skills.length - 3;
+function MemberCard({ member, onEdit }: { member: Member; onEdit: () => void }) {
+  const avail = availabilityMeta[(member.availability as Availability) ?? "full_time"];
+  const skills = member.skills ?? [];
+  const visibleSkills = skills.slice(0, 3);
+  const extraSkills = skills.length - 3;
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
       <div className="flex items-start gap-3">
-        <TeamAvatar initials={member.avatarInitials} role={member.role} className="h-10 w-10 text-[14px]" />
+        <TeamAvatar name={member.full_name ?? "?"} className="h-10 w-10 text-[14px]" />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="truncate text-[13.5px] font-semibold leading-snug">{member.name}</span>
-            {!member.isActive && (
-              <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-slate-500/15 text-slate-500 dark:text-slate-400">Inactive</span>
-            )}
-          </div>
+          <span className="truncate text-[13.5px] font-semibold leading-snug">{member.full_name ?? "—"}</span>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            <span className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium", rm.cls)}>{rm.label}</span>
-            <span className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium", am.cls)}>{am.label}</span>
+            <RoleBadge role={member.roles} />
+            <span className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium", avail.cls)}>{avail.label}</span>
           </div>
         </div>
       </div>
 
-      {member.skills.length > 0 && (
+      {skills.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {visibleSkills.map((s) => (
             <span key={s} className="rounded-full bg-muted px-2 py-0.5 text-[10.5px] text-muted-foreground">{s}</span>
@@ -702,27 +488,25 @@ function MemberCard({ member, onEdit }: { member: TeamMember; onEdit: () => void
       <div className="flex items-center justify-between text-[11.5px] text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <Briefcase className="h-3.5 w-3.5" />
-          <span>{member.assignedJobsCount} active {member.assignedJobsCount === 1 ? "job" : "jobs"}</span>
+          <span className="italic">Jobs coming soon</span>
         </div>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:border-primary/40 hover:text-foreground transition-colors"
-        >
-          <Pencil className="h-3 w-3" />
-          Edit
+        <button type="button" onClick={onEdit}
+          className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:border-primary/40 hover:text-foreground transition-colors">
+          <Pencil className="h-3 w-3" /> Edit
         </button>
       </div>
 
       <div className="space-y-1 border-t border-border/60 pt-2.5">
         <div className="flex items-center gap-2 text-[11.5px] text-muted-foreground">
           <Mail className="h-3 w-3 shrink-0" />
-          <span className="truncate">{member.email}</span>
+          <span className="truncate">{member.email ?? "—"}</span>
         </div>
-        <div className="flex items-center gap-2 text-[11.5px] text-muted-foreground">
-          <Phone className="h-3 w-3 shrink-0" />
-          <span>{member.phone}</span>
-        </div>
+        {member.phone && (
+          <div className="flex items-center gap-2 text-[11.5px] text-muted-foreground">
+            <Phone className="h-3 w-3 shrink-0" />
+            <span>{member.phone}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -732,114 +516,124 @@ function MemberCard({ member, onEdit }: { member: TeamMember; onEdit: () => void
 
 function TeamPage() {
   const { setMeta } = useMeta();
-  const [members, setMembers] = useState<TeamMember[]>(INITIAL_MEMBERS);
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<MemberRole | "all">("all");
-  const [availFilter, setAvailFilter] = useState<Availability | "all">("all");
-  const [skillsFilter, setSkillsFilter] = useState<string[]>([]);
-  const [skillsPopOpen, setSkillsPopOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const navigate    = useNavigate();
+  const qc          = useQueryClient();
 
-  const openNew = useCallback(() => { setEditingMember(null); setDrawerOpen(true); }, []);
-  const openEdit = useCallback((m: TeamMember) => { setEditingMember(m); setDrawerOpen(true); }, []);
+  const [search,         setSearch]         = useState("");
+  const [roleFilter,     setRoleFilter]     = useState("all");
+  const [availFilter,    setAvailFilter]    = useState("all");
+  const [skillsFilter,   setSkillsFilter]   = useState<string[]>([]);
+  const [skillsPopOpen,  setSkillsPopOpen]  = useState(false);
+  const [drawerOpen,     setDrawerOpen]     = useState(false);
+  const [editingMember,  setEditingMember]  = useState<Member | null>(null);
+
+  const { data: members = [], isLoading } = useQuery({ queryKey: ["team-members"], queryFn: fetchMembers });
+  const { data: roles   = [] }            = useQuery({ queryKey: ["roles"],        queryFn: fetchRoles  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof updateMember>[1] }) =>
+      updateMember(id, patch),
+    onSuccess: (_, { id, patch }) => {
+      qc.setQueryData<Member[]>(["team-members"], (prev) =>
+        prev?.map((m) => {
+          if (m.id !== id) return m;
+          const role = patch.role_id ? roles.find((r) => r.id === patch.role_id) ?? m.roles : m.roles;
+          return { ...m, ...patch, roles: role ?? null };
+        }) ?? []
+      );
+    },
+  });
+
+  const openEdit   = useCallback((m: Member) => { setEditingMember(m); setDrawerOpen(true); }, []);
+  const openInvite = useCallback(() => { navigate({ to: "/settings/team-members" }); }, [navigate]);
 
   useEffect(() => {
-    setMeta({
-      title: "Team",
-      subtitle: "Field technicians and staff",
-      newLabel: "Add Member",
-      onNew: openNew,
-    });
-  }, [setMeta, openNew]);
+    setMeta({ title: "Team", subtitle: "Field technicians and staff", newLabel: "Invite Member", onNew: openInvite });
+  }, [setMeta, openInvite]);
 
-  const handleSave = useCallback((data: MemberFormValues, id: string | null) => {
-    setMembers((prev) => {
-      if (id === null) {
-        const newMember: TeamMember = {
-          ...data, id: `tm${Date.now()}`,
-          assignedJobsCount: 0, assignedJobs: [],
-        };
-        return [...prev, newMember];
-      }
-      return prev.map((m) => m.id === id ? { ...m, ...data } : m);
-    });
-  }, []);
+  const handleSave = useCallback((id: string, data: MemberFormValues) => {
+    updateMutation.mutate({ id, patch: {
+      full_name:      data.full_name,
+      role_id:        data.role_id,
+      phone:          data.phone || null,
+      skills:         data.skills,
+      certifications: data.certifications,
+      pay_type:       data.pay_type,
+      pay_rate:       data.pay_rate,
+      availability:   data.availability,
+      start_date:     data.start_date || null,
+    }});
+  }, [updateMutation]);
 
   const allSkills = useMemo(() => {
     const set = new Set<string>();
-    members.forEach((m) => m.skills.forEach((s) => set.add(s)));
+    members.forEach((m) => (m.skills ?? []).forEach((s) => set.add(s)));
     return Array.from(set).sort();
   }, [members]);
+
+  const roleOptions = useMemo(() => [
+    { value: "all", label: "All Roles" },
+    ...roles.map((r) => ({ value: r.id, label: r.name })),
+  ], [roles]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return members.filter((m) => {
-      if (roleFilter !== "all" && m.role !== roleFilter) return false;
+      if (roleFilter !== "all" && m.role_id !== roleFilter) return false;
       if (availFilter !== "all" && m.availability !== availFilter) return false;
-      if (skillsFilter.length > 0 && !skillsFilter.some((s) => m.skills.includes(s))) return false;
-      if (q && !m.name.toLowerCase().includes(q) && !m.email.toLowerCase().includes(q)) return false;
+      if (skillsFilter.length > 0 && !skillsFilter.some((s) => (m.skills ?? []).includes(s))) return false;
+      if (q && !m.full_name?.toLowerCase().includes(q) && !m.email?.toLowerCase().includes(q)) return false;
       return true;
     });
   }, [members, search, roleFilter, availFilter, skillsFilter]);
 
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-24 text-[12.5px] text-muted-foreground">Loading team…</div>;
+  }
+
   return (
     <div className="flex flex-col">
-      {/* Filter bar */}
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search members…" />
-        <FilterSelect value={roleFilter} onChange={(v) => setRoleFilter(v as MemberRole | "all")}>
-          {ROLE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        <FilterSelect value={roleFilter} onChange={setRoleFilter}>
+          {roleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </FilterSelect>
-        <FilterSelect value={availFilter} onChange={(v) => setAvailFilter(v as Availability | "all")}>
+        <FilterSelect value={availFilter} onChange={setAvailFilter}>
           {AVAIL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </FilterSelect>
 
-        {/* Skills multi-select */}
         <Popover open={skillsPopOpen} onOpenChange={setSkillsPopOpen}>
           <PopoverTrigger asChild>
-            <button
-              type="button"
-              className={cn(
-                "flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors",
-                skillsFilter.length > 0 && "border-primary/50 text-foreground",
-              )}
-            >
+            <button type="button" className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors",
+              skillsFilter.length > 0 && "border-primary/50 text-foreground",
+            )}>
               Skills
               {skillsFilter.length > 0 && (
-                <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-medium text-primary">
-                  {skillsFilter.length}
-                </span>
+                <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-medium text-primary">{skillsFilter.length}</span>
               )}
               <ChevronDown className="h-3 w-3" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-52 p-2" align="start">
             <div className="space-y-0.5">
+              {allSkills.length === 0 && (
+                <p className="px-1.5 py-1 text-[12px] text-muted-foreground">No skills added yet.</p>
+              )}
               {allSkills.map((skill) => (
-                <label
-                  key={skill}
-                  className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1.5 text-[12px] hover:bg-accent"
-                >
+                <label key={skill} className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1.5 text-[12px] hover:bg-accent">
                   <Checkbox
                     checked={skillsFilter.includes(skill)}
                     onCheckedChange={(checked) =>
-                      setSkillsFilter(
-                        checked
-                          ? [...skillsFilter, skill]
-                          : skillsFilter.filter((s) => s !== skill),
-                      )
+                      setSkillsFilter(checked ? [...skillsFilter, skill] : skillsFilter.filter((s) => s !== skill))
                     }
                   />
                   {skill}
                 </label>
               ))}
               {skillsFilter.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setSkillsFilter([])}
-                  className="mt-1 w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors py-1"
-                >
+                <button type="button" onClick={() => setSkillsFilter([])}
+                  className="mt-1 w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors py-1">
                   Clear filter
                 </button>
               )}
@@ -852,7 +646,6 @@ function TeamPage() {
         </span>
       </FilterBar>
 
-      {/* Card grid */}
       <div className="p-4">
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -862,7 +655,7 @@ function TeamPage() {
           </div>
         ) : (
           <div className="py-16 text-center text-[12.5px] text-muted-foreground">
-            No team members match the current filters.
+            {members.length === 0 ? "No team members yet." : "No members match the current filters."}
           </div>
         )}
       </div>
@@ -871,16 +664,9 @@ function TeamPage() {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         member={editingMember}
+        roles={roles}
         onSave={handleSave}
       />
     </div>
   );
 }
-
-/*
-  SCHEMA NOTES — team_members table
-  id, tenant_id, user_id (FK to auth.users, nullable for subcontractors),
-  name, role, email, phone, avatar_initials, skills (text[]),
-  certifications (text[]), pay_rate, pay_type, availability,
-  start_date, is_active, created_at, updated_at
-*/
