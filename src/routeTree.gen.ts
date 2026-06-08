@@ -27,12 +27,26 @@ import { Route as OperationsIndexRouteImport } from './routes/operations/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
 import { Route as FinanceIndexRouteImport } from './routes/finance/index'
 import { Route as CrmIndexRouteImport } from './routes/crm/index'
-import { Route as SettingsServicePlanTiersRouteImport } from './routes/settings/service-plan-tiers'
-import { Route as SettingsQuoteTemplatesRouteImport } from './routes/settings/quote-templates'
-import { Route as SettingsIntegrationsRouteImport } from './routes/settings/integrations'
-import { Route as SettingsCompanyRouteImport } from './routes/settings/company'
-import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
+import { Route as SettingsWorkOrderTypesRouteImport } from './routes/settings/work-order-types'
+import { Route as SettingsUnitsOfMeasureRouteImport } from './routes/settings/units-of-measure'
 import { Route as SettingsTeamMembersRouteImport } from './routes/settings/team-members'
+import { Route as SettingsTaxRatesRouteImport } from './routes/settings/tax-rates'
+import { Route as SettingsServicePlanTiersRouteImport } from './routes/settings/service-plan-tiers'
+import { Route as SettingsSecurityRouteImport } from './routes/settings/security'
+import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
+import { Route as SettingsQuoteTemplatesRouteImport } from './routes/settings/quote-templates'
+import { Route as SettingsQuoteDefaultsRouteImport } from './routes/settings/quote-defaults'
+import { Route as SettingsPipelineStagesRouteImport } from './routes/settings/pipeline-stages'
+import { Route as SettingsPaymentTermsRouteImport } from './routes/settings/payment-terms'
+import { Route as SettingsLocationTypesRouteImport } from './routes/settings/location-types'
+import { Route as SettingsLeadSourcesRouteImport } from './routes/settings/lead-sources'
+import { Route as SettingsJobPrioritiesRouteImport } from './routes/settings/job-priorities'
+import { Route as SettingsItemCategoriesRouteImport } from './routes/settings/item-categories'
+import { Route as SettingsInvoiceBrandingRouteImport } from './routes/settings/invoice-branding'
+import { Route as SettingsIntegrationsRouteImport } from './routes/settings/integrations'
+import { Route as SettingsCustomStatusesRouteImport } from './routes/settings/custom-statuses'
+import { Route as SettingsCompanyRouteImport } from './routes/settings/company'
+import { Route as SettingsBusinessHoursRouteImport } from './routes/settings/business-hours'
 import { Route as ServiceServiceTicketsRouteImport } from './routes/service/service-tickets'
 import { Route as ServiceServicePlansRouteImport } from './routes/service/service-plans'
 import { Route as SalesQuotesRouteImport } from './routes/sales/quotes'
@@ -154,25 +168,35 @@ const CrmIndexRoute = CrmIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CrmRoute,
 } as any)
+const SettingsWorkOrderTypesRoute = SettingsWorkOrderTypesRouteImport.update({
+  id: '/work-order-types',
+  path: '/work-order-types',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsUnitsOfMeasureRoute = SettingsUnitsOfMeasureRouteImport.update({
+  id: '/units-of-measure',
+  path: '/units-of-measure',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsTeamMembersRoute = SettingsTeamMembersRouteImport.update({
+  id: '/team-members',
+  path: '/team-members',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsTaxRatesRoute = SettingsTaxRatesRouteImport.update({
+  id: '/tax-rates',
+  path: '/tax-rates',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const SettingsServicePlanTiersRoute =
   SettingsServicePlanTiersRouteImport.update({
     id: '/service-plan-tiers',
     path: '/service-plan-tiers',
     getParentRoute: () => SettingsRoute,
   } as any)
-const SettingsQuoteTemplatesRoute = SettingsQuoteTemplatesRouteImport.update({
-  id: '/quote-templates',
-  path: '/quote-templates',
-  getParentRoute: () => SettingsRoute,
-} as any)
-const SettingsIntegrationsRoute = SettingsIntegrationsRouteImport.update({
-  id: '/integrations',
-  path: '/integrations',
-  getParentRoute: () => SettingsRoute,
-} as any)
-const SettingsCompanyRoute = SettingsCompanyRouteImport.update({
-  id: '/company',
-  path: '/company',
+const SettingsSecurityRoute = SettingsSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
   getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsRolesRoute = SettingsRolesRouteImport.update({
@@ -180,9 +204,69 @@ const SettingsRolesRoute = SettingsRolesRouteImport.update({
   path: '/roles',
   getParentRoute: () => SettingsRoute,
 } as any)
-const SettingsTeamMembersRoute = SettingsTeamMembersRouteImport.update({
-  id: '/team-members',
-  path: '/team-members',
+const SettingsQuoteTemplatesRoute = SettingsQuoteTemplatesRouteImport.update({
+  id: '/quote-templates',
+  path: '/quote-templates',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsQuoteDefaultsRoute = SettingsQuoteDefaultsRouteImport.update({
+  id: '/quote-defaults',
+  path: '/quote-defaults',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsPipelineStagesRoute = SettingsPipelineStagesRouteImport.update({
+  id: '/pipeline-stages',
+  path: '/pipeline-stages',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsPaymentTermsRoute = SettingsPaymentTermsRouteImport.update({
+  id: '/payment-terms',
+  path: '/payment-terms',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsLocationTypesRoute = SettingsLocationTypesRouteImport.update({
+  id: '/location-types',
+  path: '/location-types',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsLeadSourcesRoute = SettingsLeadSourcesRouteImport.update({
+  id: '/lead-sources',
+  path: '/lead-sources',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsJobPrioritiesRoute = SettingsJobPrioritiesRouteImport.update({
+  id: '/job-priorities',
+  path: '/job-priorities',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsItemCategoriesRoute = SettingsItemCategoriesRouteImport.update({
+  id: '/item-categories',
+  path: '/item-categories',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsInvoiceBrandingRoute = SettingsInvoiceBrandingRouteImport.update({
+  id: '/invoice-branding',
+  path: '/invoice-branding',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsIntegrationsRoute = SettingsIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsCustomStatusesRoute = SettingsCustomStatusesRouteImport.update({
+  id: '/custom-statuses',
+  path: '/custom-statuses',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsCompanyRoute = SettingsCompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsBusinessHoursRoute = SettingsBusinessHoursRouteImport.update({
+  id: '/business-hours',
+  path: '/business-hours',
   getParentRoute: () => SettingsRoute,
 } as any)
 const ServiceServiceTicketsRoute = ServiceServiceTicketsRouteImport.update({
@@ -371,12 +455,26 @@ export interface FileRoutesByFullPath {
   '/sales/quotes': typeof SalesQuotesRouteWithChildren
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
+  '/settings/business-hours': typeof SettingsBusinessHoursRoute
   '/settings/company': typeof SettingsCompanyRoute
+  '/settings/custom-statuses': typeof SettingsCustomStatusesRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/invoice-branding': typeof SettingsInvoiceBrandingRoute
+  '/settings/item-categories': typeof SettingsItemCategoriesRoute
+  '/settings/job-priorities': typeof SettingsJobPrioritiesRoute
+  '/settings/lead-sources': typeof SettingsLeadSourcesRoute
+  '/settings/location-types': typeof SettingsLocationTypesRoute
+  '/settings/payment-terms': typeof SettingsPaymentTermsRoute
+  '/settings/pipeline-stages': typeof SettingsPipelineStagesRoute
+  '/settings/quote-defaults': typeof SettingsQuoteDefaultsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
-  '/settings/team-members': typeof SettingsTeamMembersRoute
+  '/settings/security': typeof SettingsSecurityRoute
   '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
+  '/settings/tax-rates': typeof SettingsTaxRatesRoute
+  '/settings/team-members': typeof SettingsTeamMembersRoute
+  '/settings/units-of-measure': typeof SettingsUnitsOfMeasureRoute
+  '/settings/work-order-types': typeof SettingsWorkOrderTypesRoute
   '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
   '/inventory/': typeof InventoryIndexRoute
@@ -415,12 +513,26 @@ export interface FileRoutesByTo {
   '/sales/opportunities': typeof SalesOpportunitiesRoute
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
+  '/settings/business-hours': typeof SettingsBusinessHoursRoute
   '/settings/company': typeof SettingsCompanyRoute
+  '/settings/custom-statuses': typeof SettingsCustomStatusesRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/invoice-branding': typeof SettingsInvoiceBrandingRoute
+  '/settings/item-categories': typeof SettingsItemCategoriesRoute
+  '/settings/job-priorities': typeof SettingsJobPrioritiesRoute
+  '/settings/lead-sources': typeof SettingsLeadSourcesRoute
+  '/settings/location-types': typeof SettingsLocationTypesRoute
+  '/settings/payment-terms': typeof SettingsPaymentTermsRoute
+  '/settings/pipeline-stages': typeof SettingsPipelineStagesRoute
+  '/settings/quote-defaults': typeof SettingsQuoteDefaultsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
-  '/settings/team-members': typeof SettingsTeamMembersRoute
+  '/settings/security': typeof SettingsSecurityRoute
   '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
+  '/settings/tax-rates': typeof SettingsTaxRatesRoute
+  '/settings/team-members': typeof SettingsTeamMembersRoute
+  '/settings/units-of-measure': typeof SettingsUnitsOfMeasureRoute
+  '/settings/work-order-types': typeof SettingsWorkOrderTypesRoute
   '/crm': typeof CrmIndexRoute
   '/finance': typeof FinanceIndexRoute
   '/inventory': typeof InventoryIndexRoute
@@ -472,12 +584,26 @@ export interface FileRoutesById {
   '/sales/quotes': typeof SalesQuotesRouteWithChildren
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
+  '/settings/business-hours': typeof SettingsBusinessHoursRoute
   '/settings/company': typeof SettingsCompanyRoute
+  '/settings/custom-statuses': typeof SettingsCustomStatusesRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/invoice-branding': typeof SettingsInvoiceBrandingRoute
+  '/settings/item-categories': typeof SettingsItemCategoriesRoute
+  '/settings/job-priorities': typeof SettingsJobPrioritiesRoute
+  '/settings/lead-sources': typeof SettingsLeadSourcesRoute
+  '/settings/location-types': typeof SettingsLocationTypesRoute
+  '/settings/payment-terms': typeof SettingsPaymentTermsRoute
+  '/settings/pipeline-stages': typeof SettingsPipelineStagesRoute
+  '/settings/quote-defaults': typeof SettingsQuoteDefaultsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
-  '/settings/team-members': typeof SettingsTeamMembersRoute
+  '/settings/security': typeof SettingsSecurityRoute
   '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
+  '/settings/tax-rates': typeof SettingsTaxRatesRoute
+  '/settings/team-members': typeof SettingsTeamMembersRoute
+  '/settings/units-of-measure': typeof SettingsUnitsOfMeasureRoute
+  '/settings/work-order-types': typeof SettingsWorkOrderTypesRoute
   '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
   '/inventory/': typeof InventoryIndexRoute
@@ -530,12 +656,26 @@ export interface FileRouteTypes {
     | '/sales/quotes'
     | '/service/service-plans'
     | '/service/service-tickets'
+    | '/settings/business-hours'
     | '/settings/company'
+    | '/settings/custom-statuses'
     | '/settings/integrations'
+    | '/settings/invoice-branding'
+    | '/settings/item-categories'
+    | '/settings/job-priorities'
+    | '/settings/lead-sources'
+    | '/settings/location-types'
+    | '/settings/payment-terms'
+    | '/settings/pipeline-stages'
+    | '/settings/quote-defaults'
     | '/settings/quote-templates'
     | '/settings/roles'
-    | '/settings/team-members'
+    | '/settings/security'
     | '/settings/service-plan-tiers'
+    | '/settings/tax-rates'
+    | '/settings/team-members'
+    | '/settings/units-of-measure'
+    | '/settings/work-order-types'
     | '/crm/'
     | '/finance/'
     | '/inventory/'
@@ -574,12 +714,26 @@ export interface FileRouteTypes {
     | '/sales/opportunities'
     | '/service/service-plans'
     | '/service/service-tickets'
+    | '/settings/business-hours'
     | '/settings/company'
+    | '/settings/custom-statuses'
     | '/settings/integrations'
+    | '/settings/invoice-branding'
+    | '/settings/item-categories'
+    | '/settings/job-priorities'
+    | '/settings/lead-sources'
+    | '/settings/location-types'
+    | '/settings/payment-terms'
+    | '/settings/pipeline-stages'
+    | '/settings/quote-defaults'
     | '/settings/quote-templates'
     | '/settings/roles'
-    | '/settings/team-members'
+    | '/settings/security'
     | '/settings/service-plan-tiers'
+    | '/settings/tax-rates'
+    | '/settings/team-members'
+    | '/settings/units-of-measure'
+    | '/settings/work-order-types'
     | '/crm'
     | '/finance'
     | '/inventory'
@@ -630,12 +784,26 @@ export interface FileRouteTypes {
     | '/sales/quotes'
     | '/service/service-plans'
     | '/service/service-tickets'
+    | '/settings/business-hours'
     | '/settings/company'
+    | '/settings/custom-statuses'
     | '/settings/integrations'
+    | '/settings/invoice-branding'
+    | '/settings/item-categories'
+    | '/settings/job-priorities'
+    | '/settings/lead-sources'
+    | '/settings/location-types'
+    | '/settings/payment-terms'
+    | '/settings/pipeline-stages'
+    | '/settings/quote-defaults'
     | '/settings/quote-templates'
     | '/settings/roles'
-    | '/settings/team-members'
+    | '/settings/security'
     | '/settings/service-plan-tiers'
+    | '/settings/tax-rates'
+    | '/settings/team-members'
+    | '/settings/units-of-measure'
+    | '/settings/work-order-types'
     | '/crm/'
     | '/finance/'
     | '/inventory/'
@@ -797,6 +965,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CrmIndexRouteImport
       parentRoute: typeof CrmRoute
     }
+    '/settings/work-order-types': {
+      id: '/settings/work-order-types'
+      path: '/work-order-types'
+      fullPath: '/settings/work-order-types'
+      preLoaderRoute: typeof SettingsWorkOrderTypesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/units-of-measure': {
+      id: '/settings/units-of-measure'
+      path: '/units-of-measure'
+      fullPath: '/settings/units-of-measure'
+      preLoaderRoute: typeof SettingsUnitsOfMeasureRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/team-members': {
+      id: '/settings/team-members'
+      path: '/team-members'
+      fullPath: '/settings/team-members'
+      preLoaderRoute: typeof SettingsTeamMembersRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/tax-rates': {
+      id: '/settings/tax-rates'
+      path: '/tax-rates'
+      fullPath: '/settings/tax-rates'
+      preLoaderRoute: typeof SettingsTaxRatesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/settings/service-plan-tiers': {
       id: '/settings/service-plan-tiers'
       path: '/service-plan-tiers'
@@ -804,25 +1000,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsServicePlanTiersRouteImport
       parentRoute: typeof SettingsRoute
     }
-    '/settings/quote-templates': {
-      id: '/settings/quote-templates'
-      path: '/quote-templates'
-      fullPath: '/settings/quote-templates'
-      preLoaderRoute: typeof SettingsQuoteTemplatesRouteImport
-      parentRoute: typeof SettingsRoute
-    }
-    '/settings/integrations': {
-      id: '/settings/integrations'
-      path: '/integrations'
-      fullPath: '/settings/integrations'
-      preLoaderRoute: typeof SettingsIntegrationsRouteImport
-      parentRoute: typeof SettingsRoute
-    }
-    '/settings/company': {
-      id: '/settings/company'
-      path: '/company'
-      fullPath: '/settings/company'
-      preLoaderRoute: typeof SettingsCompanyRouteImport
+    '/settings/security': {
+      id: '/settings/security'
+      path: '/security'
+      fullPath: '/settings/security'
+      preLoaderRoute: typeof SettingsSecurityRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/settings/roles': {
@@ -832,11 +1014,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRolesRouteImport
       parentRoute: typeof SettingsRoute
     }
-    '/settings/team-members': {
-      id: '/settings/team-members'
-      path: '/team-members'
-      fullPath: '/settings/team-members'
-      preLoaderRoute: typeof SettingsTeamMembersRouteImport
+    '/settings/quote-templates': {
+      id: '/settings/quote-templates'
+      path: '/quote-templates'
+      fullPath: '/settings/quote-templates'
+      preLoaderRoute: typeof SettingsQuoteTemplatesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/quote-defaults': {
+      id: '/settings/quote-defaults'
+      path: '/quote-defaults'
+      fullPath: '/settings/quote-defaults'
+      preLoaderRoute: typeof SettingsQuoteDefaultsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/pipeline-stages': {
+      id: '/settings/pipeline-stages'
+      path: '/pipeline-stages'
+      fullPath: '/settings/pipeline-stages'
+      preLoaderRoute: typeof SettingsPipelineStagesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/payment-terms': {
+      id: '/settings/payment-terms'
+      path: '/payment-terms'
+      fullPath: '/settings/payment-terms'
+      preLoaderRoute: typeof SettingsPaymentTermsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/location-types': {
+      id: '/settings/location-types'
+      path: '/location-types'
+      fullPath: '/settings/location-types'
+      preLoaderRoute: typeof SettingsLocationTypesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/lead-sources': {
+      id: '/settings/lead-sources'
+      path: '/lead-sources'
+      fullPath: '/settings/lead-sources'
+      preLoaderRoute: typeof SettingsLeadSourcesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/job-priorities': {
+      id: '/settings/job-priorities'
+      path: '/job-priorities'
+      fullPath: '/settings/job-priorities'
+      preLoaderRoute: typeof SettingsJobPrioritiesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/item-categories': {
+      id: '/settings/item-categories'
+      path: '/item-categories'
+      fullPath: '/settings/item-categories'
+      preLoaderRoute: typeof SettingsItemCategoriesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/invoice-branding': {
+      id: '/settings/invoice-branding'
+      path: '/invoice-branding'
+      fullPath: '/settings/invoice-branding'
+      preLoaderRoute: typeof SettingsInvoiceBrandingRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/integrations': {
+      id: '/settings/integrations'
+      path: '/integrations'
+      fullPath: '/settings/integrations'
+      preLoaderRoute: typeof SettingsIntegrationsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/custom-statuses': {
+      id: '/settings/custom-statuses'
+      path: '/custom-statuses'
+      fullPath: '/settings/custom-statuses'
+      preLoaderRoute: typeof SettingsCustomStatusesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/company': {
+      id: '/settings/company'
+      path: '/company'
+      fullPath: '/settings/company'
+      preLoaderRoute: typeof SettingsCompanyRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/business-hours': {
+      id: '/settings/business-hours'
+      path: '/business-hours'
+      fullPath: '/settings/business-hours'
+      preLoaderRoute: typeof SettingsBusinessHoursRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/service/service-tickets': {
@@ -1234,22 +1500,50 @@ const ServiceRouteWithChildren =
   ServiceRoute._addFileChildren(ServiceRouteChildren)
 
 interface SettingsRouteChildren {
+  SettingsBusinessHoursRoute: typeof SettingsBusinessHoursRoute
   SettingsCompanyRoute: typeof SettingsCompanyRoute
+  SettingsCustomStatusesRoute: typeof SettingsCustomStatusesRoute
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
+  SettingsInvoiceBrandingRoute: typeof SettingsInvoiceBrandingRoute
+  SettingsItemCategoriesRoute: typeof SettingsItemCategoriesRoute
+  SettingsJobPrioritiesRoute: typeof SettingsJobPrioritiesRoute
+  SettingsLeadSourcesRoute: typeof SettingsLeadSourcesRoute
+  SettingsLocationTypesRoute: typeof SettingsLocationTypesRoute
+  SettingsPaymentTermsRoute: typeof SettingsPaymentTermsRoute
+  SettingsPipelineStagesRoute: typeof SettingsPipelineStagesRoute
+  SettingsQuoteDefaultsRoute: typeof SettingsQuoteDefaultsRoute
   SettingsQuoteTemplatesRoute: typeof SettingsQuoteTemplatesRoute
   SettingsRolesRoute: typeof SettingsRolesRoute
-  SettingsTeamMembersRoute: typeof SettingsTeamMembersRoute
+  SettingsSecurityRoute: typeof SettingsSecurityRoute
   SettingsServicePlanTiersRoute: typeof SettingsServicePlanTiersRoute
+  SettingsTaxRatesRoute: typeof SettingsTaxRatesRoute
+  SettingsTeamMembersRoute: typeof SettingsTeamMembersRoute
+  SettingsUnitsOfMeasureRoute: typeof SettingsUnitsOfMeasureRoute
+  SettingsWorkOrderTypesRoute: typeof SettingsWorkOrderTypesRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
 const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsBusinessHoursRoute: SettingsBusinessHoursRoute,
   SettingsCompanyRoute: SettingsCompanyRoute,
+  SettingsCustomStatusesRoute: SettingsCustomStatusesRoute,
   SettingsIntegrationsRoute: SettingsIntegrationsRoute,
+  SettingsInvoiceBrandingRoute: SettingsInvoiceBrandingRoute,
+  SettingsItemCategoriesRoute: SettingsItemCategoriesRoute,
+  SettingsJobPrioritiesRoute: SettingsJobPrioritiesRoute,
+  SettingsLeadSourcesRoute: SettingsLeadSourcesRoute,
+  SettingsLocationTypesRoute: SettingsLocationTypesRoute,
+  SettingsPaymentTermsRoute: SettingsPaymentTermsRoute,
+  SettingsPipelineStagesRoute: SettingsPipelineStagesRoute,
+  SettingsQuoteDefaultsRoute: SettingsQuoteDefaultsRoute,
   SettingsQuoteTemplatesRoute: SettingsQuoteTemplatesRoute,
   SettingsRolesRoute: SettingsRolesRoute,
-  SettingsTeamMembersRoute: SettingsTeamMembersRoute,
+  SettingsSecurityRoute: SettingsSecurityRoute,
   SettingsServicePlanTiersRoute: SettingsServicePlanTiersRoute,
+  SettingsTaxRatesRoute: SettingsTaxRatesRoute,
+  SettingsTeamMembersRoute: SettingsTeamMembersRoute,
+  SettingsUnitsOfMeasureRoute: SettingsUnitsOfMeasureRoute,
+  SettingsWorkOrderTypesRoute: SettingsWorkOrderTypesRoute,
   SettingsIndexRoute: SettingsIndexRoute,
 }
 

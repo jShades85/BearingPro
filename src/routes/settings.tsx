@@ -1,5 +1,9 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
-import { Building2, FileText, Layers, Puzzle, ShieldCheck, Users } from "lucide-react";
+import {
+  AlertTriangle, Boxes, Building2, CalendarClock, ClipboardList,
+  Clock, FileText, Kanban, Lock, MapPin, Megaphone, Palette,
+  Percent, Puzzle, Ruler, ShieldCheck, SlidersHorizontal, Tag, Users,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/settings")({
@@ -11,10 +15,10 @@ export const Route = createFileRoute("/settings")({
 
 const sections = [
   {
-    title: "Workspace",
+    title: "Company",
     items: [
-      { to: "/settings/company",            label: "Company Profile",    icon: Building2 },
-      { to: "/settings/service-plan-tiers", label: "Service Plan Tiers", icon: Layers    },
+      { to: "/settings/company",        label: "Company Profile", icon: Building2 },
+      { to: "/settings/business-hours", label: "Business Hours",  icon: Clock     },
     ],
   },
   {
@@ -27,13 +31,46 @@ const sections = [
   {
     title: "Sales",
     items: [
-      { to: "/settings/quote-templates", label: "Quote Templates", icon: FileText },
+      { to: "/settings/pipeline-stages", label: "Pipeline Stages", icon: Kanban           },
+      { to: "/settings/lead-sources",    label: "Lead Sources",    icon: Megaphone        },
+      { to: "/settings/quote-defaults",  label: "Quote Defaults",  icon: SlidersHorizontal },
+      { to: "/settings/quote-templates", label: "Quote Templates", icon: FileText         },
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      { to: "/settings/work-order-types", label: "Work Order Types", icon: ClipboardList },
+      { to: "/settings/job-priorities",   label: "Job Priorities",   icon: AlertTriangle },
+      { to: "/settings/custom-statuses",  label: "Custom Statuses",  icon: Tag           },
+    ],
+  },
+  {
+    title: "Finance",
+    items: [
+      { to: "/settings/tax-rates",        label: "Tax Rates",        icon: Percent      },
+      { to: "/settings/payment-terms",    label: "Payment Terms",    icon: CalendarClock },
+      { to: "/settings/invoice-branding", label: "Invoice Branding", icon: Palette      },
+    ],
+  },
+  {
+    title: "Inventory",
+    items: [
+      { to: "/settings/units-of-measure", label: "Units of Measure", icon: Ruler  },
+      { to: "/settings/item-categories",  label: "Item Categories",  icon: Boxes  },
+      { to: "/settings/location-types",   label: "Location Types",   icon: MapPin },
     ],
   },
   {
     title: "Integrations",
     items: [
       { to: "/settings/integrations", label: "Integrations", icon: Puzzle },
+    ],
+  },
+  {
+    title: "Security",
+    items: [
+      { to: "/settings/security", label: "Security", icon: Lock },
     ],
   },
 ];
