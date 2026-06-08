@@ -18,12 +18,58 @@ Before writing any code in a new session, read these files:
 ## Current Status
 
 **Phase:** Frontend UI Build
-**Last Updated:** Session 012
-**Last Session:** Session 012
+**Last Updated:** Session 013
+**Last Session:** Session 013
 
 ---
 
 ## Session Log
+
+---
+
+### Session 013 — Finance Module: Invoices
+
+**Date:** June 7, 2026
+**Focus:** Full rebuild of the Invoices page (Finance module)
+
+**Completed:**
+
+- **`src/data/invoices.ts`:** New data file with types (`InvoiceStatus`, `InvoiceLineItem`, `InvoicePayment`, `Invoice`) and 10 demo invoices covering all statuses (draft, sent, partial, overdue, paid) with realistic PCSS line items, tax rates, and payment history.
+- **`src/routes/invoices.tsx`:** Full rebuild from the Lovable baseline:
+  - Stat bar: Outstanding balance / Overdue (amount + count, red-accented when non-zero) / Collected MTD / Total Invoices
+  - Status tabs: All / Draft / Sent / Partial / Overdue / Paid with live counts
+  - Filter bar: search by invoice #, company, or project + customer dropdown
+  - Table: Invoice # / Customer / Project / Total / Balance Due / Due Date / Status — full rows clickable
+  - View Sheet: dates/terms grid, linked project, line items table, totals (subtotal, tax, total, amount paid, balance due), payment progress bar for partials, payment history with method + reference, notes
+  - Edit Sheet: status, terms, dates, customer, contact, project, notes; line items shown read-only (quote builder integration deferred)
+  - New Invoice modal: customer, contact, linked project (Popover + Command combobox), issue date, payment terms, notes
+- **Linked project combobox in New Invoice modal:** `Popover + Command` autocomplete — same pattern as PO job combobox. Searches by code, name, or customer. Projects / Work Orders groups. Clear selection item when something is chosen.
+
+**Design Decisions Made:**
+
+- Invoices use Sheet drawer (view/edit) — same pattern as Vendors and POs
+- Balance Due column goes red on overdue rows — most actionable signal in the table
+- Line item editing in the edit drawer is deferred until quote builder integration — shown read-only with a note
+- New Invoice modal uses combobox for linked project — consistent with PO linked job field
+
+**Next Session Goal:**
+
+- Finance module — Payments page (stat bar, payment list, filter by method/status, link back to invoices)
+
+**Open Questions:**
+
+- Supabase project status — still needed before backend session
+- Demo data consolidation into single demo-data.ts before backend work
+- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
+
+**Schema Notes:**
+
+- invoices: id, tenant_id, number, status, company_id, contact_id, project_id, issued_date, due_date, payment_terms, subtotal, tax_rate, tax_amount, total, amount_paid, balance_due, notes
+- invoice_line_items: id, invoice_id, description, qty, unit_price, total
+- invoice_payments: id, invoice_id, date, amount, method, reference
+
+**Schema Changes This Session:** None (UI only)
+**New Env Variables This Session:** None
 
 ---
 
@@ -651,7 +697,8 @@ Before writing any code in a new session, read these files:
 | Inventory — Stock                     | Complete                    | Manufacturer grid, drill-in, adjust qty, movement log |
 | Inventory — Purchase Orders           | Complete                    | Full page — stat bar, table, view/edit drawer, comboboxes |
 | Inventory — Vendors                   | Complete                    | Stat bar, card/list view, Sheet drawer, new modal   |
-| Finance (Invoices/Payments)           | Lovable baseline (invoices) | Payments is placeholder                             |
+| Finance — Invoices                    | Complete                    | Stat bar, tabs, filters, table, Sheet drawer, modal |
+| Finance — Payments                    | Placeholder                 | Coming soon — next session                          |
 | Reports                               | Placeholder                 | Coming soon page                                    |
 
 ---
