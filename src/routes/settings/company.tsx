@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { createClient } from "@/lib/supabase/client";
@@ -41,8 +41,15 @@ async function updateTenant(values: {
 }) {
   const supabase = createClient();
   const { id, ...rest } = values;
-  const { error } = await supabase.from("tenants").update(rest).eq("id", id);
+  const { data, error } = await supabase
+    .from("tenants")
+    .update(rest)
+    .eq("id", id)
+    .select()
+    .single();
   if (error) throw error;
+  if (!data) throw new Error("Save failed — no rows matched. Check your session and try again.");
+  return data;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -61,9 +68,11 @@ function CompanyProfilePage() {
     taxRate: "8.25", paymentTerms: "Net 30",
   });
 
-  // Populate form once tenant data loads
+  // Populate form only on initial load — ref prevents reset on subsequent refetches
+  const initialized = useRef(false);
   useEffect(() => {
-    if (!tenant) return;
+    if (!tenant || initialized.current) return;
+    initialized.current = true;
     setForm({
       name:         tenant.name ?? "",
       tagline:      tenant.tagline ?? "",
@@ -85,7 +94,10 @@ function CompanyProfilePage() {
 
   const mutation = useMutation({
     mutationFn: updateTenant,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tenant"] }),
+    onSuccess: (saved) => {
+      // Update cache directly — no refetch needed, avoids form reset
+      qc.setQueryData(["tenant"], saved);
+    },
   });
 
   const update = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }));
