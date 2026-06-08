@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-export const Route = createFileRoute("/planner")({
+export const Route = createFileRoute("/operations/planner")({
   head: () => ({ meta: [{ title: "Planner · Crosscurrent" }] }),
   component: () => <Outlet />,
 });

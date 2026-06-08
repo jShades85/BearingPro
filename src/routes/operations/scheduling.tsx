@@ -19,7 +19,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-export const Route = createFileRoute("/scheduling")({
+export const Route = createFileRoute("/operations/scheduling")({
   head: () => ({ meta: [{ title: "Scheduling · Crosscurrent" }] }),
   component: SchedulingPage,
 });
@@ -439,9 +439,9 @@ function JobBlock({
   const handleViewJob = () => {
     setOpen(false);
     if (job.jobType === "work_order") {
-      navigate({ to: "/work-orders/$workOrderId", params: { workOrderId: job.id } });
+      navigate({ to: "/operations/work-orders/$workOrderId", params: { workOrderId: job.id } });
     } else {
-      navigate({ to: "/projects/$projectId", params: { projectId: job.id } });
+      navigate({ to: "/operations/projects/$projectId", params: { projectId: job.id } });
     }
   };
 

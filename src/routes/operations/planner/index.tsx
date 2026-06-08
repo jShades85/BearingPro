@@ -6,7 +6,7 @@ import {
   BarChart2, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Users2,
 } from "lucide-react";
 
-export const Route = createFileRoute("/planner/")({
+export const Route = createFileRoute("/operations/planner/")({
   head: () => ({ meta: [{ title: "Planner · Crosscurrent" }] }),
   component: PlannerPage,
 });

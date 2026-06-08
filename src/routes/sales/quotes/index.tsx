@@ -8,7 +8,7 @@ import {
   CheckCircle2, Clock, Eye, FileText, XCircle,
 } from "lucide-react";
 
-export const Route = createFileRoute("/quotes/")({
+export const Route = createFileRoute("/sales/quotes/")({
   head: () => ({ meta: [{ title: "Quotes & Estimates · Port City Sound & Security" }] }),
   component: QuotesPage,
 });
@@ -77,7 +77,7 @@ function QuotesPage() {
     setMeta({
       title: "Quotes & Estimates",
       subtitle: `${quotes.length} quotes`,
-      onNew: () => navigate({ to: "/quotes/new" }),
+      onNew: () => navigate({ to: "/sales/quotes/new" }),
       newLabel: "+ New Quote",
     });
   }, [setMeta, navigate]);
@@ -96,7 +96,7 @@ function QuotesPage() {
   }, [search, statusFilter, dateRange]);
 
   const openDetail = useCallback(
-    (id: string) => navigate({ to: "/quotes/$quoteId", params: { quoteId: id } }),
+    (id: string) => navigate({ to: "/sales/quotes/$quoteId", params: { quoteId: id } }),
     [navigate],
   );
 

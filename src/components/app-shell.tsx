@@ -28,26 +28,26 @@ const sections: { title?: string; items: NavItem[] }[] = [
   {
     title: "CRM",
     items: [
-      { to: "/contacts", label: "Contacts", icon: Users },
-      { to: "/companies", label: "Companies", icon: Building2 },
+      { to: "/crm/contacts", label: "Contacts", icon: Users },
+      { to: "/crm/companies", label: "Companies", icon: Building2 },
     ],
   },
   {
     title: "Sales",
     items: [
-      { to: "/lead-inbox", label: "Lead Inbox", icon: Inbox },
-      { to: "/opportunities", label: "Opportunities", icon: Target },
-      { to: "/quotes", label: "Quotes & Estimates", icon: FileText },
+      { to: "/sales/lead-inbox", label: "Lead Inbox", icon: Inbox },
+      { to: "/sales/opportunities", label: "Opportunities", icon: Target },
+      { to: "/sales/quotes", label: "Quotes & Estimates", icon: FileText },
     ],
   },
   {
     title: "Operations",
     items: [
-      { to: "/projects", label: "Projects", icon: Briefcase },
-      { to: "/work-orders", label: "Work Orders", icon: ClipboardList },
-      { to: "/planner",    label: "Planner",     icon: GanttChart },
-      { to: "/scheduling", label: "Scheduling",  icon: CalendarDays },
-      { to: "/team", label: "Team", icon: HardHat },
+      { to: "/operations/projects", label: "Projects", icon: Briefcase },
+      { to: "/operations/work-orders", label: "Work Orders", icon: ClipboardList },
+      { to: "/operations/planner",    label: "Planner",     icon: GanttChart },
+      { to: "/operations/scheduling", label: "Scheduling",  icon: CalendarDays },
+      { to: "/operations/team", label: "Team", icon: HardHat },
     ],
   },
   {
@@ -62,8 +62,8 @@ const sections: { title?: string; items: NavItem[] }[] = [
     items: [
       { to: "/inventory/catalog", label: "Catalog", icon: Package },
       { to: "/inventory/stock", label: "Stock", icon: Boxes },
-      { to: "/purchase-orders", label: "Purchase Orders", icon: ShoppingCart },
-      { to: "/vendors", label: "Vendors", icon: Truck },
+      { to: "/inventory/purchase-orders", label: "Purchase Orders", icon: ShoppingCart },
+      { to: "/inventory/vendors", label: "Vendors", icon: Truck },
     ],
   },
   {

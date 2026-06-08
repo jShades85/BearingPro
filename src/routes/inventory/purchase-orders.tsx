@@ -35,7 +35,7 @@ import { PROJECTS } from "@/data/projects";
 
 // ─── Route ────────────────────────────────────────────────────────────────────
 
-export const Route = createFileRoute("/purchase-orders")({
+export const Route = createFileRoute("/inventory/purchase-orders")({
   head: () => ({ meta: [{ title: "Purchase Orders · Crosscurrent" }] }),
   component: PurchaseOrdersPage,
 });

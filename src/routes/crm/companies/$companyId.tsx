@@ -11,7 +11,7 @@ import {
 import { COMPANIES, type ActivityType, type CompanyStage, type InvoiceStatus } from "@/data/companies";
 import type { DealStage } from "@/lib/demo-data";
 
-export const Route = createFileRoute("/companies/$companyId")({
+export const Route = createFileRoute("/crm/companies/$companyId")({
   component: CompanyDetailPage,
 });
 
@@ -113,7 +113,7 @@ function CompanyDetailPage() {
         <p className="text-[14px] font-medium">Company not found</p>
         <p className="text-[12.5px] text-muted-foreground mt-1 mb-4">The company ID "{companyId}" doesn't exist.</p>
         <Link
-          to="/companies"
+          to="/crm/companies"
           className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12.5px] font-medium text-primary-foreground hover:opacity-90"
         >
           Back to Companies
@@ -129,7 +129,7 @@ function CompanyDetailPage() {
       {/* Back nav */}
       <div className="border-b border-border px-5 py-2.5">
         <Link
-          to="/companies"
+          to="/crm/companies"
           className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

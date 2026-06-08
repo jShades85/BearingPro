@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 
-export const Route = createFileRoute("/team")({
+export const Route = createFileRoute("/operations/team")({
   head: () => ({ meta: [{ title: "Team · Port City Sound & Security" }] }),
   component: TeamPage,
 });

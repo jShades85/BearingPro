@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-export const Route = createFileRoute("/opportunities")({
+export const Route = createFileRoute("/sales/opportunities")({
   head: () => ({ meta: [{ title: "Opportunities · Port City Sound & Security" }] }),
   component: Opportunities,
 });

@@ -12,7 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 
-export const Route = createFileRoute("/lead-inbox")({
+export const Route = createFileRoute("/sales/lead-inbox")({
   head: () => ({ meta: [{ title: "Lead Inbox · Port City Sound & Security" }] }),
   component: LeadInbox,
 });

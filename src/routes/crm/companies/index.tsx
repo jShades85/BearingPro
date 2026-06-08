@@ -11,7 +11,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { COMPANIES, type CompanyIndustry, type CompanyStage, type CompanyRecord } from "@/data/companies";
 
-export const Route = createFileRoute("/companies/")({
+export const Route = createFileRoute("/crm/companies/")({
   head: () => ({ meta: [{ title: "Companies · Port City Sound & Security" }] }),
   component: CompaniesPage,
 });
@@ -79,7 +79,7 @@ function CompaniesPage() {
   }, [search, industryFilter, stageFilter]);
 
   const openDetail = useCallback(
-    (c: CompanyRecord) => navigate({ to: "/companies/$companyId", params: { companyId: c.id } }),
+    (c: CompanyRecord) => navigate({ to: "/crm/companies/$companyId", params: { companyId: c.id } }),
     [navigate],
   );
 

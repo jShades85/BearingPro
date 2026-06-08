@@ -11,7 +11,7 @@ import {
   type ProjectStatus,
 } from "@/data/projects";
 
-export const Route = createFileRoute("/work-orders/")({
+export const Route = createFileRoute("/operations/work-orders/")({
   head: () => ({ meta: [{ title: "Work Orders · Crosscurrent" }] }),
   component: WorkOrdersListPage,
 });
@@ -60,7 +60,7 @@ function WorkOrdersListPage() {
   }, [search, statusFilter]);
 
   const openDetail = useCallback(
-    (id: string) => navigate({ to: "/work-orders/$workOrderId", params: { workOrderId: id } }),
+    (id: string) => navigate({ to: "/operations/work-orders/$workOrderId", params: { workOrderId: id } }),
     [navigate],
   );
 

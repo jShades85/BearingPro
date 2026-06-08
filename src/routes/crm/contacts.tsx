@@ -11,7 +11,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-export const Route = createFileRoute("/contacts")({
+export const Route = createFileRoute("/crm/contacts")({
   head: () => ({ meta: [{ title: "Contacts · Port City Sound & Security" }] }),
   component: ContactsPage,
 });

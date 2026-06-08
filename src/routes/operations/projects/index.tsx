@@ -11,7 +11,7 @@ import {
   type ProjectStatus, type ProjectType,
 } from "@/data/projects";
 
-export const Route = createFileRoute("/projects/")({
+export const Route = createFileRoute("/operations/projects/")({
   head: () => ({ meta: [{ title: "Projects · Crosscurrent" }] }),
   component: ProjectsListPage,
 });
@@ -69,7 +69,7 @@ function ProjectsListPage() {
   }, [search, statusFilter]);
 
   const openDetail = useCallback(
-    (id: string) => navigate({ to: "/projects/$projectId", params: { projectId: id } }),
+    (id: string) => navigate({ to: "/operations/projects/$projectId", params: { projectId: id } }),
     [navigate],
   );
 

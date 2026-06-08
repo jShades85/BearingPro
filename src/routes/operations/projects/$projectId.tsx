@@ -20,7 +20,7 @@ import { PartsPanel } from "@/components/projects/PartsPanel";
 import { TeamPanel } from "@/components/projects/TeamPanel";
 import { ActivityPanel } from "@/components/projects/ActivityPanel";
 
-export const Route = createFileRoute("/projects/$projectId")({
+export const Route = createFileRoute("/operations/projects/$projectId")({
   component: ProjectDetailPage,
 });
 
@@ -171,7 +171,7 @@ export function ProjectDetailView({
   const project = PROJECTS.find((p) => p.id === projectId);
   const [status, setStatus] = useState<ProjectStatus>(project?.status ?? "in-progress");
 
-  const backHref = section === "Work Orders" ? "/work-orders" : "/projects";
+  const backHref = section === "Work Orders" ? "/operations/work-orders" : "/operations/projects";
   const backLabel = section === "Work Orders" ? "All Work Orders" : "All Projects";
 
   useEffect(() => {

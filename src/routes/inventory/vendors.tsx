@@ -14,7 +14,7 @@ import { VENDORS, type VendorRecord, type VendorStatus, type VendorCategory } fr
 
 // ─── Route ────────────────────────────────────────────────────────────────────
 
-export const Route = createFileRoute("/vendors")({
+export const Route = createFileRoute("/inventory/vendors")({
   head: () => ({ meta: [{ title: "Vendors · Port City Sound & Security" }] }),
   component: VendorsPage,
 });

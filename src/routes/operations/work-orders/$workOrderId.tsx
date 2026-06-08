@@ -18,7 +18,7 @@ import { PartsPanel } from "@/components/projects/PartsPanel";
 import { TeamPanel } from "@/components/projects/TeamPanel";
 import { ActivityPanel } from "@/components/projects/ActivityPanel";
 
-export const Route = createFileRoute("/work-orders/$workOrderId")({
+export const Route = createFileRoute("/operations/work-orders/$workOrderId")({
   component: WorkOrderDetailPage,
 });
 
@@ -131,7 +131,7 @@ export default function WorkOrderDetailPage() {
           No record with ID &ldquo;{workOrderId}&rdquo; exists.
         </p>
         <Link
-          to="/work-orders"
+          to="/operations/work-orders"
           className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12.5px] font-medium text-primary-foreground hover:opacity-90"
         >
           Back to Work Orders
@@ -147,7 +147,7 @@ export default function WorkOrderDetailPage() {
       {/* Back nav */}
       <div className="border-b border-border px-5 py-2.5">
         <Link
-          to="/work-orders"
+          to="/operations/work-orders"
           className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">

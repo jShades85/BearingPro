@@ -9,63 +9,52 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WorkOrdersRouteImport } from './routes/work-orders'
-import { Route as VendorsRouteImport } from './routes/vendors'
-import { Route as TeamRouteImport } from './routes/team'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ServiceRouteImport } from './routes/service'
-import { Route as SchedulingRouteImport } from './routes/scheduling'
+import { Route as SalesRouteImport } from './routes/sales'
 import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as QuotesRouteImport } from './routes/quotes'
-import { Route as PurchaseOrdersRouteImport } from './routes/purchase-orders'
-import { Route as ProjectsRouteImport } from './routes/projects'
-import { Route as PlannerRouteImport } from './routes/planner'
-import { Route as OpportunitiesRouteImport } from './routes/opportunities'
 import { Route as OperationsRouteImport } from './routes/operations'
-import { Route as LeadInboxRouteImport } from './routes/lead-inbox'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as FinanceRouteImport } from './routes/finance'
-import { Route as ContactsRouteImport } from './routes/contacts'
-import { Route as CompaniesRouteImport } from './routes/companies'
-import { Route as CatalogRouteImport } from './routes/catalog'
+import { Route as CrmRouteImport } from './routes/crm'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as WorkOrdersIndexRouteImport } from './routes/work-orders/index'
 import { Route as ServiceIndexRouteImport } from './routes/service/index'
-import { Route as QuotesIndexRouteImport } from './routes/quotes/index'
-import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
-import { Route as PlannerIndexRouteImport } from './routes/planner/index'
+import { Route as SalesIndexRouteImport } from './routes/sales/index'
+import { Route as OperationsIndexRouteImport } from './routes/operations/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
 import { Route as FinanceIndexRouteImport } from './routes/finance/index'
-import { Route as CompaniesIndexRouteImport } from './routes/companies/index'
-import { Route as WorkOrdersWorkOrderIdRouteImport } from './routes/work-orders/$workOrderId'
+import { Route as CrmIndexRouteImport } from './routes/crm/index'
 import { Route as SettingsQuoteTemplatesRouteImport } from './routes/settings/quote-templates'
 import { Route as ServiceServiceTicketsRouteImport } from './routes/service/service-tickets'
 import { Route as ServiceServicePlansRouteImport } from './routes/service/service-plans'
-import { Route as QuotesNewRouteImport } from './routes/quotes/new'
-import { Route as QuotesQuoteIdRouteImport } from './routes/quotes/$quoteId'
-import { Route as ProjectsProjectIdRouteImport } from './routes/projects/$projectId'
+import { Route as SalesQuotesRouteImport } from './routes/sales/quotes'
+import { Route as SalesOpportunitiesRouteImport } from './routes/sales/opportunities'
+import { Route as SalesLeadInboxRouteImport } from './routes/sales/lead-inbox'
+import { Route as OperationsWorkOrdersRouteImport } from './routes/operations/work-orders'
+import { Route as OperationsTeamRouteImport } from './routes/operations/team'
+import { Route as OperationsSchedulingRouteImport } from './routes/operations/scheduling'
+import { Route as OperationsProjectsRouteImport } from './routes/operations/projects'
+import { Route as OperationsPlannerRouteImport } from './routes/operations/planner'
+import { Route as InventoryVendorsRouteImport } from './routes/inventory/vendors'
 import { Route as InventoryStockRouteImport } from './routes/inventory/stock'
+import { Route as InventoryPurchaseOrdersRouteImport } from './routes/inventory/purchase-orders'
 import { Route as InventoryCatalogRouteImport } from './routes/inventory/catalog'
 import { Route as FinancePaymentsRouteImport } from './routes/finance/payments'
 import { Route as FinanceInvoicesRouteImport } from './routes/finance/invoices'
-import { Route as CompaniesCompanyIdRouteImport } from './routes/companies/$companyId'
+import { Route as CrmContactsRouteImport } from './routes/crm/contacts'
+import { Route as CrmCompaniesRouteImport } from './routes/crm/companies'
+import { Route as SalesQuotesIndexRouteImport } from './routes/sales/quotes/index'
+import { Route as OperationsWorkOrdersIndexRouteImport } from './routes/operations/work-orders/index'
+import { Route as OperationsProjectsIndexRouteImport } from './routes/operations/projects/index'
+import { Route as OperationsPlannerIndexRouteImport } from './routes/operations/planner/index'
+import { Route as CrmCompaniesIndexRouteImport } from './routes/crm/companies/index'
+import { Route as SalesQuotesNewRouteImport } from './routes/sales/quotes/new'
+import { Route as SalesQuotesQuoteIdRouteImport } from './routes/sales/quotes/$quoteId'
+import { Route as OperationsWorkOrdersWorkOrderIdRouteImport } from './routes/operations/work-orders/$workOrderId'
+import { Route as OperationsProjectsProjectIdRouteImport } from './routes/operations/projects/$projectId'
+import { Route as CrmCompaniesCompanyIdRouteImport } from './routes/crm/companies/$companyId'
 
-const WorkOrdersRoute = WorkOrdersRouteImport.update({
-  id: '/work-orders',
-  path: '/work-orders',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VendorsRoute = VendorsRouteImport.update({
-  id: '/vendors',
-  path: '/vendors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TeamRoute = TeamRouteImport.update({
-  id: '/team',
-  path: '/team',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -76,9 +65,9 @@ const ServiceRoute = ServiceRouteImport.update({
   path: '/service',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SchedulingRoute = SchedulingRouteImport.update({
-  id: '/scheduling',
-  path: '/scheduling',
+const SalesRoute = SalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsRoute = ReportsRouteImport.update({
@@ -86,39 +75,9 @@ const ReportsRoute = ReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
-const QuotesRoute = QuotesRouteImport.update({
-  id: '/quotes',
-  path: '/quotes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PurchaseOrdersRoute = PurchaseOrdersRouteImport.update({
-  id: '/purchase-orders',
-  path: '/purchase-orders',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjectsRoute = ProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlannerRoute = PlannerRouteImport.update({
-  id: '/planner',
-  path: '/planner',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpportunitiesRoute = OpportunitiesRouteImport.update({
-  id: '/opportunities',
-  path: '/opportunities',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OperationsRoute = OperationsRouteImport.update({
   id: '/operations',
   path: '/operations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LeadInboxRoute = LeadInboxRouteImport.update({
-  id: '/lead-inbox',
-  path: '/lead-inbox',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InventoryRoute = InventoryRouteImport.update({
@@ -136,19 +95,9 @@ const FinanceRoute = FinanceRouteImport.update({
   path: '/finance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ContactsRoute = ContactsRouteImport.update({
-  id: '/contacts',
-  path: '/contacts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompaniesRoute = CompaniesRouteImport.update({
-  id: '/companies',
-  path: '/companies',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CatalogRoute = CatalogRouteImport.update({
-  id: '/catalog',
-  path: '/catalog',
+const CrmRoute = CrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -156,30 +105,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkOrdersIndexRoute = WorkOrdersIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => WorkOrdersRoute,
-} as any)
 const ServiceIndexRoute = ServiceIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ServiceRoute,
 } as any)
-const QuotesIndexRoute = QuotesIndexRouteImport.update({
+const SalesIndexRoute = SalesIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => QuotesRoute,
+  getParentRoute: () => SalesRoute,
 } as any)
-const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
+const OperationsIndexRoute = OperationsIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProjectsRoute,
-} as any)
-const PlannerIndexRoute = PlannerIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PlannerRoute,
+  getParentRoute: () => OperationsRoute,
 } as any)
 const InventoryIndexRoute = InventoryIndexRouteImport.update({
   id: '/',
@@ -191,15 +130,10 @@ const FinanceIndexRoute = FinanceIndexRouteImport.update({
   path: '/',
   getParentRoute: () => FinanceRoute,
 } as any)
-const CompaniesIndexRoute = CompaniesIndexRouteImport.update({
+const CrmIndexRoute = CrmIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => CompaniesRoute,
-} as any)
-const WorkOrdersWorkOrderIdRoute = WorkOrdersWorkOrderIdRouteImport.update({
-  id: '/$workOrderId',
-  path: '/$workOrderId',
-  getParentRoute: () => WorkOrdersRoute,
+  getParentRoute: () => CrmRoute,
 } as any)
 const SettingsQuoteTemplatesRoute = SettingsQuoteTemplatesRouteImport.update({
   id: '/quote-templates',
@@ -216,24 +150,59 @@ const ServiceServicePlansRoute = ServiceServicePlansRouteImport.update({
   path: '/service-plans',
   getParentRoute: () => ServiceRoute,
 } as any)
-const QuotesNewRoute = QuotesNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => QuotesRoute,
+const SalesQuotesRoute = SalesQuotesRouteImport.update({
+  id: '/quotes',
+  path: '/quotes',
+  getParentRoute: () => SalesRoute,
 } as any)
-const QuotesQuoteIdRoute = QuotesQuoteIdRouteImport.update({
-  id: '/$quoteId',
-  path: '/$quoteId',
-  getParentRoute: () => QuotesRoute,
+const SalesOpportunitiesRoute = SalesOpportunitiesRouteImport.update({
+  id: '/opportunities',
+  path: '/opportunities',
+  getParentRoute: () => SalesRoute,
 } as any)
-const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
-  id: '/$projectId',
-  path: '/$projectId',
-  getParentRoute: () => ProjectsRoute,
+const SalesLeadInboxRoute = SalesLeadInboxRouteImport.update({
+  id: '/lead-inbox',
+  path: '/lead-inbox',
+  getParentRoute: () => SalesRoute,
+} as any)
+const OperationsWorkOrdersRoute = OperationsWorkOrdersRouteImport.update({
+  id: '/work-orders',
+  path: '/work-orders',
+  getParentRoute: () => OperationsRoute,
+} as any)
+const OperationsTeamRoute = OperationsTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => OperationsRoute,
+} as any)
+const OperationsSchedulingRoute = OperationsSchedulingRouteImport.update({
+  id: '/scheduling',
+  path: '/scheduling',
+  getParentRoute: () => OperationsRoute,
+} as any)
+const OperationsProjectsRoute = OperationsProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => OperationsRoute,
+} as any)
+const OperationsPlannerRoute = OperationsPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => OperationsRoute,
+} as any)
+const InventoryVendorsRoute = InventoryVendorsRouteImport.update({
+  id: '/vendors',
+  path: '/vendors',
+  getParentRoute: () => InventoryRoute,
 } as any)
 const InventoryStockRoute = InventoryStockRouteImport.update({
   id: '/stock',
   path: '/stock',
+  getParentRoute: () => InventoryRoute,
+} as any)
+const InventoryPurchaseOrdersRoute = InventoryPurchaseOrdersRouteImport.update({
+  id: '/purchase-orders',
+  path: '/purchase-orders',
   getParentRoute: () => InventoryRoute,
 } as any)
 const InventoryCatalogRoute = InventoryCatalogRouteImport.update({
@@ -251,305 +220,349 @@ const FinanceInvoicesRoute = FinanceInvoicesRouteImport.update({
   path: '/invoices',
   getParentRoute: () => FinanceRoute,
 } as any)
-const CompaniesCompanyIdRoute = CompaniesCompanyIdRouteImport.update({
+const CrmContactsRoute = CrmContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => CrmRoute,
+} as any)
+const CrmCompaniesRoute = CrmCompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
+  getParentRoute: () => CrmRoute,
+} as any)
+const SalesQuotesIndexRoute = SalesQuotesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SalesQuotesRoute,
+} as any)
+const OperationsWorkOrdersIndexRoute =
+  OperationsWorkOrdersIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => OperationsWorkOrdersRoute,
+  } as any)
+const OperationsProjectsIndexRoute = OperationsProjectsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OperationsProjectsRoute,
+} as any)
+const OperationsPlannerIndexRoute = OperationsPlannerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OperationsPlannerRoute,
+} as any)
+const CrmCompaniesIndexRoute = CrmCompaniesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CrmCompaniesRoute,
+} as any)
+const SalesQuotesNewRoute = SalesQuotesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => SalesQuotesRoute,
+} as any)
+const SalesQuotesQuoteIdRoute = SalesQuotesQuoteIdRouteImport.update({
+  id: '/$quoteId',
+  path: '/$quoteId',
+  getParentRoute: () => SalesQuotesRoute,
+} as any)
+const OperationsWorkOrdersWorkOrderIdRoute =
+  OperationsWorkOrdersWorkOrderIdRouteImport.update({
+    id: '/$workOrderId',
+    path: '/$workOrderId',
+    getParentRoute: () => OperationsWorkOrdersRoute,
+  } as any)
+const OperationsProjectsProjectIdRoute =
+  OperationsProjectsProjectIdRouteImport.update({
+    id: '/$projectId',
+    path: '/$projectId',
+    getParentRoute: () => OperationsProjectsRoute,
+  } as any)
+const CrmCompaniesCompanyIdRoute = CrmCompaniesCompanyIdRouteImport.update({
   id: '/$companyId',
   path: '/$companyId',
-  getParentRoute: () => CompaniesRoute,
+  getParentRoute: () => CrmCompaniesRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/catalog': typeof CatalogRoute
-  '/companies': typeof CompaniesRouteWithChildren
-  '/contacts': typeof ContactsRoute
+  '/crm': typeof CrmRouteWithChildren
   '/finance': typeof FinanceRouteWithChildren
   '/inbox': typeof InboxRoute
   '/inventory': typeof InventoryRouteWithChildren
-  '/lead-inbox': typeof LeadInboxRoute
-  '/operations': typeof OperationsRoute
-  '/opportunities': typeof OpportunitiesRoute
-  '/planner': typeof PlannerRouteWithChildren
-  '/projects': typeof ProjectsRouteWithChildren
-  '/purchase-orders': typeof PurchaseOrdersRoute
-  '/quotes': typeof QuotesRouteWithChildren
+  '/operations': typeof OperationsRouteWithChildren
   '/reports': typeof ReportsRoute
-  '/scheduling': typeof SchedulingRoute
+  '/sales': typeof SalesRouteWithChildren
   '/service': typeof ServiceRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
-  '/team': typeof TeamRoute
-  '/vendors': typeof VendorsRoute
-  '/work-orders': typeof WorkOrdersRouteWithChildren
-  '/companies/$companyId': typeof CompaniesCompanyIdRoute
+  '/crm/companies': typeof CrmCompaniesRouteWithChildren
+  '/crm/contacts': typeof CrmContactsRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
   '/inventory/catalog': typeof InventoryCatalogRoute
+  '/inventory/purchase-orders': typeof InventoryPurchaseOrdersRoute
   '/inventory/stock': typeof InventoryStockRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/quotes/$quoteId': typeof QuotesQuoteIdRoute
-  '/quotes/new': typeof QuotesNewRoute
+  '/inventory/vendors': typeof InventoryVendorsRoute
+  '/operations/planner': typeof OperationsPlannerRouteWithChildren
+  '/operations/projects': typeof OperationsProjectsRouteWithChildren
+  '/operations/scheduling': typeof OperationsSchedulingRoute
+  '/operations/team': typeof OperationsTeamRoute
+  '/operations/work-orders': typeof OperationsWorkOrdersRouteWithChildren
+  '/sales/lead-inbox': typeof SalesLeadInboxRoute
+  '/sales/opportunities': typeof SalesOpportunitiesRoute
+  '/sales/quotes': typeof SalesQuotesRouteWithChildren
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
-  '/work-orders/$workOrderId': typeof WorkOrdersWorkOrderIdRoute
-  '/companies/': typeof CompaniesIndexRoute
+  '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
   '/inventory/': typeof InventoryIndexRoute
-  '/planner/': typeof PlannerIndexRoute
-  '/projects/': typeof ProjectsIndexRoute
-  '/quotes/': typeof QuotesIndexRoute
+  '/operations/': typeof OperationsIndexRoute
+  '/sales/': typeof SalesIndexRoute
   '/service/': typeof ServiceIndexRoute
-  '/work-orders/': typeof WorkOrdersIndexRoute
+  '/crm/companies/$companyId': typeof CrmCompaniesCompanyIdRoute
+  '/operations/projects/$projectId': typeof OperationsProjectsProjectIdRoute
+  '/operations/work-orders/$workOrderId': typeof OperationsWorkOrdersWorkOrderIdRoute
+  '/sales/quotes/$quoteId': typeof SalesQuotesQuoteIdRoute
+  '/sales/quotes/new': typeof SalesQuotesNewRoute
+  '/crm/companies/': typeof CrmCompaniesIndexRoute
+  '/operations/planner/': typeof OperationsPlannerIndexRoute
+  '/operations/projects/': typeof OperationsProjectsIndexRoute
+  '/operations/work-orders/': typeof OperationsWorkOrdersIndexRoute
+  '/sales/quotes/': typeof SalesQuotesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/catalog': typeof CatalogRoute
-  '/contacts': typeof ContactsRoute
   '/inbox': typeof InboxRoute
-  '/lead-inbox': typeof LeadInboxRoute
-  '/operations': typeof OperationsRoute
-  '/opportunities': typeof OpportunitiesRoute
-  '/purchase-orders': typeof PurchaseOrdersRoute
   '/reports': typeof ReportsRoute
-  '/scheduling': typeof SchedulingRoute
   '/settings': typeof SettingsRouteWithChildren
-  '/team': typeof TeamRoute
-  '/vendors': typeof VendorsRoute
-  '/companies/$companyId': typeof CompaniesCompanyIdRoute
+  '/crm/contacts': typeof CrmContactsRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
   '/inventory/catalog': typeof InventoryCatalogRoute
+  '/inventory/purchase-orders': typeof InventoryPurchaseOrdersRoute
   '/inventory/stock': typeof InventoryStockRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/quotes/$quoteId': typeof QuotesQuoteIdRoute
-  '/quotes/new': typeof QuotesNewRoute
+  '/inventory/vendors': typeof InventoryVendorsRoute
+  '/operations/scheduling': typeof OperationsSchedulingRoute
+  '/operations/team': typeof OperationsTeamRoute
+  '/sales/lead-inbox': typeof SalesLeadInboxRoute
+  '/sales/opportunities': typeof SalesOpportunitiesRoute
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
-  '/work-orders/$workOrderId': typeof WorkOrdersWorkOrderIdRoute
-  '/companies': typeof CompaniesIndexRoute
+  '/crm': typeof CrmIndexRoute
   '/finance': typeof FinanceIndexRoute
   '/inventory': typeof InventoryIndexRoute
-  '/planner': typeof PlannerIndexRoute
-  '/projects': typeof ProjectsIndexRoute
-  '/quotes': typeof QuotesIndexRoute
+  '/operations': typeof OperationsIndexRoute
+  '/sales': typeof SalesIndexRoute
   '/service': typeof ServiceIndexRoute
-  '/work-orders': typeof WorkOrdersIndexRoute
+  '/crm/companies/$companyId': typeof CrmCompaniesCompanyIdRoute
+  '/operations/projects/$projectId': typeof OperationsProjectsProjectIdRoute
+  '/operations/work-orders/$workOrderId': typeof OperationsWorkOrdersWorkOrderIdRoute
+  '/sales/quotes/$quoteId': typeof SalesQuotesQuoteIdRoute
+  '/sales/quotes/new': typeof SalesQuotesNewRoute
+  '/crm/companies': typeof CrmCompaniesIndexRoute
+  '/operations/planner': typeof OperationsPlannerIndexRoute
+  '/operations/projects': typeof OperationsProjectsIndexRoute
+  '/operations/work-orders': typeof OperationsWorkOrdersIndexRoute
+  '/sales/quotes': typeof SalesQuotesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/catalog': typeof CatalogRoute
-  '/companies': typeof CompaniesRouteWithChildren
-  '/contacts': typeof ContactsRoute
+  '/crm': typeof CrmRouteWithChildren
   '/finance': typeof FinanceRouteWithChildren
   '/inbox': typeof InboxRoute
   '/inventory': typeof InventoryRouteWithChildren
-  '/lead-inbox': typeof LeadInboxRoute
-  '/operations': typeof OperationsRoute
-  '/opportunities': typeof OpportunitiesRoute
-  '/planner': typeof PlannerRouteWithChildren
-  '/projects': typeof ProjectsRouteWithChildren
-  '/purchase-orders': typeof PurchaseOrdersRoute
-  '/quotes': typeof QuotesRouteWithChildren
+  '/operations': typeof OperationsRouteWithChildren
   '/reports': typeof ReportsRoute
-  '/scheduling': typeof SchedulingRoute
+  '/sales': typeof SalesRouteWithChildren
   '/service': typeof ServiceRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
-  '/team': typeof TeamRoute
-  '/vendors': typeof VendorsRoute
-  '/work-orders': typeof WorkOrdersRouteWithChildren
-  '/companies/$companyId': typeof CompaniesCompanyIdRoute
+  '/crm/companies': typeof CrmCompaniesRouteWithChildren
+  '/crm/contacts': typeof CrmContactsRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
   '/inventory/catalog': typeof InventoryCatalogRoute
+  '/inventory/purchase-orders': typeof InventoryPurchaseOrdersRoute
   '/inventory/stock': typeof InventoryStockRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/quotes/$quoteId': typeof QuotesQuoteIdRoute
-  '/quotes/new': typeof QuotesNewRoute
+  '/inventory/vendors': typeof InventoryVendorsRoute
+  '/operations/planner': typeof OperationsPlannerRouteWithChildren
+  '/operations/projects': typeof OperationsProjectsRouteWithChildren
+  '/operations/scheduling': typeof OperationsSchedulingRoute
+  '/operations/team': typeof OperationsTeamRoute
+  '/operations/work-orders': typeof OperationsWorkOrdersRouteWithChildren
+  '/sales/lead-inbox': typeof SalesLeadInboxRoute
+  '/sales/opportunities': typeof SalesOpportunitiesRoute
+  '/sales/quotes': typeof SalesQuotesRouteWithChildren
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
-  '/work-orders/$workOrderId': typeof WorkOrdersWorkOrderIdRoute
-  '/companies/': typeof CompaniesIndexRoute
+  '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
   '/inventory/': typeof InventoryIndexRoute
-  '/planner/': typeof PlannerIndexRoute
-  '/projects/': typeof ProjectsIndexRoute
-  '/quotes/': typeof QuotesIndexRoute
+  '/operations/': typeof OperationsIndexRoute
+  '/sales/': typeof SalesIndexRoute
   '/service/': typeof ServiceIndexRoute
-  '/work-orders/': typeof WorkOrdersIndexRoute
+  '/crm/companies/$companyId': typeof CrmCompaniesCompanyIdRoute
+  '/operations/projects/$projectId': typeof OperationsProjectsProjectIdRoute
+  '/operations/work-orders/$workOrderId': typeof OperationsWorkOrdersWorkOrderIdRoute
+  '/sales/quotes/$quoteId': typeof SalesQuotesQuoteIdRoute
+  '/sales/quotes/new': typeof SalesQuotesNewRoute
+  '/crm/companies/': typeof CrmCompaniesIndexRoute
+  '/operations/planner/': typeof OperationsPlannerIndexRoute
+  '/operations/projects/': typeof OperationsProjectsIndexRoute
+  '/operations/work-orders/': typeof OperationsWorkOrdersIndexRoute
+  '/sales/quotes/': typeof SalesQuotesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/catalog'
-    | '/companies'
-    | '/contacts'
+    | '/crm'
     | '/finance'
     | '/inbox'
     | '/inventory'
-    | '/lead-inbox'
     | '/operations'
-    | '/opportunities'
-    | '/planner'
-    | '/projects'
-    | '/purchase-orders'
-    | '/quotes'
     | '/reports'
-    | '/scheduling'
+    | '/sales'
     | '/service'
     | '/settings'
-    | '/team'
-    | '/vendors'
-    | '/work-orders'
-    | '/companies/$companyId'
+    | '/crm/companies'
+    | '/crm/contacts'
     | '/finance/invoices'
     | '/finance/payments'
     | '/inventory/catalog'
+    | '/inventory/purchase-orders'
     | '/inventory/stock'
-    | '/projects/$projectId'
-    | '/quotes/$quoteId'
-    | '/quotes/new'
+    | '/inventory/vendors'
+    | '/operations/planner'
+    | '/operations/projects'
+    | '/operations/scheduling'
+    | '/operations/team'
+    | '/operations/work-orders'
+    | '/sales/lead-inbox'
+    | '/sales/opportunities'
+    | '/sales/quotes'
     | '/service/service-plans'
     | '/service/service-tickets'
     | '/settings/quote-templates'
-    | '/work-orders/$workOrderId'
-    | '/companies/'
+    | '/crm/'
     | '/finance/'
     | '/inventory/'
-    | '/planner/'
-    | '/projects/'
-    | '/quotes/'
+    | '/operations/'
+    | '/sales/'
     | '/service/'
-    | '/work-orders/'
+    | '/crm/companies/$companyId'
+    | '/operations/projects/$projectId'
+    | '/operations/work-orders/$workOrderId'
+    | '/sales/quotes/$quoteId'
+    | '/sales/quotes/new'
+    | '/crm/companies/'
+    | '/operations/planner/'
+    | '/operations/projects/'
+    | '/operations/work-orders/'
+    | '/sales/quotes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/catalog'
-    | '/contacts'
     | '/inbox'
-    | '/lead-inbox'
-    | '/operations'
-    | '/opportunities'
-    | '/purchase-orders'
     | '/reports'
-    | '/scheduling'
     | '/settings'
-    | '/team'
-    | '/vendors'
-    | '/companies/$companyId'
+    | '/crm/contacts'
     | '/finance/invoices'
     | '/finance/payments'
     | '/inventory/catalog'
+    | '/inventory/purchase-orders'
     | '/inventory/stock'
-    | '/projects/$projectId'
-    | '/quotes/$quoteId'
-    | '/quotes/new'
+    | '/inventory/vendors'
+    | '/operations/scheduling'
+    | '/operations/team'
+    | '/sales/lead-inbox'
+    | '/sales/opportunities'
     | '/service/service-plans'
     | '/service/service-tickets'
     | '/settings/quote-templates'
-    | '/work-orders/$workOrderId'
-    | '/companies'
+    | '/crm'
     | '/finance'
     | '/inventory'
-    | '/planner'
-    | '/projects'
-    | '/quotes'
+    | '/operations'
+    | '/sales'
     | '/service'
-    | '/work-orders'
+    | '/crm/companies/$companyId'
+    | '/operations/projects/$projectId'
+    | '/operations/work-orders/$workOrderId'
+    | '/sales/quotes/$quoteId'
+    | '/sales/quotes/new'
+    | '/crm/companies'
+    | '/operations/planner'
+    | '/operations/projects'
+    | '/operations/work-orders'
+    | '/sales/quotes'
   id:
     | '__root__'
     | '/'
-    | '/catalog'
-    | '/companies'
-    | '/contacts'
+    | '/crm'
     | '/finance'
     | '/inbox'
     | '/inventory'
-    | '/lead-inbox'
     | '/operations'
-    | '/opportunities'
-    | '/planner'
-    | '/projects'
-    | '/purchase-orders'
-    | '/quotes'
     | '/reports'
-    | '/scheduling'
+    | '/sales'
     | '/service'
     | '/settings'
-    | '/team'
-    | '/vendors'
-    | '/work-orders'
-    | '/companies/$companyId'
+    | '/crm/companies'
+    | '/crm/contacts'
     | '/finance/invoices'
     | '/finance/payments'
     | '/inventory/catalog'
+    | '/inventory/purchase-orders'
     | '/inventory/stock'
-    | '/projects/$projectId'
-    | '/quotes/$quoteId'
-    | '/quotes/new'
+    | '/inventory/vendors'
+    | '/operations/planner'
+    | '/operations/projects'
+    | '/operations/scheduling'
+    | '/operations/team'
+    | '/operations/work-orders'
+    | '/sales/lead-inbox'
+    | '/sales/opportunities'
+    | '/sales/quotes'
     | '/service/service-plans'
     | '/service/service-tickets'
     | '/settings/quote-templates'
-    | '/work-orders/$workOrderId'
-    | '/companies/'
+    | '/crm/'
     | '/finance/'
     | '/inventory/'
-    | '/planner/'
-    | '/projects/'
-    | '/quotes/'
+    | '/operations/'
+    | '/sales/'
     | '/service/'
-    | '/work-orders/'
+    | '/crm/companies/$companyId'
+    | '/operations/projects/$projectId'
+    | '/operations/work-orders/$workOrderId'
+    | '/sales/quotes/$quoteId'
+    | '/sales/quotes/new'
+    | '/crm/companies/'
+    | '/operations/planner/'
+    | '/operations/projects/'
+    | '/operations/work-orders/'
+    | '/sales/quotes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CatalogRoute: typeof CatalogRoute
-  CompaniesRoute: typeof CompaniesRouteWithChildren
-  ContactsRoute: typeof ContactsRoute
+  CrmRoute: typeof CrmRouteWithChildren
   FinanceRoute: typeof FinanceRouteWithChildren
   InboxRoute: typeof InboxRoute
   InventoryRoute: typeof InventoryRouteWithChildren
-  LeadInboxRoute: typeof LeadInboxRoute
-  OperationsRoute: typeof OperationsRoute
-  OpportunitiesRoute: typeof OpportunitiesRoute
-  PlannerRoute: typeof PlannerRouteWithChildren
-  ProjectsRoute: typeof ProjectsRouteWithChildren
-  PurchaseOrdersRoute: typeof PurchaseOrdersRoute
-  QuotesRoute: typeof QuotesRouteWithChildren
+  OperationsRoute: typeof OperationsRouteWithChildren
   ReportsRoute: typeof ReportsRoute
-  SchedulingRoute: typeof SchedulingRoute
+  SalesRoute: typeof SalesRouteWithChildren
   ServiceRoute: typeof ServiceRouteWithChildren
   SettingsRoute: typeof SettingsRouteWithChildren
-  TeamRoute: typeof TeamRoute
-  VendorsRoute: typeof VendorsRoute
-  WorkOrdersRoute: typeof WorkOrdersRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/work-orders': {
-      id: '/work-orders'
-      path: '/work-orders'
-      fullPath: '/work-orders'
-      preLoaderRoute: typeof WorkOrdersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/vendors': {
-      id: '/vendors'
-      path: '/vendors'
-      fullPath: '/vendors'
-      preLoaderRoute: typeof VendorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/team': {
-      id: '/team'
-      path: '/team'
-      fullPath: '/team'
-      preLoaderRoute: typeof TeamRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -564,11 +577,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/scheduling': {
-      id: '/scheduling'
-      path: '/scheduling'
-      fullPath: '/scheduling'
-      preLoaderRoute: typeof SchedulingRouteImport
+    '/sales': {
+      id: '/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof SalesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports': {
@@ -578,53 +591,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/quotes': {
-      id: '/quotes'
-      path: '/quotes'
-      fullPath: '/quotes'
-      preLoaderRoute: typeof QuotesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/purchase-orders': {
-      id: '/purchase-orders'
-      path: '/purchase-orders'
-      fullPath: '/purchase-orders'
-      preLoaderRoute: typeof PurchaseOrdersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects': {
-      id: '/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof ProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/planner': {
-      id: '/planner'
-      path: '/planner'
-      fullPath: '/planner'
-      preLoaderRoute: typeof PlannerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/opportunities': {
-      id: '/opportunities'
-      path: '/opportunities'
-      fullPath: '/opportunities'
-      preLoaderRoute: typeof OpportunitiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/operations': {
       id: '/operations'
       path: '/operations'
       fullPath: '/operations'
       preLoaderRoute: typeof OperationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lead-inbox': {
-      id: '/lead-inbox'
-      path: '/lead-inbox'
-      fullPath: '/lead-inbox'
-      preLoaderRoute: typeof LeadInboxRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inventory': {
@@ -648,25 +619,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FinanceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/contacts': {
-      id: '/contacts'
-      path: '/contacts'
-      fullPath: '/contacts'
-      preLoaderRoute: typeof ContactsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/companies': {
-      id: '/companies'
-      path: '/companies'
-      fullPath: '/companies'
-      preLoaderRoute: typeof CompaniesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/catalog': {
-      id: '/catalog'
-      path: '/catalog'
-      fullPath: '/catalog'
-      preLoaderRoute: typeof CatalogRouteImport
+    '/crm': {
+      id: '/crm'
+      path: '/crm'
+      fullPath: '/crm'
+      preLoaderRoute: typeof CrmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -676,13 +633,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/work-orders/': {
-      id: '/work-orders/'
-      path: '/'
-      fullPath: '/work-orders/'
-      preLoaderRoute: typeof WorkOrdersIndexRouteImport
-      parentRoute: typeof WorkOrdersRoute
-    }
     '/service/': {
       id: '/service/'
       path: '/'
@@ -690,26 +640,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiceIndexRouteImport
       parentRoute: typeof ServiceRoute
     }
-    '/quotes/': {
-      id: '/quotes/'
+    '/sales/': {
+      id: '/sales/'
       path: '/'
-      fullPath: '/quotes/'
-      preLoaderRoute: typeof QuotesIndexRouteImport
-      parentRoute: typeof QuotesRoute
+      fullPath: '/sales/'
+      preLoaderRoute: typeof SalesIndexRouteImport
+      parentRoute: typeof SalesRoute
     }
-    '/projects/': {
-      id: '/projects/'
+    '/operations/': {
+      id: '/operations/'
       path: '/'
-      fullPath: '/projects/'
-      preLoaderRoute: typeof ProjectsIndexRouteImport
-      parentRoute: typeof ProjectsRoute
-    }
-    '/planner/': {
-      id: '/planner/'
-      path: '/'
-      fullPath: '/planner/'
-      preLoaderRoute: typeof PlannerIndexRouteImport
-      parentRoute: typeof PlannerRoute
+      fullPath: '/operations/'
+      preLoaderRoute: typeof OperationsIndexRouteImport
+      parentRoute: typeof OperationsRoute
     }
     '/inventory/': {
       id: '/inventory/'
@@ -725,19 +668,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FinanceIndexRouteImport
       parentRoute: typeof FinanceRoute
     }
-    '/companies/': {
-      id: '/companies/'
+    '/crm/': {
+      id: '/crm/'
       path: '/'
-      fullPath: '/companies/'
-      preLoaderRoute: typeof CompaniesIndexRouteImport
-      parentRoute: typeof CompaniesRoute
-    }
-    '/work-orders/$workOrderId': {
-      id: '/work-orders/$workOrderId'
-      path: '/$workOrderId'
-      fullPath: '/work-orders/$workOrderId'
-      preLoaderRoute: typeof WorkOrdersWorkOrderIdRouteImport
-      parentRoute: typeof WorkOrdersRoute
+      fullPath: '/crm/'
+      preLoaderRoute: typeof CrmIndexRouteImport
+      parentRoute: typeof CrmRoute
     }
     '/settings/quote-templates': {
       id: '/settings/quote-templates'
@@ -760,32 +696,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiceServicePlansRouteImport
       parentRoute: typeof ServiceRoute
     }
-    '/quotes/new': {
-      id: '/quotes/new'
-      path: '/new'
-      fullPath: '/quotes/new'
-      preLoaderRoute: typeof QuotesNewRouteImport
-      parentRoute: typeof QuotesRoute
+    '/sales/quotes': {
+      id: '/sales/quotes'
+      path: '/quotes'
+      fullPath: '/sales/quotes'
+      preLoaderRoute: typeof SalesQuotesRouteImport
+      parentRoute: typeof SalesRoute
     }
-    '/quotes/$quoteId': {
-      id: '/quotes/$quoteId'
-      path: '/$quoteId'
-      fullPath: '/quotes/$quoteId'
-      preLoaderRoute: typeof QuotesQuoteIdRouteImport
-      parentRoute: typeof QuotesRoute
+    '/sales/opportunities': {
+      id: '/sales/opportunities'
+      path: '/opportunities'
+      fullPath: '/sales/opportunities'
+      preLoaderRoute: typeof SalesOpportunitiesRouteImport
+      parentRoute: typeof SalesRoute
     }
-    '/projects/$projectId': {
-      id: '/projects/$projectId'
-      path: '/$projectId'
-      fullPath: '/projects/$projectId'
-      preLoaderRoute: typeof ProjectsProjectIdRouteImport
-      parentRoute: typeof ProjectsRoute
+    '/sales/lead-inbox': {
+      id: '/sales/lead-inbox'
+      path: '/lead-inbox'
+      fullPath: '/sales/lead-inbox'
+      preLoaderRoute: typeof SalesLeadInboxRouteImport
+      parentRoute: typeof SalesRoute
+    }
+    '/operations/work-orders': {
+      id: '/operations/work-orders'
+      path: '/work-orders'
+      fullPath: '/operations/work-orders'
+      preLoaderRoute: typeof OperationsWorkOrdersRouteImport
+      parentRoute: typeof OperationsRoute
+    }
+    '/operations/team': {
+      id: '/operations/team'
+      path: '/team'
+      fullPath: '/operations/team'
+      preLoaderRoute: typeof OperationsTeamRouteImport
+      parentRoute: typeof OperationsRoute
+    }
+    '/operations/scheduling': {
+      id: '/operations/scheduling'
+      path: '/scheduling'
+      fullPath: '/operations/scheduling'
+      preLoaderRoute: typeof OperationsSchedulingRouteImport
+      parentRoute: typeof OperationsRoute
+    }
+    '/operations/projects': {
+      id: '/operations/projects'
+      path: '/projects'
+      fullPath: '/operations/projects'
+      preLoaderRoute: typeof OperationsProjectsRouteImport
+      parentRoute: typeof OperationsRoute
+    }
+    '/operations/planner': {
+      id: '/operations/planner'
+      path: '/planner'
+      fullPath: '/operations/planner'
+      preLoaderRoute: typeof OperationsPlannerRouteImport
+      parentRoute: typeof OperationsRoute
+    }
+    '/inventory/vendors': {
+      id: '/inventory/vendors'
+      path: '/vendors'
+      fullPath: '/inventory/vendors'
+      preLoaderRoute: typeof InventoryVendorsRouteImport
+      parentRoute: typeof InventoryRoute
     }
     '/inventory/stock': {
       id: '/inventory/stock'
       path: '/stock'
       fullPath: '/inventory/stock'
       preLoaderRoute: typeof InventoryStockRouteImport
+      parentRoute: typeof InventoryRoute
+    }
+    '/inventory/purchase-orders': {
+      id: '/inventory/purchase-orders'
+      path: '/purchase-orders'
+      fullPath: '/inventory/purchase-orders'
+      preLoaderRoute: typeof InventoryPurchaseOrdersRouteImport
       parentRoute: typeof InventoryRoute
     }
     '/inventory/catalog': {
@@ -809,29 +794,120 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FinanceInvoicesRouteImport
       parentRoute: typeof FinanceRoute
     }
-    '/companies/$companyId': {
-      id: '/companies/$companyId'
+    '/crm/contacts': {
+      id: '/crm/contacts'
+      path: '/contacts'
+      fullPath: '/crm/contacts'
+      preLoaderRoute: typeof CrmContactsRouteImport
+      parentRoute: typeof CrmRoute
+    }
+    '/crm/companies': {
+      id: '/crm/companies'
+      path: '/companies'
+      fullPath: '/crm/companies'
+      preLoaderRoute: typeof CrmCompaniesRouteImport
+      parentRoute: typeof CrmRoute
+    }
+    '/sales/quotes/': {
+      id: '/sales/quotes/'
+      path: '/'
+      fullPath: '/sales/quotes/'
+      preLoaderRoute: typeof SalesQuotesIndexRouteImport
+      parentRoute: typeof SalesQuotesRoute
+    }
+    '/operations/work-orders/': {
+      id: '/operations/work-orders/'
+      path: '/'
+      fullPath: '/operations/work-orders/'
+      preLoaderRoute: typeof OperationsWorkOrdersIndexRouteImport
+      parentRoute: typeof OperationsWorkOrdersRoute
+    }
+    '/operations/projects/': {
+      id: '/operations/projects/'
+      path: '/'
+      fullPath: '/operations/projects/'
+      preLoaderRoute: typeof OperationsProjectsIndexRouteImport
+      parentRoute: typeof OperationsProjectsRoute
+    }
+    '/operations/planner/': {
+      id: '/operations/planner/'
+      path: '/'
+      fullPath: '/operations/planner/'
+      preLoaderRoute: typeof OperationsPlannerIndexRouteImport
+      parentRoute: typeof OperationsPlannerRoute
+    }
+    '/crm/companies/': {
+      id: '/crm/companies/'
+      path: '/'
+      fullPath: '/crm/companies/'
+      preLoaderRoute: typeof CrmCompaniesIndexRouteImport
+      parentRoute: typeof CrmCompaniesRoute
+    }
+    '/sales/quotes/new': {
+      id: '/sales/quotes/new'
+      path: '/new'
+      fullPath: '/sales/quotes/new'
+      preLoaderRoute: typeof SalesQuotesNewRouteImport
+      parentRoute: typeof SalesQuotesRoute
+    }
+    '/sales/quotes/$quoteId': {
+      id: '/sales/quotes/$quoteId'
+      path: '/$quoteId'
+      fullPath: '/sales/quotes/$quoteId'
+      preLoaderRoute: typeof SalesQuotesQuoteIdRouteImport
+      parentRoute: typeof SalesQuotesRoute
+    }
+    '/operations/work-orders/$workOrderId': {
+      id: '/operations/work-orders/$workOrderId'
+      path: '/$workOrderId'
+      fullPath: '/operations/work-orders/$workOrderId'
+      preLoaderRoute: typeof OperationsWorkOrdersWorkOrderIdRouteImport
+      parentRoute: typeof OperationsWorkOrdersRoute
+    }
+    '/operations/projects/$projectId': {
+      id: '/operations/projects/$projectId'
+      path: '/$projectId'
+      fullPath: '/operations/projects/$projectId'
+      preLoaderRoute: typeof OperationsProjectsProjectIdRouteImport
+      parentRoute: typeof OperationsProjectsRoute
+    }
+    '/crm/companies/$companyId': {
+      id: '/crm/companies/$companyId'
       path: '/$companyId'
-      fullPath: '/companies/$companyId'
-      preLoaderRoute: typeof CompaniesCompanyIdRouteImport
-      parentRoute: typeof CompaniesRoute
+      fullPath: '/crm/companies/$companyId'
+      preLoaderRoute: typeof CrmCompaniesCompanyIdRouteImport
+      parentRoute: typeof CrmCompaniesRoute
     }
   }
 }
 
-interface CompaniesRouteChildren {
-  CompaniesCompanyIdRoute: typeof CompaniesCompanyIdRoute
-  CompaniesIndexRoute: typeof CompaniesIndexRoute
+interface CrmCompaniesRouteChildren {
+  CrmCompaniesCompanyIdRoute: typeof CrmCompaniesCompanyIdRoute
+  CrmCompaniesIndexRoute: typeof CrmCompaniesIndexRoute
 }
 
-const CompaniesRouteChildren: CompaniesRouteChildren = {
-  CompaniesCompanyIdRoute: CompaniesCompanyIdRoute,
-  CompaniesIndexRoute: CompaniesIndexRoute,
+const CrmCompaniesRouteChildren: CrmCompaniesRouteChildren = {
+  CrmCompaniesCompanyIdRoute: CrmCompaniesCompanyIdRoute,
+  CrmCompaniesIndexRoute: CrmCompaniesIndexRoute,
 }
 
-const CompaniesRouteWithChildren = CompaniesRoute._addFileChildren(
-  CompaniesRouteChildren,
+const CrmCompaniesRouteWithChildren = CrmCompaniesRoute._addFileChildren(
+  CrmCompaniesRouteChildren,
 )
+
+interface CrmRouteChildren {
+  CrmCompaniesRoute: typeof CrmCompaniesRouteWithChildren
+  CrmContactsRoute: typeof CrmContactsRoute
+  CrmIndexRoute: typeof CrmIndexRoute
+}
+
+const CrmRouteChildren: CrmRouteChildren = {
+  CrmCompaniesRoute: CrmCompaniesRouteWithChildren,
+  CrmContactsRoute: CrmContactsRoute,
+  CrmIndexRoute: CrmIndexRoute,
+}
+
+const CrmRouteWithChildren = CrmRoute._addFileChildren(CrmRouteChildren)
 
 interface FinanceRouteChildren {
   FinanceInvoicesRoute: typeof FinanceInvoicesRoute
@@ -850,13 +926,17 @@ const FinanceRouteWithChildren =
 
 interface InventoryRouteChildren {
   InventoryCatalogRoute: typeof InventoryCatalogRoute
+  InventoryPurchaseOrdersRoute: typeof InventoryPurchaseOrdersRoute
   InventoryStockRoute: typeof InventoryStockRoute
+  InventoryVendorsRoute: typeof InventoryVendorsRoute
   InventoryIndexRoute: typeof InventoryIndexRoute
 }
 
 const InventoryRouteChildren: InventoryRouteChildren = {
   InventoryCatalogRoute: InventoryCatalogRoute,
+  InventoryPurchaseOrdersRoute: InventoryPurchaseOrdersRoute,
   InventoryStockRoute: InventoryStockRoute,
+  InventoryVendorsRoute: InventoryVendorsRoute,
   InventoryIndexRoute: InventoryIndexRoute,
 }
 
@@ -864,45 +944,96 @@ const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
   InventoryRouteChildren,
 )
 
-interface PlannerRouteChildren {
-  PlannerIndexRoute: typeof PlannerIndexRoute
+interface OperationsPlannerRouteChildren {
+  OperationsPlannerIndexRoute: typeof OperationsPlannerIndexRoute
 }
 
-const PlannerRouteChildren: PlannerRouteChildren = {
-  PlannerIndexRoute: PlannerIndexRoute,
+const OperationsPlannerRouteChildren: OperationsPlannerRouteChildren = {
+  OperationsPlannerIndexRoute: OperationsPlannerIndexRoute,
 }
 
-const PlannerRouteWithChildren =
-  PlannerRoute._addFileChildren(PlannerRouteChildren)
+const OperationsPlannerRouteWithChildren =
+  OperationsPlannerRoute._addFileChildren(OperationsPlannerRouteChildren)
 
-interface ProjectsRouteChildren {
-  ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
-  ProjectsIndexRoute: typeof ProjectsIndexRoute
+interface OperationsProjectsRouteChildren {
+  OperationsProjectsProjectIdRoute: typeof OperationsProjectsProjectIdRoute
+  OperationsProjectsIndexRoute: typeof OperationsProjectsIndexRoute
 }
 
-const ProjectsRouteChildren: ProjectsRouteChildren = {
-  ProjectsProjectIdRoute: ProjectsProjectIdRoute,
-  ProjectsIndexRoute: ProjectsIndexRoute,
+const OperationsProjectsRouteChildren: OperationsProjectsRouteChildren = {
+  OperationsProjectsProjectIdRoute: OperationsProjectsProjectIdRoute,
+  OperationsProjectsIndexRoute: OperationsProjectsIndexRoute,
 }
 
-const ProjectsRouteWithChildren = ProjectsRoute._addFileChildren(
-  ProjectsRouteChildren,
+const OperationsProjectsRouteWithChildren =
+  OperationsProjectsRoute._addFileChildren(OperationsProjectsRouteChildren)
+
+interface OperationsWorkOrdersRouteChildren {
+  OperationsWorkOrdersWorkOrderIdRoute: typeof OperationsWorkOrdersWorkOrderIdRoute
+  OperationsWorkOrdersIndexRoute: typeof OperationsWorkOrdersIndexRoute
+}
+
+const OperationsWorkOrdersRouteChildren: OperationsWorkOrdersRouteChildren = {
+  OperationsWorkOrdersWorkOrderIdRoute: OperationsWorkOrdersWorkOrderIdRoute,
+  OperationsWorkOrdersIndexRoute: OperationsWorkOrdersIndexRoute,
+}
+
+const OperationsWorkOrdersRouteWithChildren =
+  OperationsWorkOrdersRoute._addFileChildren(OperationsWorkOrdersRouteChildren)
+
+interface OperationsRouteChildren {
+  OperationsPlannerRoute: typeof OperationsPlannerRouteWithChildren
+  OperationsProjectsRoute: typeof OperationsProjectsRouteWithChildren
+  OperationsSchedulingRoute: typeof OperationsSchedulingRoute
+  OperationsTeamRoute: typeof OperationsTeamRoute
+  OperationsWorkOrdersRoute: typeof OperationsWorkOrdersRouteWithChildren
+  OperationsIndexRoute: typeof OperationsIndexRoute
+}
+
+const OperationsRouteChildren: OperationsRouteChildren = {
+  OperationsPlannerRoute: OperationsPlannerRouteWithChildren,
+  OperationsProjectsRoute: OperationsProjectsRouteWithChildren,
+  OperationsSchedulingRoute: OperationsSchedulingRoute,
+  OperationsTeamRoute: OperationsTeamRoute,
+  OperationsWorkOrdersRoute: OperationsWorkOrdersRouteWithChildren,
+  OperationsIndexRoute: OperationsIndexRoute,
+}
+
+const OperationsRouteWithChildren = OperationsRoute._addFileChildren(
+  OperationsRouteChildren,
 )
 
-interface QuotesRouteChildren {
-  QuotesQuoteIdRoute: typeof QuotesQuoteIdRoute
-  QuotesNewRoute: typeof QuotesNewRoute
-  QuotesIndexRoute: typeof QuotesIndexRoute
+interface SalesQuotesRouteChildren {
+  SalesQuotesQuoteIdRoute: typeof SalesQuotesQuoteIdRoute
+  SalesQuotesNewRoute: typeof SalesQuotesNewRoute
+  SalesQuotesIndexRoute: typeof SalesQuotesIndexRoute
 }
 
-const QuotesRouteChildren: QuotesRouteChildren = {
-  QuotesQuoteIdRoute: QuotesQuoteIdRoute,
-  QuotesNewRoute: QuotesNewRoute,
-  QuotesIndexRoute: QuotesIndexRoute,
+const SalesQuotesRouteChildren: SalesQuotesRouteChildren = {
+  SalesQuotesQuoteIdRoute: SalesQuotesQuoteIdRoute,
+  SalesQuotesNewRoute: SalesQuotesNewRoute,
+  SalesQuotesIndexRoute: SalesQuotesIndexRoute,
 }
 
-const QuotesRouteWithChildren =
-  QuotesRoute._addFileChildren(QuotesRouteChildren)
+const SalesQuotesRouteWithChildren = SalesQuotesRoute._addFileChildren(
+  SalesQuotesRouteChildren,
+)
+
+interface SalesRouteChildren {
+  SalesLeadInboxRoute: typeof SalesLeadInboxRoute
+  SalesOpportunitiesRoute: typeof SalesOpportunitiesRoute
+  SalesQuotesRoute: typeof SalesQuotesRouteWithChildren
+  SalesIndexRoute: typeof SalesIndexRoute
+}
+
+const SalesRouteChildren: SalesRouteChildren = {
+  SalesLeadInboxRoute: SalesLeadInboxRoute,
+  SalesOpportunitiesRoute: SalesOpportunitiesRoute,
+  SalesQuotesRoute: SalesQuotesRouteWithChildren,
+  SalesIndexRoute: SalesIndexRoute,
+}
+
+const SalesRouteWithChildren = SalesRoute._addFileChildren(SalesRouteChildren)
 
 interface ServiceRouteChildren {
   ServiceServicePlansRoute: typeof ServiceServicePlansRoute
@@ -931,42 +1062,17 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
   SettingsRouteChildren,
 )
 
-interface WorkOrdersRouteChildren {
-  WorkOrdersWorkOrderIdRoute: typeof WorkOrdersWorkOrderIdRoute
-  WorkOrdersIndexRoute: typeof WorkOrdersIndexRoute
-}
-
-const WorkOrdersRouteChildren: WorkOrdersRouteChildren = {
-  WorkOrdersWorkOrderIdRoute: WorkOrdersWorkOrderIdRoute,
-  WorkOrdersIndexRoute: WorkOrdersIndexRoute,
-}
-
-const WorkOrdersRouteWithChildren = WorkOrdersRoute._addFileChildren(
-  WorkOrdersRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CatalogRoute: CatalogRoute,
-  CompaniesRoute: CompaniesRouteWithChildren,
-  ContactsRoute: ContactsRoute,
+  CrmRoute: CrmRouteWithChildren,
   FinanceRoute: FinanceRouteWithChildren,
   InboxRoute: InboxRoute,
   InventoryRoute: InventoryRouteWithChildren,
-  LeadInboxRoute: LeadInboxRoute,
-  OperationsRoute: OperationsRoute,
-  OpportunitiesRoute: OpportunitiesRoute,
-  PlannerRoute: PlannerRouteWithChildren,
-  ProjectsRoute: ProjectsRouteWithChildren,
-  PurchaseOrdersRoute: PurchaseOrdersRoute,
-  QuotesRoute: QuotesRouteWithChildren,
+  OperationsRoute: OperationsRouteWithChildren,
   ReportsRoute: ReportsRoute,
-  SchedulingRoute: SchedulingRoute,
+  SalesRoute: SalesRouteWithChildren,
   ServiceRoute: ServiceRouteWithChildren,
   SettingsRoute: SettingsRouteWithChildren,
-  TeamRoute: TeamRoute,
-  VendorsRoute: VendorsRoute,
-  WorkOrdersRoute: WorkOrdersRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
