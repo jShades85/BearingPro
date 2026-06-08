@@ -239,6 +239,7 @@ function AppShellContent() {
             >
               <Search className="h-3 w-3" />
               <span>Search...</span>
+              <kbd className="ml-1 hidden rounded border border-border bg-muted px-1 py-0.5 text-[10px] font-mono leading-none sm:inline-block">⌘K</kbd>
             </button>
             {meta.onNew && (
               <button
