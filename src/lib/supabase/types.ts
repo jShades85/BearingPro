@@ -282,6 +282,7 @@ export type Database = {
     }
     Functions: {
       current_tenant_id: { Args: never; Returns: string }
+      deactivate_member: { Args: { p_id: string }; Returns: undefined }
       seed_default_roles: { Args: { p_tenant_id: string }; Returns: undefined }
     }
     Enums: {
