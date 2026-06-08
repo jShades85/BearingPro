@@ -1,938 +1,110 @@
-# PROGRESS_LOG.md
+# PROGRESS_LOG.md — BearingPro
 
-## HandyHustle Hub — Trade Service SaaS — Session Log
-
-> Updated at the end of every chat session. New sessions read this before writing any code.
-
----
-
-## Read First
-
-Before writing any code in a new session, read these files:
-
-- @PROGRESS_LOG.md — current status, what's done, what's next, open questions
-- @PROJECT_CONTEXT.md — full architecture, decisions, and conventions
+> Read this + PROJECT_CONTEXT.md at the start of every session before touching code.
 
 ---
 
 ## Current Status
 
-**Phase:** Frontend UI Build — Near Complete
-**Last Updated:** Session 017
-**Last Session:** Session 017
+**Phase:** Backend — Foundation complete, auth live, first real data connections next
+**Last Updated:** Session 018
+**Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
+**Supabase Project:** `erdtfwelbdlvammfdtgz`
 
 ---
 
-## Session Log
+## What's Next
+
+1. **Wire up Settings → Company Profile** to the `tenants` table — easiest first real read/write
+2. **Schema sprint** — migrations for all remaining modules (companies, contacts, projects, etc.)
+3. **Replace demo data module by module** — starting with CRM after schema is in place
+4. **Team page invite flow** — admin invites teammates via email; trigger already handles joining existing tenant
 
 ---
 
-### Session 017 — Reports Placeholder
-
-**Date:** June 8, 2026
-**Focus:** Reports page — full catalog placeholder + custom report builder teaser
-
-**Completed:**
-
-- **`src/routes/reports.tsx`:** Replaced one-line placeholder with full page:
-  - Tab bar: All Reports + 6 category tabs (Finance, Sales, Operations, Service, Team, Inventory)
-  - 27 pre-built report definitions across all 6 categories — each with name and description that specifies exactly what the report needs to show (defines the backend query requirements)
-  - Report cards: "Coming soon" badge + reduced opacity on unavailable reports; available reports show a `>` chevron and hover state
-  - Custom Reports teaser section (visible on All tab): describes the builder vision (field picker, filter builder, chart types, saved reports, scheduled delivery), feature chips, "Post-launch" lock badge
-
-**Design Decisions Made:**
-
-- Custom report builder is a post-launch feature — teaser communicates the vision without blocking the page
-- Report catalog is the right pre-backend deliverable — the 27 report definitions now fully specify what queries and aggregations the backend needs to support
-- "Coming soon" reports use opacity reduction, not disabled buttons — communicates roadmap without dead interactions
-
-**Frontend Status: Near Complete**
-
-Remaining pre-backend frontend work:
-- Quote Builder (needs backend — deferred)
-- Planner / Gantt (needs backend — deferred)
-- Demo data consolidation into a single `src/data/index.ts`
-
-**Next Session Goal:**
-
-- Backend session: Supabase project + keys → client setup → schema design → migrations → auth → replace demo data module by module
-- Prerequisite: Supabase project URL and anon key in `.env.local`
-
-**Open Questions:**
-
-- Supabase project status — keys still needed before backend session can begin
-
-**Schema Notes (from Reports):**
-Reports defined here fully specify needed backend aggregations:
-- Finance: revenue time series, invoice aging buckets, payment ledger, job margin (revenue - direct costs), AR totals
-- Sales: opportunity pipeline by stage, lead source attribution, quote acceptance rate, rep performance
-- Operations: project status + budget burn, planned vs actual hours, on-time rates, scheduling density
-- Service: ticket volume/resolution time by category, MRR/ARR over time, plan churn, SLA compliance %
-- Team: scheduled vs available hours, hours logged per tech, job completion metrics
-- Inventory: stock movement rates, PO spend by vendor, parts-to-job mapping, stockout history
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 016 — Command Palette, Inbox Fix, Settings Module
-
-**Date:** June 8, 2026
-**Focus:** Command palette wiring, inbox layout fix, full Settings module build
-
-**Completed:**
-
-- **Command palette wired up (`src/components/command-palette.tsx`):**
-  - All 21 nav entries updated to current routes (stale Lovable routes replaced)
-  - Navigate group shows module group label (e.g. "Operations") as right-aligned secondary text
-  - Quick actions group: New Lead, Opportunity, Quote, Project, Work Order, Service Ticket, Invoice, Purchase Order
-  - Live demo data search: Companies (→ detail page), Projects (by name/code/customer), Contacts
-  - `⌘K / Ctrl K` hint added to topbar search button; button widened to `min-w-[220px]`
-
-- **Inbox page two-column alignment (`src/routes/inbox.tsx`):**
-  - Both columns unified to `space-y-3` (activity was `space-y-2`)
-  - Activity items: `min-h-[72px]`
-  - Request cards: `min-h-[156px]` with `flex flex-col` — exactly 2:1 ratio (2×72+12=156), first 4 request cards align perfectly with all 8 activity items
-  - Actions row changed from `mt-3` → `mt-auto pt-3` — pins to card bottom regardless of content
-
-- **Settings module (full build):**
-  - `settings.tsx`: replaced bare `<Outlet />` with two-column settings shell — left sub-nav (200px) + right content area
-  - Sub-nav sections: Workspace (Company Profile, Service Plan Tiers) / Sales (Quote Templates) / Integrations
-  - `settings/index.tsx`: redirects to `/settings/company`
-  - `settings/company.tsx`: Company Profile — logo placeholder, business info, trade type, timezone, contact details, address, invoice defaults (payment terms + default tax rate), save confirmation
-  - `settings/service-plan-tiers.tsx`: 4 editable tier cards (Essential / Standard / Professional / Elite) with colored left border — response time SLA, visits/year, covered systems chip picker (12 options, toggle active/inactive), add/remove extras per tier
-  - `settings/integrations.tsx`: 7 integration categories, 12 integrations total — Payments (Stripe), Accounting (QuickBooks, Xero), Communication (Resend, Twilio), Field Ops (Google Maps, Waze), Calendars (Google Calendar, Outlook), Storage (Google Drive, Dropbox), Automation (Zapier, Webhooks). Connected/available/coming-soon states with appropriate actions.
-  - Gear icon in sidebar user panel now navigates to `/settings/company`
-  - Settings section removed from main sidebar nav
-  - Command palette updated with all 4 settings pages
-
-**Design Decisions Made:**
-
-- Settings uses gear icon → `/settings` pattern (not a modal, not a sidebar section) — matches Linear/Vercel convention
-- Settings shell keeps app sidebar visible — users can navigate back to any module without losing context
-- User roles deferred until auth session — team member profiles (Team page) ≠ system access roles
-- Quote Builder and Planner deferred until backend — both are fundamentally data-driven; building them on demo data would require a full rebuild
-- Integrations page uses coming-soon opacity reduction — communicates roadmap without dead buttons
-
-**Next Session Goal:**
-
-- Reports module — placeholder with key report categories (or defer until backend)
-- Demo data consolidation into `src/data/index.ts` before backend work begins
-- Backend session: Supabase project + keys needed → client setup → schema + migrations → auth → replace demo data
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single file before backend work
-- Reports: build pre-backend placeholder, or defer entirely?
-
-**Schema Notes (from Settings build):**
-- `tenants`: name, tagline, phone, email, website, address, city, state, zip, trade_type, timezone, default_tax_rate, default_payment_terms, logo_url
-- `service_plan_tiers`: id, tenant_id, name, response_time_hours, visits_per_year, covered_systems (jsonb array), extras (jsonb array), sort_order
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 015 — UI Consistency Pass
-
-**Date:** June 8, 2026
-**Focus:** Full UI consistency sweep — shared component library + uniform layout across all modules
-
-**Completed:**
-
-- **`src/components/ui/page-components.tsx`** (NEW): Central shared component library for all list pages:
-  - `StatBar` / `StatItem` — icon chip + label/value stat bar with optional accent color (`red` | `amber` | `green`)
-  - `FilterBar` / `SearchInput` / `FilterSelect` — composable filter bar; `SearchInput` defaults to `flex-1 min-w-40` so it fills available space
-  - `PageTabs` / `PageTab` — tab bar with `border-b-2` underline and inline count badge; replaces `Tab` from ui-bits on all list pages
-  - `StatusBadge`, `EmptyState`, `DrawerFooter`, `FieldLabel` — shared detail UI primitives
-
-- **Standard layout order enforced on every page:** `stat bar → tabs → filter bar` — components omitted if not needed for that page, never reordered
-
-- **Finance module:**
-  - `invoices.tsx` — replaced inline stat bar, tabs, and filter bar with shared components
-  - `payments.tsx` — major restructure: lifted filter state up, moved stat bar above tabs (was inside each tab), three tabs now use `PageTabs`/`PageTab`
-
-- **Inventory module:**
-  - `catalog.tsx`, `stock.tsx` — filter bar replaced with `FilterBar`/`SearchInput`/`FilterSelect`; removed `selectCls` variable and inline `Search` icon
-  - `purchase-orders.tsx` — `grid grid-cols-4` stat bar → `StatBar`/`StatItem`; pseudo-underline tabs → `PageTabs`/`PageTab`; filter bar replaced
-  - `vendors.tsx` — inline `.map()` stat bar → `StatBar`/`StatItem`; filter bar replaced
-
-- **Service module:**
-  - `service-tickets.tsx` — separated combined tab+filter row into `PageTabs` (status tabs with counts) + `FilterBar` (priority/category/tech selects)
-  - `service-plans.tsx` — `grid grid-cols-4` stat bar → `StatBar`/`StatItem` with `accentColor="amber"` on Expiring Soon; `Tab` (ui-bits) → `PageTabs`/`PageTab`
-
-- **Operations module:**
-  - `projects/index.tsx`, `work-orders/index.tsx` — filter bar replaced; custom Date Range button kept as `FilterBar` child
-  - `team.tsx` — filter bar replaced; Skills `Popover` (custom multi-select) kept as `FilterBar` child; `selectCls` removed
-  - `scheduling.tsx` — calendar nav bar left untouched (it's a date navigator, not a tab component); filter bar replaced with `FilterBar`/`FilterSelect`; `selectCls` removed
-
-- **Sales module:**
-  - `lead-inbox.tsx` — separated combined status+filter row into `PageTabs`/`PageTab` + `FilterBar`; `Tab` from ui-bits replaced with `PageTab`
-  - `opportunities.tsx` — filter bar replaced; view toggle (kanban/list) kept as custom `FilterBar` child
-  - `quotes/index.tsx` — filter bar replaced
-
-- **CRM module:**
-  - `contacts.tsx` — filter bar replaced (4 selects + search)
-  - `companies/index.tsx` — filter bar replaced; view toggle (card/list) kept as custom `FilterBar` child
-
-- **Inbox page (`/inbox`):**
-  - Both columns now use `space-y-3` (was `space-y-2` on activity feed) — gaps match
-  - Activity items: `min-h-[72px]`
-  - Request cards: `min-h-[156px]` with `flex flex-col` — exactly 2× activity height + 1 gap (2×72+12=156), creating a 2:1 visual rhythm
-  - Actions row changed from `mt-3` → `mt-auto pt-3` so it pins to the bottom of each card regardless of content
-
-**Design Decisions Made:**
-
-- `stat bar → tabs → filter bar` is the locked layout order for every list page — any component not needed for a page is simply omitted
-- `SearchInput` defaults to `flex-1 min-w-40` — grows to fill available space without callers needing to pass width props
-- Scheduling calendar nav is NOT a tab component — it's a date navigator and was left as custom HTML
-- Drawer/form selects (which use `w-full h-8` sizing) were intentionally left unchanged — `FilterSelect` is filter UI only, not a form component
-- Inbox 2:1 height ratio: 1 request card = 2 activity items stacked with gap, so first 4 request cards align with all 8 activity items
-
-**Next Session Goal:**
-
-- Settings module — Service Plan Tier Features config page (tenant-configurable per-tier inclusions: response time, visits, covered systems, extras)
-- Or Reports module — placeholder with key report categories
-- Backend session is getting close — Supabase keys needed before data connections begin
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single demo-data.ts before backend work
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 014 — Finance Module: Payments
-
-**Date:** June 8, 2026
-**Focus:** Full build of the Payments page (Finance module)
-
-**Completed:**
-
-- **`src/routes/payments.tsx`:** Full build from the placeholder — three-tab layout:
-  - **Outstanding tab:** AR aging view, overdue invoices sorted first (then by due date asc). Stat bar: Total Outstanding / Overdue (red-accented, amount + count) / Partial Remaining / Open Invoices. Table: Invoice # / Customer / Project / Total / Paid / Balance Due (red + days overdue on overdue rows) / Due Date / Status / Collect button. "Collect →" per row jumps to Collect tab with invoice pre-selected.
-  - **All Payments tab:** Ledger of all payment records derived from invoice history. Stat bar: Total Collected / This Month / Last Month / Payment Count. Filter bar: search (invoice #, customer, reference) + method dropdown. Table: Date / Invoice # / Customer / Method (color-coded badge) / Reference / Amount (green `+$`). Sorted newest-first.
-  - **Collect Payment tab:** Stripe-first payment collection form. Invoice combobox (outstanding invoices only, with status badge and balance in dropdown). Invoice summary card once selected (customer, total/paid/balance). Amount field pre-filled to balance due with partial-payment warning when editing. Four method cards: Stripe (Recommended badge), Check, Wire, Cash. Stripe panel shows Stripe brand color, fee disclosure (2.9% + 30¢ card / 0.8% ACH), email field, Copy Link + Send via Email buttons with distinct success screens. Check/Wire show date + reference number fields. All non-Stripe paths show a "Payment Recorded" confirmation screen.
-- **Payment processor decision: Stripe** — handles card + ACH in one integration, payment links for remote commercial clients, Stripe Terminal for future on-site collection. Best fit for AV/security integrators billing commercial NET 30 accounts.
-- **Dev environment fix:** `node_modules` was missing in Codespaces — ran `npm install --legacy-peer-deps`. TypeScript passes clean with zero errors.
-
-**Design Decisions Made:**
-
-- Stripe is the recommended payment processor — framed as "Recommended" in the method selector
-- "Collect →" in the Outstanding table is the primary AR action — drives users to the Collect tab with context
-- Stripe + Check + Wire + Cash are the four collection methods — matches how AV/security integrators actually get paid (links for commercial clients, checks from institutions, wire for large projects)
-- Collect Payment form is a single centered column — mirrors Stripe's own payment link creation flow, more focused than a two-column layout
-- Partial payment shows a warning with remaining balance — prevents accidental under-collection
-
-**Next Session Goal:**
-
-- Settings module — Service Plan Tier Features config page (tenant-configurable per-tier inclusions: response time, visits, covered systems, extras)
-- Or Reports module — placeholder with key report categories
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single demo-data.ts before backend work
-- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
-
-**Schema Notes:**
-
-- payments: id, tenant_id, invoice_id, date, amount, method, reference, notes, recorded_by
-- (invoice_payments already partially modeled in invoices schema from Session 013)
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 013 — Finance Module: Invoices
-
-**Date:** June 7, 2026
-**Focus:** Full rebuild of the Invoices page (Finance module)
-
-**Completed:**
-
-- **`src/data/invoices.ts`:** New data file with types (`InvoiceStatus`, `InvoiceLineItem`, `InvoicePayment`, `Invoice`) and 10 demo invoices covering all statuses (draft, sent, partial, overdue, paid) with realistic PCSS line items, tax rates, and payment history.
-- **`src/routes/invoices.tsx`:** Full rebuild from the Lovable baseline:
-  - Stat bar: Outstanding balance / Overdue (amount + count, red-accented when non-zero) / Collected MTD / Total Invoices
-  - Status tabs: All / Draft / Sent / Partial / Overdue / Paid with live counts
-  - Filter bar: search by invoice #, company, or project + customer dropdown
-  - Table: Invoice # / Customer / Project / Total / Balance Due / Due Date / Status — full rows clickable
-  - View Sheet: dates/terms grid, linked project, line items table, totals (subtotal, tax, total, amount paid, balance due), payment progress bar for partials, payment history with method + reference, notes
-  - Edit Sheet: status, terms, dates, customer, contact, project, notes; line items shown read-only (quote builder integration deferred)
-  - New Invoice modal: customer, contact, linked project (Popover + Command combobox), issue date, payment terms, notes
-- **Linked project combobox in New Invoice modal:** `Popover + Command` autocomplete — same pattern as PO job combobox. Searches by code, name, or customer. Projects / Work Orders groups. Clear selection item when something is chosen.
-
-**Design Decisions Made:**
-
-- Invoices use Sheet drawer (view/edit) — same pattern as Vendors and POs
-- Balance Due column goes red on overdue rows — most actionable signal in the table
-- Line item editing in the edit drawer is deferred until quote builder integration — shown read-only with a note
-- New Invoice modal uses combobox for linked project — consistent with PO linked job field
-
-**Next Session Goal:**
-
-- Finance module — Payments page (stat bar, payment list, filter by method/status, link back to invoices)
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single demo-data.ts before backend work
-- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
-
-**Schema Notes:**
-
-- invoices: id, tenant_id, number, status, company_id, contact_id, project_id, issued_date, due_date, payment_terms, subtotal, tax_rate, tax_amount, total, amount_paid, balance_due, notes
-- invoice_line_items: id, invoice_id, description, qty, unit_price, total
-- invoice_payments: id, invoice_id, date, amount, method, reference
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 012 — Purchase Orders & Vendors
-
-**Date:** June 7, 2026
-**Focus:** Complete Inventory module — Purchase Orders page and Vendors page
-
-**Completed:**
-
-- **Purchase Orders page (`/purchase-orders`):** Stat bar (Total POs / Open / Overdue / Total Value), status tabs (All / Draft / Sent / Partial / Received / Cancelled), filter bar with search + vendor + job filters, list table with tracking number links (carrier auto-detected from number format), view drawer with status timeline + receipt progress bar + line items, edit/new drawer with full form and line item editor
-- **Tracking number links:** Carrier auto-detected — `1Z…` prefix → UPS, 12–22 digits → FedEx, otherwise Google search. `stopPropagation` on link click prevents row drawer from opening.
-- **Linked job field:** Connects a PO to a project or work order. All line items on the PO are considered attached to that job. Filter bar includes a Job filter with "General Stock" option for unlinked POs.
-- **Autocomplete comboboxes:** Replaced both the linked job `<select>` and the catalog `<select>` with `Popover + Command` comboboxes. Job combobox searches by code, name, and customer with Projects / Work Orders groups. Catalog combobox searches by name and SKU, includes "Add custom item…" at the bottom.
-- **`src/data/purchase-orders.ts`:** Types (`POStatus`, `POLineItem`, `Vendor`, `PurchaseOrder`) and 11 demo POs covering all statuses with realistic line items and linked jobs.
-- **Vendors page (`/vendors`):** Stat bar (Total Vendors / Preferred / Active POs / YTD Spend), card + list view toggle, category and status filters, Sheet drawer with view mode (stats, contact info, rep info, notes) and edit mode, New Vendor modal.
-- **`src/data/vendors.ts`:** 7 vendor records (ADI, Anixter/Wesco, Axis, Verkada, Biamp, Leviton, Middle Atlantic) with full contact, account rep, payment terms, and YTD stats.
-
-**Design Decisions Made:**
-
-- Tracking carrier auto-detected from number format — no need to store carrier separately
-- Linked job stores only `linkedJobId` — `findJob()` helper looks up from `PROJECTS` at render time, no denormalization
-- Cancelled jobs excluded from the linked job selector
-- Vendors uses a Sheet drawer (not a full detail page) — vendor detail is simpler than a company record
-- Stat bar pattern (icon chip + label + value, right-bordered blocks) established on both POs and Vendors — user wants this applied to other list pages going forward
-- `__clear__` sentinel in job combobox always shown by the custom filter function regardless of search input
-
-**Next Session Goal:**
-
-- Finance module — Invoices polish (Lovable baseline needs PCSS rebrand + detail page), Payments page
-- Or Settings — Service Plan Tier Features config page
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single demo-data.ts before backend work
-- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
-
-**Future / Deferred:**
-
-- When a PO is linked to a job, line items should auto-populate from the job's unallocated parts list — deferred until projects have a `parts[]` field in demo data
-
-**Schema Notes:**
-
-- purchase_orders: id, tenant_id, vendor_id, po_number, status, order_date, expected_date, received_date, vendor_order_number, tracking_number, linked_job_id, notes
-- po_line_items: id, po_id, catalog_item_id, description, sku, qty_ordered, qty_received, unit_cost
-- vendors: id, tenant_id, name, category, status, account_number, payment_terms, website, phone, email, city, state, rep_name, rep_phone, rep_email, notes
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 011 — Catalog & Stock Polish
-
-**Date:** June 7, 2026
-**Focus:** Second pass on Catalog and Stock pages — view mode, nav cleanup, bug fixes
-
-**Completed:**
-
-- **Catalog — view mode:** Row click now opens a read-only view panel (manufacturer badge, category chip, active status, description, 3-stat pricing bar with Cost / MSRP / Margin %). Edit button in view panel footer switches to edit form in-place. Hover Edit button on row stays as a direct shortcut to edit mode.
-- **Catalog — duplicate button fix:** Removed inline `+ New Item` button from drill-in toolbar (global topbar button handles it)
-- **Stock — removed Parts & Materials:** Removed nav entry, replaced `/inventory` index route with a redirect to `/inventory/stock`
-- **Stock — view mode:** Row click opens view panel with on-hand qty as the dominant element (large colored number, status badge), stock level bar with min/max markers, location, SKU, unit cost, value on hand, and movement log. Edit button switches to edit form.
-- **Stock — Needs Attention filter fix:** `needs_attention` was being set by the alert banner but wasn't in the status dropdown — select showed blank. Added as first option in the dropdown.
-- **Stock — Value on Hand column:** Added `qty × unit cost` column to the table as secondary context alongside On Hand qty.
-- **Stock — movement log:** Moved from edit form to view panel where it belongs as read-only audit history.
-- **Stock — duplicate button fix:** Removed inline `+ New Item` button from drill-in toolbar.
-- **Stock — adjust popover bug:** Clicks inside the AdjustCell popover content were bubbling up to the row and opening the view drawer. Fixed with `stopPropagation` on `PopoverContent`.
-
-**Design Decisions Made:**
-
-- View-before-edit is now the standard pattern across list pages — row click = view, hover Edit = shortcut to edit
-- On-hand qty is the primary reason someone opens the Stock page — it's the dominant element in the view panel, not value
-- Value on Hand is useful secondary context in the table and view panel, not the primary driver
-- Parts & Materials was a leftover nav entry from Session 004 IA — Stock supersedes it entirely
-
-**Next Session Goal:**
-
-- Purchase Orders page (Inventory module)
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single demo-data.ts before backend work
-- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
-
-**Schema Notes:**
-
-- purchase_orders: id, tenant_id, vendor_id, po_number, status, order_date, expected_date, received_date, notes, line_items[]
-- po_line_items: id, po_id, catalog_item_id, stock_item_id, description, qty_ordered, qty_received, unit_cost
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 010 — Service Module
-
-**Date:** June 7, 2026
-**Focus:** Build Service Tickets and Service Plans pages
-
-**Completed:**
-
-- Built Service Tickets page (status tabs, priority/category/tech filters, table list, detail drawer with notes + activity, new ticket modal)
-- Created `src/data/service-tickets.ts` with 8 realistic demo tickets
-- Built Service Plans page (stat bar with MRR/ARR/expiring count, status tabs, card grid view, detail drawer with tier + status selects, new plan modal)
-- Created `src/data/service-plans.ts` with 8 demo plans across all four tiers
-- Fixed drawer header overlap (plan ID colliding with Sheet close button — restructured header with `pr-12`)
-- Switched Service Plans from table to card grid (tier/status more visually prominent, better for contract-style records)
-
-**Design Decisions Made:**
-
-- Service Tickets: list/table view — correct pattern for a reactive queue (mirrors Zendesk/Freshdesk)
-- Service Plans: card grid view — plans are account-like contracts, cards make tier and status more prominent
-- Plan tiers: Essential / Standard / Professional / Elite
-- Tier and status are editable inline from the drawer via selects
-- Service Plans stat bar: Active Plans, MRR, ARR, Expiring Soon (amber when non-zero)
-
-**Next Session Goal:**
-
-- Settings — Service Plan Tier Features config page (tenant-configurable per-tier inclusions: response time, visits, covered systems, extras — for internal reference and eventual client-facing use)
-- Then Vendors and Purchase Orders (Inventory)
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single demo-data.ts before backend work
-- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
-
-**Schema Notes:**
-
-- service_tickets: id, tenant_id, customer_id, contact_id, category, issue, priority, status, assigned_to, on_service_plan, date_created, date_due, notes
-- service_plans: id, tenant_id, customer_id, tier, covered_systems[], mrr, billing_cycle, sla_response, visits_per_year, visits_used, start_date, renewal_date, status, account_manager_id, notes
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 009 — Scheduling Part 2 & Planner Page
-
-**Date:** June 7, 2026
-**Focus:** Complete Scheduling page interactivity, build Planner page
-
-**Completed:**
-
-- Scheduling Part 2 — overlap handling, popovers, filter interactivity
-- Planner page — Gantt + Resource View + Capacity tabs
-
-**Next Session Goal:**
-
-- Vendors page (Inventory)
-- Purchase Orders page (Inventory)
-
-**Design Decisions Made:** None noted
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single demo-data.ts before backend work
-- Route structure inconsistency — flat vs nested routes — reconcile in consistency pass
-
-**Schema Changes This Session:** None
-**New Env Variables This Session:** None
-
----
-
-### Session 008 — Inventory Module, Operations Pages, Dev Environment
-
-**Date:** June 7, 2026
-**Focus:** Inventory builds, Operations pages, local dev environment setup
-
-**Completed:**
-
-- Built Catalog page (manufacturer grid default view, drill-in list,
-  all items toggle, new/edit drawer with cost/MSRP/labor/image upload placeholder)
-- Built Quote Templates standalone page (3 demo templates, inline edit,
-  default template logic)
-- Built Quote Builder (section-based line items, catalog search modal,
-  product + labor sub-lines, inline editing, margin %)
-- Built New Quote route (/sales/quotes/new) wired to + New Quote button
-- Built Stock page (manufacturer grid, drill-in list, stock alerts banner,
-  adjust qty popover, movement log, catalog item linking)
-- Fixed Stock drawer — catalog-linked fields are read-only with lock icons
-- Fixed Team page drawer crash (FormControl missing FormItem wrapper)
-- Built Work Orders detail page (simplified Project shell, flat task
-  checklist, parts, team, activity panels)
-- Built Team page (card grid, full member drawer, skills/certs tag inputs,
-  admin-only pay rate section, assigned jobs)
-- Built Scheduling page Part 1 (calendar grid shell, week/day views,
-  demo data, job block positioning, schedule drawer)
-- Set up local VS Code desktop environment (Git Bash, extensions,
-  Settings Sync, resolved Bun/Windows install issues)
-- Git pushed all sessions 006-008 work to main
-
-**Not completed this session (usage limit):**
-
-- Scheduling Part 2 (overlap handling, popovers, filter interactivity)
-- Planner page (Gantt + Resource + Capacity)
-
-**Next Session Goal:**
-
-- Scheduling Part 2 first (surgical update to existing file)
-- Planner page (full session — Gantt + Resource View + Capacity)
-- Then Vendors, Purchase Orders (Inventory)
-
-**Design Decisions Made:**
-
-- Stock page named "Stock" not "Parts & Materials" — universal across trades
-- Catalog is source of truth — linked stock items inherit and lock fields
-  above stock levels section
-- Labor shows as separate line item below product on quotes
-- Quote Templates live in Settings (standalone page for now, wire to
-  Settings shell later)
-- Manufacturer-first view for both Catalog and Stock (mirrors D-Tools/
-  industry standard)
-- npm install used for local Windows dependency install (Bun esbuild
-  lifecycle script bug on Windows) — Bun used for everything else
-- Git Bash set as default terminal in VS Code (replaces PowerShell)
-
-**Open Questions:**
-
-- Supabase project status — still needed before backend session
-- Demo data consolidation into single demo-data.ts before backend work
-- Route structure inconsistency — some routes flat (/scheduling),
-  some nested (/operations/projects) — reconcile in consistency pass
-
-**Schema Notes:**
-
-- catalog_items: id, tenant_id, manufacturer_id, name, sku, category,
-  description, cost, msrp, unit_of_measure, has_labor, labor_hours,
-  labor_rate_override, image_url, is_active
-- manufacturers: id, tenant_id, name, logo_url
-- stock_items: id, tenant_id, catalog_item_id, name, sku, category,
-  unit_cost, unit_of_measure, manufacturer_name, location_bin,
-  qty_on_hand, min_stock_level, max_stock_level, image_url, is_active
-- stock_movements: id, tenant_id, stock_item_id, type, qty_delta,
-  note, job_reference, created_by, created_at
-- team_members: id, tenant_id, user_id, name, role, email, phone,
-  skills[], certifications[], pay_rate, pay_type, availability,
-  start_date, is_active
-- scheduled_jobs: id, tenant_id, job_type, job_id, category,
-  customer_name, address, date, start_time, end_time, status, notes
-- scheduled_job_techs: id, scheduled_job_id, team_member_id
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 007 — Projects Module & Navigation Updates
-
-**Date:** June 6, 2026
-**Focus:** Projects module UI build, Work Orders, Planner section, nav decisions
-
-**Completed:**
-
-- Built Projects list page (list view only, filters by status, search, New Project button)
-- Built Project detail page (full page, header with status/dates/value, tabbed layout)
-- Built Phases & Tasks panel (phase templates dropdown, collapsible phases, flat checklist for Work Orders)
-- Built Parts List panel (inline editing, summary bar, source/status badges)
-- Built Team panel (member list, roles, add member stub)
-- Built Activity Feed panel (typed activity items, add note input)
-- Wired all panels into Project detail tabs
-- Built Work Orders list page (reuses Projects shell, list view only, no Type column)
-- Built Work Orders detail route (reuses Project detail component, projectType='work_order')
-- Added Planner section to Operations nav — single link, tabs inside page (Gantt / Resource View / Capacity), all coming soon states
-- Decided against sidebar sub-items — flattened Planner to tabs, keeps nav consistent
-
-**Design Decisions Made:**
-
-- Projects list view only — no kanban, field managers scan and click
-- Opportunity → Project conversion triggered by Quote acceptance — "Convert to Project" button placeholder on Quote detail, source_quote_id field on Project header
-- Phase templates are tenant-configured — no hardcoded defaults, template selector in UI with static placeholders for now
-- Work Orders use same shell as Projects with projectType flag — hides phases, shows flat task checklist
-- Planner uses tab pattern (Gantt / Resource View / Capacity) not sidebar sub-items — consistent with rest of nav
-- Planner is fully placeholder — Gantt needs real phase date data, Resource View needs team assignments, Capacity needs time tracking
-
-**Next Session Goal:**
-
-- Inventory module — Catalog first (quote builder depends on it)
-- Catalog: list of products/services a tenant sells, with pricing, units, categories
-- Then Quote Builder — interactive line item builder pulling from Catalog
-
-**Open Questions:**
-
-- Supabase project status — created yet? Keys available?
-- Auth approach for v1 — email/password, magic link, or both?
-- Tenant onboarding minimum fields — company name, trade type, timezone?
-- Backend session is getting close — almost every module will need real data after Catalog + Quote Builder
-
-**Schema Notes (for backend session):**
-
-- projects table: id, tenant_id, name, status, type, customer_id, site_address, source_quote_id, opportunity_id, contract_value, budgeted_cost, actual_cost, start_date, target_end_date, actual_end_date
-- phases table: id, tenant_id, project_id, name, order, status, budgeted_hours, logged_hours
-- tasks table: id, tenant_id, phase_id, project_id, title, status, assignee_id, due_date, estimated_hours, actual_hours
-- parts table: id, tenant_id, project_id, phase_id, name, qty, unit_cost, source (stock/special_order), status
-- project_team table: id, tenant_id, project_id, user_id, role
-- phase_templates table: id, tenant_id, name, phases (jsonb array) — tenant-configurable
-- activity_feed table: id, tenant_id, project_id, type, actor_id, description, created_at
-
-**Schema Changes This Session:** None (UI only)
-**New Env Variables This Session:** None
-
----
-
-### Session 006 — CRM & Sales Module Build-Out
-
-**Date:** June 5, 2026
-**Focus:** CRM and Sales module UI build, design decisions, page improvements
-
-**Completed:**
-
-- Built Lead Inbox page (list view, filters, detail drawer, new lead modal)
-- Built Contacts page (list view, filters, detail drawer, commercial/residential split, new contact modal)
-- Built Companies page (card/list toggle, full company detail page with activity feed, contacts, opportunities, projects, invoices)
-- Improved Opportunities page (removed Lead column, added filter bar, view toggle, detail drawer with activity feed)
-- Improved Quotes & Estimates (filter bar, full detail page, grouped/flat line item toggle, grouped collapsed by default)
-- Discussed and resolved key design decisions around Lead → Contact → Opportunity conversion flow
-
-**Design Decisions Made:**
-
-- Leads are pre-CRM — they become Contacts only when converted to an Opportunity
-- Contacts have a Commercial/Residential customer type — residential contacts have no company
-- Commercial/Residential identified by icon in list view — text badges removed as redundant
-- Companies page is commercial accounts only — residential managed through Contacts
-- Quote detail is a full page, not a drawer — quotes can be too long for a side panel
-- Grouped view is default on quote detail — collapsed sections show summary at a glance
-- Quote builder will be built after Inventory/Catalog is complete — catalog is the line item source
-- Quotes created from Opportunities will pre-fill company, contact, opportunity automatically (v2)
-- Tenant admins will be able to define custom Contact Types in Settings (noted for schema design)
-
-**Next Session Goal:**
-
-- Operations module — Projects and Work Orders
-- Then Inventory — Catalog first (quote builder depends on it)
-- Then return to build interactive quote builder
-
-**Open Questions:**
-
-- Quote builder UX — how should line items be searched and added from Catalog?
-- Should Work Orders have a different layout than Projects or share the same pattern?
-
-**Schema Changes This Session:** None
-**New Env Variables This Session:** None
-
----
-
-### Session 005 — Navigation IA Finalization & Home Machine Setup
-
-**Date:** June 5, 2026
-**Focus:** Navigation IA review, module planning, sidebar update
-
-**Completed:**
-
-- Set up home machine dev environment (Bun installed, switched to npm due to Bun/Windows compatibility issues)
-- Identified Codespaces as primary dev environment going forward
-- Pushed uncommitted Session 004 fixes (opportunities scrollbar, styles.css) from Codespaces to main
-- Conducted full review of Sales and CRM modules against trade service industry best practices
-- Finalized and locked navigation information architecture:
-  - Reordered: CRM now comes before Sales (relationship before deal)
-  - Reordered pages within Sales to follow deal lifecycle
-  - Moved Catalog from Sales to Inventory
-  - Added Lead Inbox to Sales
-  - Added Work Orders to Operations
-  - Added Service as a new module (Service Tickets, Service Plans)
-  - Added Purchase Orders to Inventory
-  - Kept Sales and CRM as separate modules
-- Updated sidebar navigation to match final IA
-- Created placeholder route files for all new pages
-- Confirmed nav rendering correctly in browser
-
-**Design Decisions Made:**
-
-- CRM before Sales — relationship exists before the deal
-- Sales and CRM stay separate — different workflows, different cadences
-- Catalog lives in Inventory — it's configuration/reference, not a sales workflow step
-- Service is its own module — recurring service revenue is distinct from project work
-- Work Orders added to Operations — covers single-visit service calls vs full projects
-- Purchase Orders added to Inventory — closes the loop between vendors and stock
-
-**Next Session Goal:**
-
-- Build out Projects module UI (list view + detail view)
-- Define data fields from UI to drive schema design
-- Schema follows UI decisions, not the reverse
-
-**Open Questions:**
-
-- Confirm Supabase project is active and keys are available for when backend work begins
-- Define user roles formally
-- Decide on role-based dashboard variants
-
-**Schema Changes This Session:** None
-**New Env Variables This Session:** None
-
----
-
-### Session 004 — Frontend Build & UI Shell
-
-**Date:** June 5, 2026
-**Focus:** Dev environment setup, frontend UI build, navigation IA, dashboard
-
-**Completed:**
-
-- Set up GitHub Codespaces as remote dev environment
-  - Installed Bun, confirmed bun dev running
-  - Installed Claude Code extension in Codespaces
-  - Confirmed works identically to local VS Code setup
-- Audited full Lovable baseline:
-  - styles.css — Linear-inspired dark oklch token system, already production quality
-  - app-shell.tsx — full sidebar, nav, command palette, collapsible, topbar
-  - ui-bits.tsx — PageHeader, Tab, StageChip, PriorityDot, Avatar, StatCard, Sparkline already built
-  - routes — all major module pages already stubbed with real demo data
-  - Key finding: Lovable's index.tsx was always a blank placeholder — no dashboard existed
-  - Key finding: Opportunities, Projects, Quotes pages are production-quality with demo data
-- Added light mode token set to styles.css (.light class with full oklch token set)
-- Built src/hooks/useTheme.ts — reads/writes localStorage key 'hhh-theme', resolves system preference, applies light/dark class to html element
-- Built src/components/ui/ThemeToggle.tsx — cycles light → dark → system, lucide-react icons
-- Fixed hardcoded className="dark" in \_\_root.tsx — added ThemeInitializer inline script to prevent flash of wrong theme on load
-- Confirmed theme toggle working correctly in browser
-- Added JobCard component to ui-bits.tsx — props: id, title, customer, status, date, assignee, value, onClick
-- Defined and locked final navigation IA:
-  - Top level: Dashboard, Inbox
-  - Sales: Opportunities, Quotes & Estimates, Catalog
-  - CRM: Contacts, Companies
-  - Operations: Projects, Scheduling, Team
-  - Inventory: Parts & Materials, Vendors
-  - Finance: Invoices, Payments (placeholder)
-  - Reports: Reports (placeholder)
-  - Settings: footer only
-- Updated sidebar navigation to match final IA
-- Reconciled all route files:
-  - Renamed deals.tsx → opportunities.tsx (path /deals → /opportunities)
-  - Renamed dispatch.tsx → scheduling.tsx (path /dispatch → /scheduling)
-  - Created new placeholders: team.tsx, vendors.tsx, payments.tsx, reports.tsx
-- Updated app branding throughout:
-  - Company: Port City Sound & Security / AV & Security Systems / PCSS initials
-  - User: Justin Shader / Admin
-- Built owner/CEO dashboard from demo data:
-  - 5 stat cards: Pipeline Value, Active Projects, Quotes Out, Outstanding, Revenue MTD with sparkline
-  - Recent Activity feed (5 items mixing jobs, invoices, quotes, inventory)
-  - Closing Soon card (top 3 open deals sorted by close date)
-  - At-Risk Projects card (projects over budget or past due)
-  - All values derived from demo-data.ts — coherent with module pages
-- Topbar improvements:
-  - Added PanelLeft toggle button (left side) — single consistent sidebar toggle
-  - Removed collapse button from sidebar header and footer
-  - Removed Ask (AI) button
-  - Added ThemeToggle to topbar right side
-  - Removed ThemeToggle from sidebar footer
-  - Simplified search buttons — removed keyboard shortcut hints, plain "Search..." text
-  - Removed redundant breadcrumb from topbar
-- Increased sidebar header vertical padding for long company names
-- Implemented PageMetaContext system:
-  - src/contexts/PageMetaContext.tsx — provides title, subtitle, newLabel, onNew per page
-  - Each route calls setMeta() on mount to register its topbar content
-  - Topbar renders centered title + inline subtitle, conditional + New button
-  - - New button hidden on pages with no action defined
-  - All 14 route files updated with appropriate meta
-
-**Design Decisions Made:**
-
-- No widget customization on dashboard (v2 feature) — role-based dashboards first
-- No recharts charts on dashboard — sparkline stat card + status list bars instead
-- Closing Soon + At-Risk Projects replace revenue trend chart in right column
-- PageHeader component in ui-bits.tsx reserved for in-page section headers, not page-level titles
-- - New button hides entirely on pages with no defined action
-
-**Next Session Goal — Projects Module:**
-
-- Build out Projects module fully as UI first (list view, detail view, phases, tasks)
-- Document exact data fields and relationships the page needs
-- Use that as spec for Supabase schema design for Projects module
-- Schema design follows UI decisions, not the other way around
-
-**Open Questions for Next Session:**
-
-- Confirm Supabase project is active and keys are available
-- Define user roles formally (needed before auth session)
-- Revisit dashboard spacing once more pages are fleshed out
-- Decide on role-based dashboard variants (owner, PM, field tech) — after roles are defined
-
-**Schema Changes This Session:** None
-**New Env Variables This Session:** None
-
----
-
-### Session 003 — Frontend Planning & Dev Environment Scoping
-
-**Date:** [Date]
-**Focus:** Plan frontend design session, establish UI direction, scope dev environment setup
-
-**Completed:**
-
-- Confirmed UI/design direction:
-  - Theme: Light + Dark with user toggle
-  - Style reference: Linear (clean, minimal, confident)
-  - Brand colors: TBD — to be generated fresh
-- Scoped full frontend build plan — saved in FRONTEND_SESSION.md
-- Identified that Claude Code + dev environment setup is needed before frontend work begins
-- User is not yet familiar with Bun or TanStack — explain concepts as they come up
-
-**Next Session Goal — Dev Environment Setup:**
-
-- [x] Confirm OS (Windows)
-- [x] Install Bun
-- [x] Install Claude Code
-- [x] Clone repo locally / set up Codespaces
-- [x] Run bun install
-- [x] Run bun dev
-- [x] Confirm Claude Code working
-- [ ] Set up .env.local with Supabase keys (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
-
-**Design Decisions Made:**
-
-- Linear-inspired aesthetic — clean, minimal, confident
-- Light + dark themes with toggle
-- Build on shadcn/ui — extend, don't replace
-
-**Schema Changes This Session:** None
-**New Env Variables This Session:** None
-
----
-
-### Session 002 — Stack Confirmation & Repo Review
-
-**Date:** [Date]
-**Focus:** Confirm tech stack from GitHub repo, update project files
-
-**Completed:**
-
-- Fetched and reviewed package.json from https://github.com/jShades85/handyhustle-hub
-- Confirmed full tech stack (see PROJECT_CONTEXT.md)
-- Key discovery: project uses TanStack Start (SSR framework), not plain Vite + React Router
-- Key discovery: Tailwind CSS v4 (CSS-based config, not v3 tailwind.config.js)
-- Key discovery: Bun as package manager
-- Key discovery: React 19
-- Updated PROJECT_CONTEXT.md and PROGRESS_LOG.md with confirmed info
-- Added GitHub repo URL to PROJECT_CONTEXT.md
-
-**Schema Changes This Session:** None
-**New Env Variables This Session:** None
-
----
-
-### Session 001 — Project Setup
-
-**Date:** [Date]
-**Focus:** Claude project configuration and documentation setup
-
-**Completed:**
-
-- Defined project scope: multi-tenant trade service SaaS
-- Confirmed services: Supabase, Vercel, Resend, Linear, GitHub
-- Created CUSTOM_INSTRUCTIONS.md, PROJECT_CONTEXT.md, PROGRESS_LOG.md
-
-**Schema Changes This Session:** None
-**New Env Variables This Session:** None
-
----
-
-## Decisions Log
-
-| Decision                                         | Rationale                                                                   | Date        |
-| ------------------------------------------------ | --------------------------------------------------------------------------- | ----------- |
-| CRM before Sales in nav                          | Relationship exists before the deal                                         | Session 005 |
-| Sales and CRM stay separate                      | Different workflows and cadences                                            | Session 005 |
-| Catalog moved to Inventory                       | Reference/config resource, not a sales workflow step                        | Session 005 |
-| Service as own module                            | Recurring service revenue distinct from project work                        | Session 005 |
-| Work Orders added to Operations                  | Single-visit service calls vs full projects                                 | Session 005 |
-| Purchase Orders added to Inventory               | Closes loop between vendors and stock                                       | Session 005 |
-| PageMetaContext for topbar                       | Each route registers its own title, subtitle, New action — clean separation | Session 004 |
-| + New button hides when no action                | Disabled buttons with no context are worse UX than no button                | Session 004 |
-| No recharts on dashboard                         | Linear-style stat cards and bars cleaner than heavy chart library           | Session 004 |
-| Role-based dashboards (not widget customization) | Ship useful now, widget system is v2                                        | Session 004 |
-| Schema follows UI, not reverse                   | Avoids building backend that forces UI to fit                               | Session 004 |
-| Projects module first                            | Core of trade service business — everything hangs off it                    | Session 004 |
-| Codespaces as dev environment                    | Zero environment drift, access from anywhere, port forwarding built in      | Session 004 |
-| Single topbar sidebar toggle                     | Consistent UX — toggle always in same place regardless of sidebar state     | Session 004 |
-| Remove keyboard shortcut hints from search       | Trades employees not thinking in keyboard shortcuts                         | Session 004 |
-| Multi-tenant via tenant_id + RLS                 | Industry standard for SaaS isolation on Supabase                            | Session 001 |
-| Migrations via versioned SQL files               | Reproducible, version-controlled schema changes                             | Session 001 |
-| Resend for email                                 | Simple API, good integration support                                        | Session 001 |
-| Linear for issue tracking                        | User preference                                                             | Session 001 |
-| Vercel for deployment                            | User preference, excellent Vite/React support                               | Session 001 |
-| Bun as package manager                           | Already set in repo by Lovable                                              | Session 002 |
-| TanStack Start as framework                      | Already set in repo by Lovable — SSR-capable                                | Session 002 |
-| Tailwind CSS v4                                  | Already set in repo by Lovable                                              | Session 002 |
-| Light + dark theme with toggle                   | User preference                                                             | Session 003 |
-| Linear-inspired UI aesthetic                     | User preference — clean, minimal, confident                                 | Session 003 |
-| Build on shadcn/ui — extend don't replace        | Already installed, avoid duplication                                        | Session 003 |
-
----
-
-## Blockers
-
-- Supabase keys not yet added to .env.local — needed before any data connection work
-- Database schema not yet designed — follows Projects module UI build next session
-- TanStack Start + Supabase auth pattern not yet confirmed — needed before data-connected features
-- User roles not formally defined — needed before auth session and role-based dashboards
+## Open Questions / Blockers
+
+- Demo data still needs consolidation into `src/data/index.ts` before large-scale backend wiring
+- Quote Builder deferred — needs backend (catalog + projects)
+- Planner/Gantt deferred — needs backend (phases + team assignments)
+- D-Tools SI integration: needs real license key from SI software (Control Panel → Manage Integrations)
 
 ---
 
 ## Module Status
 
-| Module                                | Status                      | Notes                                               |
-| ------------------------------------- | --------------------------- | --------------------------------------------------- |
-| UI Shell / Layout                     | Complete                    | AppShell, sidebar, topbar, PageMetaContext all done |
-| Theme System                          | Complete                    | Light/dark/system toggle, no flash on load          |
-| Dashboard                             | Complete (placeholder)      | Owner dashboard with demo data — spacing to revisit |
-| Auth / Tenant Onboarding              | Not started                 | Confirm TanStack Start auth pattern first           |
-| CRM (Contacts/Companies)              | Lovable baseline            | Needs build-out — detail pages required             |
-| Lead Inbox                            | Placeholder                 | New — coming soon page                              |
-| Opportunities                         | Lovable baseline            | Kanban + list view — needs rebrand to PCSS data     |
-| Quotes & Estimates                    | Lovable baseline            | Two-column master/detail — needs rebrand            |
-| Projects                              | Next session                | Build full UI first, then schema                    |
-| Work Orders                           | Placeholder                 | New — coming soon page                              |
-| Scheduling                            | Placeholder                 | Coming soon page                                    |
-| Team                                  | Placeholder                 | Coming soon page                                    |
-| Service Tickets                       | Placeholder                 | New — coming soon page                              |
-| Service Plans                         | Placeholder                 | New — coming soon page                              |
-| Inventory — Catalog                   | Complete                    | Manufacturer grid, drill-in list, view/edit drawer  |
-| Inventory — Stock                     | Complete                    | Manufacturer grid, drill-in, adjust qty, movement log |
-| Inventory — Purchase Orders           | Complete                    | Full page — stat bar, table, view/edit drawer, comboboxes |
-| Inventory — Vendors                   | Complete                    | Stat bar, card/list view, Sheet drawer, new modal   |
-| Finance — Invoices                    | Complete                    | Stat bar, tabs, filters, table, Sheet drawer, modal |
-| Finance — Payments                    | Complete                    | Outstanding AR / ledger / Stripe-first collect form |
-| Reports                               | Placeholder                 | Coming soon page                                    |
+| Module | Status | Notes |
+|---|---|---|
+| UI Shell / Layout | ✅ Complete | AppShell, sidebar, topbar, PageMetaContext |
+| Theme System | ✅ Complete | Light/dark/system toggle, no flash |
+| Dashboard | ✅ Complete (demo) | Owner dashboard, demo data |
+| Auth | ✅ Complete | Login/signup, session guard, sign-out popover |
+| Supabase Client | ✅ Complete | Browser + server clients, typed Database |
+| DB: tenants + user_profiles | ✅ Live | RLS + handle_new_user trigger |
+| Vercel Deployment | ✅ Live | bearingpro.tech, nitro vercel preset |
+| CRM (Contacts/Companies) | 🟡 Demo data | Full UI built, needs schema + data wiring |
+| Sales (Lead Inbox, Opps, Quotes) | 🟡 Demo data | Full UI built |
+| Operations (Projects, Work Orders, Team, Scheduling) | 🟡 Demo data | Full UI built |
+| Service (Tickets, Plans) | 🟡 Demo data | Full UI built |
+| Inventory (Catalog, Stock, POs, Vendors) | 🟡 Demo data | Full UI built |
+| Finance (Invoices, Payments) | 🟡 Demo data | Full UI built |
+| Reports | 🟡 Placeholder | 27-report catalog defined, all coming soon |
+| Settings (Company, Tiers, Integrations) | 🟡 Demo data | UI built, needs tenants table wiring |
+| Quote Builder | ⏸ Deferred | Needs backend |
+| Planner / Gantt | ⏸ Deferred | Needs backend |
 
 ---
 
-## How to Update This File
+## Backend Schema (Migrations Applied)
 
-At the end of each session, add a new ### Session NNN block at the top of the Session Log with:
+| Migration | Tables | Status |
+|---|---|---|
+| `20260608000001_init` | `tenants`, `user_profiles`, `current_tenant_id()` RLS helper | ✅ Live |
+| `20260608000002_auth_trigger` | `handle_new_user()` trigger on `auth.users` | ✅ Live |
 
-- What was completed
-- Next steps (specific, actionable)
-- Any open questions
-- Schema changes made
-- New env variables added
+**Trigger logic:** New signup → creates `tenants` row + `user_profiles` row (role: admin). Invited user (has `tenant_id` in metadata) → joins existing tenant instead.
+
+---
+
+## Key Decisions (Permanent)
+
+- **Schema follows UI** — build the page first, derive the schema from what it needs
+- **Invite-only for existing companies** — signup creates new tenant; teammates join via invite link (tenant_id in metadata)
+- **Stripe** for payments — card + ACH, payment links for commercial NET 30 clients
+- **Email confirmation disabled** in dev (`mailer_autoconfirm: true` via Management API)
+- **Nitro preset: `vercel`** — set in `vite.config.ts`; Lovable config defaults to cloudflare and skips nitro outside sandbox
+- **`.npmrc`** — `legacy-peer-deps=true` required for Vercel installs
+- **`stat bar → tabs → filter bar`** — locked layout order on every list page
+- **View-before-edit** — row click = view panel, hover Edit = shortcut to edit form
+
+---
+
+## Session Archive (001–017)
+
+Sessions 001–015 established the full frontend UI: all module pages, shared component library (`page-components.tsx`), command palette, settings module, reports placeholder, theme system, Linear-inspired design.
+
+Session 016: Command palette wired, inbox alignment fixed, full Settings module (Company Profile, Service Plan Tiers, Integrations), gear icon → `/settings/company`.
+
+Session 017: Reports page — 27-report catalog across 6 categories + custom report builder teaser (post-launch).
+
+---
+
+## Session 018 — Supabase Backend Foundation + Auth + Deployment
+
+**Date:** June 8, 2026
+
+**Completed:**
+
+- Installed `@supabase/supabase-js` + `@supabase/ssr`; created `src/lib/supabase/client.ts` (browser) and `src/lib/supabase/server.ts` (SSR)
+- `supabase init` + `supabase link` to project `erdtfwelbdlvammfdtgz`
+- Migration 001: `tenants`, `user_profiles`, RLS policies, `current_tenant_id()` helper
+- Migration 002: `handle_new_user()` trigger — auto-creates tenant + profile on signup
+- Auth: `AuthContext`, login/signup pages, `ProtectedApp` guard in `__root.tsx`, sign-out popover
+- Vercel deployment: `.npmrc` for peer deps, `nitro: { preset: "vercel" }` in `vite.config.ts`
+- Custom domain `bearingpro.tech` via Cloudflare DNS → Vercel (DNS-only, no proxy)
+- Supabase config: `site_url` → `bearingpro.tech`, `mailer_autoconfirm: true`, allowed origins set
+- Rebranded auth pages to BearingPro (BP badge, correct copy)
+- Theme toggle added to auth pages; sign-out changed to confirmation popover
+- Investigated D-Tools SI API — example key in docs is illustrative only, not functional; needs real SI license
+
+**Schema notes:** `tenants` and `user_profiles` are live. All future tables need `tenant_id uuid not null references tenants(id)` + RLS policy using `current_tenant_id()`.
