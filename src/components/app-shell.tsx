@@ -9,7 +9,7 @@ import {
   Search, Plus, Settings, PanelLeft, ClipboardList, Headphones, ShieldCheck, ShoppingCart,
   GanttChart, LogOut,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, avatarGradient, avatarInitials } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
 import ThemeToggle from "./ui/ThemeToggle";
 import { PageMetaProvider, useMeta } from "@/contexts/PageMetaContext";
@@ -201,9 +201,15 @@ function AppShellContent() {
 
         <div className="border-t border-sidebar-border p-2">
           <div className={cn("flex items-center gap-2 rounded-md p-1.5", !collapsed && "hover:bg-sidebar-accent/60")}>
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-chart-2 to-primary text-[10px] font-semibold text-primary-foreground">
-              {user?.email?.[0]?.toUpperCase() ?? "?"}
-            </div>
+            {(() => {
+              const name = user?.user_metadata?.full_name || user?.email || "?";
+              return (
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+                  style={{ background: avatarGradient(name) }}>
+                  {avatarInitials(name)}
+                </div>
+              );
+            })()}
             {!collapsed && (
               <>
                 <div className="flex min-w-0 flex-col leading-tight">
