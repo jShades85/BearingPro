@@ -77,12 +77,28 @@ async function removeMember(id: string) {
 
 // ─── Initials avatar ──────────────────────────────────────────────────────────
 
-function Avatar({ name, color }: { name: string; color?: string }) {
+const AVATAR_GRADIENTS = [
+  "linear-gradient(135deg, #6366f1, #8b5cf6)",
+  "linear-gradient(135deg, #3b82f6, #06b6d4)",
+  "linear-gradient(135deg, #10b981, #3b82f6)",
+  "linear-gradient(135deg, #f59e0b, #ef4444)",
+  "linear-gradient(135deg, #ec4899, #8b5cf6)",
+  "linear-gradient(135deg, #14b8a6, #6366f1)",
+  "linear-gradient(135deg, #f97316, #eab308)",
+  "linear-gradient(135deg, #8b5cf6, #ec4899)",
+];
+
+function avatarGradient(name: string) {
+  const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return AVATAR_GRADIENTS[hash % AVATAR_GRADIENTS.length];
+}
+
+function Avatar({ name }: { name: string }) {
   const initials = name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
   return (
     <div
       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
-      style={{ backgroundColor: color ?? "#6366f1" }}
+      style={{ background: avatarGradient(name) }}
     >
       {initials}
     </div>
@@ -134,7 +150,7 @@ function EditPanel({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <div className="flex items-center gap-3">
-          <Avatar name={member.full_name ?? "?"} color={member.roles?.color} />
+          <Avatar name={member.full_name ?? "?"} />
           <div>
             <p className="text-[13px] font-medium">{member.full_name ?? "Unknown"}</p>
             <p className="text-[11.5px] text-muted-foreground">{member.email ?? ""}</p>
@@ -451,13 +467,13 @@ function TeamMembersPage() {
                 key={member.id}
                 onClick={() => { setEditId(member.id); setInviteOpen(false); }}
                 className={cn(
-                  "border-b border-border/60 cursor-pointer transition-colors",
+                  "group border-b border-border/60 cursor-pointer transition-colors",
                   editId === member.id ? "bg-accent/40" : "hover:bg-muted/30",
                 )}
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
-                    <Avatar name={member.full_name ?? "?"} color={member.roles?.color} />
+                    <Avatar name={member.full_name ?? "?"} />
                     <span className="font-medium">{member.full_name ?? "—"}</span>
                   </div>
                 </td>
