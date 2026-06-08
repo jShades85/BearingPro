@@ -4,6 +4,8 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -13,6 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "../components/app-shell";
 import { useTheme } from "../hooks/useTheme";
+import { AuthProvider, useAuth } from "../contexts/AuthContext";
 
 function NotFoundComponent() {
   return (
@@ -116,13 +119,40 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+// Renders AppShell only when authenticated; redirects to login otherwise.
+function ProtectedApp() {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !session) {
+      navigate({ to: "/auth/login" });
+    }
+  }, [session, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!session) return null;
+
+  return <AppShell />;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   useTheme();
+
   return (
     <QueryClientProvider client={queryClient}>
-      {/* AppShell renders its own <Outlet /> for nested route content */}
-      <AppShell />
+      <AuthProvider>
+        {pathname.startsWith("/auth") ? <Outlet /> : <ProtectedApp />}
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

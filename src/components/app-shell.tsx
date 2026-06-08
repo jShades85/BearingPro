@@ -1,10 +1,11 @@
 import { Link, useRouterState, Outlet, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import {
   Inbox, LayoutDashboard, Target, Building2, Users, FileText, Package,
   Briefcase, CalendarDays, Receipt, HardHat, Boxes, Truck, CreditCard, BarChart2,
   Search, Plus, Settings, PanelLeft, ClipboardList, Headphones, ShieldCheck, ShoppingCart,
-  GanttChart,
+  GanttChart, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
@@ -95,8 +96,14 @@ const pendingRequestCount = requestItems.length;
 
 function AppShellContent() {
   const { meta } = useMeta();
+  const { signOut, user } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/auth/login" });
+  };
   const [collapsed, setCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   useEffect(() => {
@@ -188,22 +195,31 @@ function AppShellContent() {
 
         <div className="border-t border-sidebar-border p-2">
           <div className={cn("flex items-center gap-2 rounded-md p-1.5", !collapsed && "hover:bg-sidebar-accent/60")}>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-chart-2 to-primary text-[10px] font-semibold text-primary-foreground">
-              JS
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-chart-2 to-primary text-[10px] font-semibold text-primary-foreground">
+              {user?.email?.[0]?.toUpperCase() ?? "?"}
             </div>
             {!collapsed && (
               <>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-[12px] font-medium">Justin Shader</span>
+                <div className="flex min-w-0 flex-col leading-tight">
+                  <span className="truncate text-[12px] font-medium">{user?.email ?? "—"}</span>
                   <span className="text-[10px] text-muted-foreground">Admin · Workspace</span>
                 </div>
-                <button
-                  onClick={() => navigate({ to: "/settings/company" })}
-                  className="ml-auto rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  aria-label="Settings"
-                >
-                  <Settings className="h-3.5 w-3.5" />
-                </button>
+                <div className="ml-auto flex items-center gap-0.5">
+                  <button
+                    onClick={() => navigate({ to: "/settings/company" })}
+                    className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    aria-label="Settings"
+                  >
+                    <Settings className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    aria-label="Sign out"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </>
             )}
           </div>

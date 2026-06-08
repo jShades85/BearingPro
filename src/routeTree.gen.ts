@@ -18,6 +18,7 @@ import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as CrmRouteImport } from './routes/crm'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as ServiceIndexRouteImport } from './routes/service/index'
@@ -48,6 +49,8 @@ import { Route as FinancePaymentsRouteImport } from './routes/finance/payments'
 import { Route as FinanceInvoicesRouteImport } from './routes/finance/invoices'
 import { Route as CrmContactsRouteImport } from './routes/crm/contacts'
 import { Route as CrmCompaniesRouteImport } from './routes/crm/companies'
+import { Route as AuthSignupRouteImport } from './routes/auth/signup'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as SalesQuotesIndexRouteImport } from './routes/sales/quotes/index'
 import { Route as OperationsWorkOrdersIndexRouteImport } from './routes/operations/work-orders/index'
 import { Route as OperationsProjectsIndexRouteImport } from './routes/operations/projects/index'
@@ -102,6 +105,11 @@ const FinanceRoute = FinanceRouteImport.update({
 const CrmRoute = CrmRouteImport.update({
   id: '/crm',
   path: '/crm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -255,6 +263,16 @@ const CrmCompaniesRoute = CrmCompaniesRouteImport.update({
   path: '/companies',
   getParentRoute: () => CrmRoute,
 } as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
 const SalesQuotesIndexRoute = SalesQuotesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -311,6 +329,7 @@ const CrmCompaniesCompanyIdRoute = CrmCompaniesCompanyIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/crm': typeof CrmRouteWithChildren
   '/finance': typeof FinanceRouteWithChildren
   '/inbox': typeof InboxRoute
@@ -320,6 +339,8 @@ export interface FileRoutesByFullPath {
   '/sales': typeof SalesRouteWithChildren
   '/service': typeof ServiceRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/crm/companies': typeof CrmCompaniesRouteWithChildren
   '/crm/contacts': typeof CrmContactsRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
@@ -362,8 +383,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/inbox': typeof InboxRoute
   '/reports': typeof ReportsRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/crm/contacts': typeof CrmContactsRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
@@ -402,6 +426,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/crm': typeof CrmRouteWithChildren
   '/finance': typeof FinanceRouteWithChildren
   '/inbox': typeof InboxRoute
@@ -411,6 +436,8 @@ export interface FileRoutesById {
   '/sales': typeof SalesRouteWithChildren
   '/service': typeof ServiceRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/crm/companies': typeof CrmCompaniesRouteWithChildren
   '/crm/contacts': typeof CrmContactsRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
@@ -455,6 +482,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/crm'
     | '/finance'
     | '/inbox'
@@ -464,6 +492,8 @@ export interface FileRouteTypes {
     | '/sales'
     | '/service'
     | '/settings'
+    | '/auth/login'
+    | '/auth/signup'
     | '/crm/companies'
     | '/crm/contacts'
     | '/finance/invoices'
@@ -506,8 +536,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/inbox'
     | '/reports'
+    | '/auth/login'
+    | '/auth/signup'
     | '/crm/contacts'
     | '/finance/invoices'
     | '/finance/payments'
@@ -545,6 +578,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/crm'
     | '/finance'
     | '/inbox'
@@ -554,6 +588,8 @@ export interface FileRouteTypes {
     | '/sales'
     | '/service'
     | '/settings'
+    | '/auth/login'
+    | '/auth/signup'
     | '/crm/companies'
     | '/crm/contacts'
     | '/finance/invoices'
@@ -597,6 +633,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRouteWithChildren
   CrmRoute: typeof CrmRouteWithChildren
   FinanceRoute: typeof FinanceRouteWithChildren
   InboxRoute: typeof InboxRoute
@@ -671,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/crm'
       fullPath: '/crm'
       preLoaderRoute: typeof CrmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -883,6 +927,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CrmCompaniesRouteImport
       parentRoute: typeof CrmRoute
     }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/sales/quotes/': {
       id: '/sales/quotes/'
       path: '/'
@@ -955,6 +1013,18 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignupRoute: typeof AuthSignupRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+  AuthSignupRoute: AuthSignupRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface CrmCompaniesRouteChildren {
   CrmCompaniesCompanyIdRoute: typeof CrmCompaniesCompanyIdRoute
@@ -1147,6 +1217,7 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
   CrmRoute: CrmRouteWithChildren,
   FinanceRoute: FinanceRouteWithChildren,
   InboxRoute: InboxRoute,
