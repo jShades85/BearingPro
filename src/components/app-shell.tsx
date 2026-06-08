@@ -1,6 +1,8 @@
 import { Link, useRouterState, Outlet, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
 import {
   Inbox, LayoutDashboard, Target, Building2, Users, FileText, Package,
   Briefcase, CalendarDays, Receipt, HardHat, Boxes, Truck, CreditCard, BarChart2,
@@ -95,9 +97,17 @@ export function AppShell() {
 
 const pendingRequestCount = requestItems.length;
 
+async function fetchTenant() {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("tenants").select("id, name, trade_type").single();
+  if (error) throw error;
+  return data;
+}
+
 function AppShellContent() {
   const { meta } = useMeta();
   const { signOut, user } = useAuth();
+  const { data: tenant } = useQuery({ queryKey: ["tenant"], queryFn: fetchTenant, staleTime: Infinity });
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
 
@@ -132,25 +142,17 @@ function AppShellContent() {
       >
         <div className="flex min-h-14 items-center gap-2 px-3 py-3 border-b border-sidebar-border">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-primary to-chart-2 text-[10px] font-bold text-primary-foreground shadow-glow">
-            PCSS
+            {tenant?.name ? tenant.name.split(" ").map((w: string) => w[0]).join("").slice(0, 4).toUpperCase() : "BP"}
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="text-[13px] font-semibold tracking-tight">Port City Sound & Security</span>
-              <span className="text-[10px] text-muted-foreground">AV & Security Systems</span>
+              <span className="text-[13px] font-semibold tracking-tight">{tenant?.name ?? "BearingPro"}</span>
+              {tenant?.trade_type && (
+                <span className="text-[10px] text-muted-foreground">{tenant.trade_type}</span>
+              )}
             </div>
           )}
         </div>
-
-        {!collapsed && (
-          <button
-            onClick={() => setPaletteOpen(true)}
-            className="mx-3 mt-3 flex h-8 items-center gap-2 rounded-md border border-border bg-surface px-2 text-[12px] text-muted-foreground hover:bg-surface-2 hover:text-foreground"
-          >
-            <Search className="h-3.5 w-3.5" />
-            <span>Search or jump…</span>
-          </button>
-        )}
 
         <nav className="flex-1 overflow-y-auto px-2 py-3">
           {sections.map((section, i) => (
