@@ -2,32 +2,50 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { z } from "zod";
+
+const inviteSearchSchema = z.object({
+  invite:    z.string().optional(),
+  tenant_id: z.string().optional(),
+  role_name: z.string().optional(),
+  full_name: z.string().optional(),
+  email:     z.string().optional(),
+});
 
 export const Route = createFileRoute("/auth/signup")({
+  validateSearch: inviteSearchSchema,
   component: SignupPage,
 });
 
 function SignupPage() {
-  const navigate = useNavigate();
+  const navigate    = useNavigate();
+  const search      = Route.useSearch();
+  const isInvite    = search.invite === "1";
+  const tenantId    = search.tenant_id ?? "";
+  const roleName    = search.role_name ?? "";
+
   const [companyName, setCompanyName] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [checkEmail, setCheckEmail] = useState(false);
+  const [fullName,    setFullName]    = useState(search.full_name ?? "");
+  const [email,       setEmail]       = useState(search.email     ?? "");
+  const [password,    setPassword]    = useState("");
+  const [error,       setError]       = useState<string | null>(null);
+  const [loading,     setLoading]     = useState(false);
+  const [checkEmail,  setCheckEmail]  = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     const supabase = createClient();
+
+    const metadata = isInvite
+      ? { full_name: fullName, tenant_id: tenantId, role_name: roleName }
+      : { company_name: companyName, full_name: fullName };
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { company_name: companyName, full_name: fullName },
-      },
+      options: { data: metadata },
     });
     if (error) {
       setError(error.message);
@@ -68,21 +86,29 @@ function SignupPage() {
 
   return (
     <AuthShell>
-      <h1 className="text-[18px] font-semibold tracking-tight text-foreground">Create your account</h1>
-      <p className="mt-1 text-[13px] text-muted-foreground">Get started with BearingPro</p>
+      <h1 className="text-[18px] font-semibold tracking-tight text-foreground">
+        {isInvite ? "Join your team" : "Create your account"}
+      </h1>
+      <p className="mt-1 text-[13px] text-muted-foreground">
+        {isInvite
+          ? roleName ? `You've been invited as ${roleName}` : "You've been invited to join BearingPro"
+          : "Get started with BearingPro"}
+      </p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-[12px] font-medium text-foreground">Company name</label>
-          <input
-            type="text"
-            required
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-            placeholder="Acme AV & Security"
-          />
-        </div>
+        {!isInvite && (
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-foreground">Company name</label>
+            <input
+              type="text"
+              required
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              placeholder="Acme AV & Security"
+            />
+          </div>
+        )}
 
         <div className="space-y-1.5">
           <label className="text-[12px] font-medium text-foreground">Your name</label>

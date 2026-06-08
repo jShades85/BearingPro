@@ -32,6 +32,7 @@ import { Route as SettingsQuoteTemplatesRouteImport } from './routes/settings/qu
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings/integrations'
 import { Route as SettingsCompanyRouteImport } from './routes/settings/company'
 import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
+import { Route as SettingsTeamMembersRouteImport } from './routes/settings/team-members'
 import { Route as ServiceServiceTicketsRouteImport } from './routes/service/service-tickets'
 import { Route as ServiceServicePlansRouteImport } from './routes/service/service-plans'
 import { Route as SalesQuotesRouteImport } from './routes/sales/quotes'
@@ -177,6 +178,11 @@ const SettingsCompanyRoute = SettingsCompanyRouteImport.update({
 const SettingsRolesRoute = SettingsRolesRouteImport.update({
   id: '/roles',
   path: '/roles',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsTeamMembersRoute = SettingsTeamMembersRouteImport.update({
+  id: '/team-members',
+  path: '/team-members',
   getParentRoute: () => SettingsRoute,
 } as any)
 const ServiceServiceTicketsRoute = ServiceServiceTicketsRouteImport.update({
@@ -369,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/team-members': typeof SettingsTeamMembersRoute
   '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
@@ -412,6 +419,7 @@ export interface FileRoutesByTo {
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/team-members': typeof SettingsTeamMembersRoute
   '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/crm': typeof CrmIndexRoute
   '/finance': typeof FinanceIndexRoute
@@ -468,6 +476,7 @@ export interface FileRoutesById {
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/team-members': typeof SettingsTeamMembersRoute
   '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
@@ -525,6 +534,7 @@ export interface FileRouteTypes {
     | '/settings/integrations'
     | '/settings/quote-templates'
     | '/settings/roles'
+    | '/settings/team-members'
     | '/settings/service-plan-tiers'
     | '/crm/'
     | '/finance/'
@@ -568,6 +578,7 @@ export interface FileRouteTypes {
     | '/settings/integrations'
     | '/settings/quote-templates'
     | '/settings/roles'
+    | '/settings/team-members'
     | '/settings/service-plan-tiers'
     | '/crm'
     | '/finance'
@@ -623,6 +634,7 @@ export interface FileRouteTypes {
     | '/settings/integrations'
     | '/settings/quote-templates'
     | '/settings/roles'
+    | '/settings/team-members'
     | '/settings/service-plan-tiers'
     | '/crm/'
     | '/finance/'
@@ -818,6 +830,13 @@ declare module '@tanstack/react-router' {
       path: '/roles'
       fullPath: '/settings/roles'
       preLoaderRoute: typeof SettingsRolesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/team-members': {
+      id: '/settings/team-members'
+      path: '/team-members'
+      fullPath: '/settings/team-members'
+      preLoaderRoute: typeof SettingsTeamMembersRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/service/service-tickets': {
@@ -1219,6 +1238,7 @@ interface SettingsRouteChildren {
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
   SettingsQuoteTemplatesRoute: typeof SettingsQuoteTemplatesRoute
   SettingsRolesRoute: typeof SettingsRolesRoute
+  SettingsTeamMembersRoute: typeof SettingsTeamMembersRoute
   SettingsServicePlanTiersRoute: typeof SettingsServicePlanTiersRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
 }
@@ -1228,6 +1248,7 @@ const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsIntegrationsRoute: SettingsIntegrationsRoute,
   SettingsQuoteTemplatesRoute: SettingsQuoteTemplatesRoute,
   SettingsRolesRoute: SettingsRolesRoute,
+  SettingsTeamMembersRoute: SettingsTeamMembersRoute,
   SettingsServicePlanTiersRoute: SettingsServicePlanTiersRoute,
   SettingsIndexRoute: SettingsIndexRoute,
 }
