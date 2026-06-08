@@ -235,11 +235,15 @@ function AppShellContent() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPaletteOpen(true)}
-              className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2 text-[11.5px] text-muted-foreground hover:text-foreground"
+              className="flex h-7 min-w-[220px] items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground"
             >
-              <Search className="h-3 w-3" />
-              <span>Search...</span>
-              <kbd className="ml-1 hidden rounded border border-border bg-muted px-1 py-0.5 text-[10px] font-mono leading-none sm:inline-block">⌘K</kbd>
+              <Search className="h-3 w-3 shrink-0" />
+              <span className="flex-1 text-left">Search...</span>
+              <span className="hidden items-center gap-1 sm:flex">
+                <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px] font-mono leading-none">⌘K</kbd>
+                <span className="text-[10px] text-muted-foreground/40">/</span>
+                <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px] font-mono leading-none">Ctrl K</kbd>
+              </span>
             </button>
             {meta.onNew && (
               <button
