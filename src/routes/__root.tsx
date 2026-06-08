@@ -82,8 +82,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Port City Sound & Security" },
-      { name: "description", content: "A Linear-styled CRM, sales, and operations workspace for trade service companies." },
+      { title: "BearingPro" },
+      { name: "description", content: "Field service management for trade businesses." },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

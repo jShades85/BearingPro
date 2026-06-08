@@ -30,7 +30,7 @@ function LoginPage() {
   return (
     <AuthShell>
       <h1 className="text-[18px] font-semibold tracking-tight text-foreground">Sign in</h1>
-      <p className="mt-1 text-[13px] text-muted-foreground">Welcome back to Port City Sound & Security</p>
+      <p className="mt-1 text-[13px] text-muted-foreground">Welcome back to BearingPro</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div className="space-y-1.5">
@@ -88,9 +88,9 @@ function AuthShell({ children }: { children: React.ReactNode }) {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-chart-2 text-[11px] font-bold text-primary-foreground shadow-glow">
-            PCSS
+            BP
           </div>
-          <span className="text-[14px] font-semibold tracking-tight">Port City Sound & Security</span>
+          <span className="text-[14px] font-semibold tracking-tight">BearingPro</span>
         </div>
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           {children}
