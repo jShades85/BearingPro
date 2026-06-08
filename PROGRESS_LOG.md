@@ -15,10 +15,10 @@
 
 ## What's Next
 
-1. **Wire up Settings → Company Profile** to the `tenants` table — easiest first real read/write
-2. **Schema sprint** — migrations for all remaining modules (companies, contacts, projects, etc.)
-3. **Replace demo data module by module** — starting with CRM after schema is in place
-4. **Team page invite flow** — admin invites teammates via email; trigger already handles joining existing tenant
+1. **Schema sprint** — migrations for all remaining modules (companies, contacts, projects, etc.)
+2. **Replace demo data module by module** — starting with CRM after schema is in place
+3. **Team page invite flow** — admin invites teammates via email; trigger already handles joining existing tenant
+4. **Sidebar company name** — currently hardcoded "Port City Sound & Security"; needs to read from `tenants` table
 
 ---
 
@@ -49,7 +49,7 @@
 | Inventory (Catalog, Stock, POs, Vendors) | 🟡 Demo data | Full UI built |
 | Finance (Invoices, Payments) | 🟡 Demo data | Full UI built |
 | Reports | 🟡 Placeholder | 27-report catalog defined, all coming soon |
-| Settings (Company, Tiers, Integrations) | 🟡 Demo data | UI built, needs tenants table wiring |
+| Settings (Company, Tiers, Integrations) | ✅ Company live | Company Profile reads/writes `tenants` table; Tiers + Integrations still demo |
 | Quote Builder | ⏸ Deferred | Needs backend |
 | Planner / Gantt | ⏸ Deferred | Needs backend |
 
@@ -108,3 +108,18 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - Investigated D-Tools SI API — example key in docs is illustrative only, not functional; needs real SI license
 
 **Schema notes:** `tenants` and `user_profiles` are live. All future tables need `tenant_id uuid not null references tenants(id)` + RLS policy using `current_tenant_id()`.
+
+---
+
+## Session 019 — Settings Company Profile Wired
+
+**Date:** June 8, 2026
+
+**Completed:**
+
+- Settings → Company Profile reads from and writes to the live `tenants` table
+- Fixed form-reset bug: `useRef` guard prevents `useEffect` from re-populating the form on every refetch (was overwriting typed values with DB nulls after save)
+- `onSuccess` uses `setQueryData` instead of `invalidateQueries` — cache updated directly, no round-trip refetch
+- Added `.select().single()` to update call so 0-row updates (RLS mismatch) surface as errors instead of false success
+
+**Pattern to follow for future data pages:** `useRef` initialized flag + `setQueryData` on save instead of invalidate.
