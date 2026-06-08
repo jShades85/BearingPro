@@ -15,10 +15,9 @@
 
 ## What's Next
 
-1. **Schema sprint** — migrations for all remaining modules (companies, contacts, projects, etc.)
-2. **Replace demo data module by module** — starting with CRM after schema is in place
-3. **Team page invite flow** — admin invites teammates via email; trigger already handles joining existing tenant
-4. **Sidebar company name** — currently hardcoded "Port City Sound & Security"; needs to read from `tenants` table
+1. **Team / Users page** — wire Operations → Team to real `user_profiles` data; build invite flow (admin sends email, teammate joins existing tenant via `tenant_id` in metadata). `user_profiles` table is already live — no schema work needed first.
+2. **Schema sprint** — migrations for all remaining modules (companies, contacts, projects, etc.)
+3. **Replace demo data module by module** — starting with CRM after schema is in place
 
 ---
 
@@ -123,3 +122,10 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - Added `.select().single()` to update call so 0-row updates (RLS mismatch) surface as errors instead of false success
 
 **Pattern to follow for future data pages:** `useRef` initialized flag + `setQueryData` on save instead of invalidate.
+
+---
+
+## Session 019 (continued) — Sidebar polish
+
+- Removed duplicate search button from sidebar (top bar only)
+- Sidebar company name and initials badge now read from `tenants` table (shares `["tenant"]` cache with Company Profile — no extra fetch)
