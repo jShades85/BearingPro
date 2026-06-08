@@ -14,6 +14,144 @@ export type Database = {
   }
   public: {
     Tables: {
+      companies: {
+        Row: {
+          billing_address: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          industry: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          service_address: string | null
+          stage: string
+          state: string | null
+          tenant_id: string
+          website: string | null
+        }
+        Insert: {
+          billing_address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          industry?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          service_address?: string | null
+          stage?: string
+          state?: string | null
+          tenant_id: string
+          website?: string | null
+        }
+        Update: {
+          billing_address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          industry?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          service_address?: string | null
+          stage?: string
+          state?: string | null
+          tenant_id?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companies_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          address: string | null
+          assigned_to: string | null
+          company_id: string | null
+          contact_type: string | null
+          created_at: string
+          customer_type: string
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          source: string | null
+          stage: string
+          tags: string[]
+          tenant_id: string
+          title: string | null
+        }
+        Insert: {
+          address?: string | null
+          assigned_to?: string | null
+          company_id?: string | null
+          contact_type?: string | null
+          created_at?: string
+          customer_type?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          stage?: string
+          tags?: string[]
+          tenant_id: string
+          title?: string | null
+        }
+        Update: {
+          address?: string | null
+          assigned_to?: string | null
+          company_id?: string | null
+          contact_type?: string | null
+          created_at?: string
+          customer_type?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          stage?: string
+          tags?: string[]
+          tenant_id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_locations: {
         Row: {
           created_at: string

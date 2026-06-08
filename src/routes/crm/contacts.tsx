@@ -2,18 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
-import { ownerNames } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import {
-  Building2, CheckCircle2, CreditCard, Eye, FileText,
-  Home, Mail, MapPin, Pencil, Phone,
+  Building2, Eye, Home, Mail, MapPin, Pencil, Phone,
 } from "lucide-react";
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
 
 export const Route = createFileRoute("/crm/contacts")({
-  head: () => ({ meta: [{ title: "Contacts · Port City Sound & Security" }] }),
+  head: () => ({ meta: [{ title: "Contacts · BearingPro" }] }),
   component: ContactsPage,
 });
 
@@ -22,33 +22,30 @@ export const Route = createFileRoute("/crm/contacts")({
 type CustomerType   = "commercial" | "residential";
 type ContactType    = "Decision Maker" | "Billing Contact" | "Site Contact" | "Influencer";
 type LifecycleStage = "Lead" | "Customer" | "Inactive";
-type ContactTag     = "VIP" | "Referral Source" | "Commercial" | "Residential";
 type ContactSource  = "Phone" | "Web Form" | "Referral" | "Email" | "Walk-in";
-type ActivityKind   = "quote" | "call" | "job" | "invoice";
 
-interface ActivityEntry { kind: ActivityKind; text: string; date: string }
-interface LinkedOpp     { id: string; title: string; value: number }
-interface LinkedJob     { id: string; title: string; date: string }
-
-interface Contact {
+interface DbContact {
   id: string;
-  name: string;
-  title: string;
-  company?: string;
-  phone: string;
-  email: string;
-  address: string;
-  type?: ContactType;
-  source: ContactSource;
-  assignedTo: string;
+  company_id: string | null;
+  full_name: string;
+  title: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  contact_type: ContactType | null;
+  source: ContactSource | null;
+  assigned_to: string | null;
   stage: LifecycleStage;
-  tags: ContactTag[];
-  notes: string;
-  openOpps: LinkedOpp[];
-  recentJobs: LinkedJob[];
-  activity: ActivityEntry[];
-  customerType: CustomerType;
+  customer_type: CustomerType;
+  tags: string[];
+  notes: string | null;
+  created_at: string;
+  company: { id: string; name: string } | null;
+  assignee: { id: string; full_name: string | null } | null;
 }
+
+interface TeamMember { id: string; full_name: string | null }
+interface CompanyOption { id: string; name: string }
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -65,239 +62,41 @@ const stageMeta: Record<LifecycleStage, { label: string; cls: string }> = {
   Inactive: { label: "Inactive", cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
 };
 
-const tagCls: Record<ContactTag, string> = {
-  "VIP":            "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  "Referral Source":"bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  "Commercial":     "bg-sky-500/15 text-sky-600 dark:text-sky-400",
-  "Residential":    "bg-rose-500/15 text-rose-500 dark:text-rose-400",
-};
-
-const kindIcon: Record<ActivityKind, React.ComponentType<{ className?: string }>> = {
-  quote:   FileText,
-  call:    Phone,
-  job:     CheckCircle2,
-  invoice: CreditCard,
-};
-
-const kindColor: Record<ActivityKind, string> = {
-  quote:   "text-blue-500",
-  call:    "text-green-500",
-  job:     "text-primary",
-  invoice: "text-emerald-500",
-};
-
 const typeOptions: ContactType[]    = ["Decision Maker", "Billing Contact", "Site Contact", "Influencer"];
 const sourceOptions: ContactSource[] = ["Phone", "Web Form", "Referral", "Email", "Walk-in"];
 
-// ─── Demo data ────────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
-const CONTACTS: Contact[] = [
-  {
-    id: "p1", name: "Audrey Chen", title: "Principal Architect",
-    company: "Northbeam Architects", phone: "(718) 555-0142",
-    email: "audrey@northbeam.co", address: "44 Berry St, Brooklyn, NY 11211",
-    type: "Decision Maker", source: "Referral", assignedTo: "MO",
-    stage: "Customer", tags: ["VIP", "Commercial"],
-    customerType: "commercial",
-    notes: "Key contact for all Northbeam AV projects. Prefers email.",
-    openOpps: [{ id: "AV-226", title: "Penthouse cinema build", value: 184500 }],
-    recentJobs: [{ id: "pr1", title: "Penthouse cinema build", date: "Jul 09" }],
-    activity: [
-      { kind: "invoice", text: "INV-04809 paid — $92,250",               date: "Jun 10" },
-      { kind: "quote",   text: "Quote Q-2026-0415 sent — $184,500",      date: "May 22" },
-      { kind: "call",    text: "Call logged — discussed timeline",         date: "May 15" },
-      { kind: "job",     text: "Vertex 14F boardroom — project completed", date: "Apr 30" },
-    ],
-  },
-  {
-    id: "p2", name: "Marcus Bell", title: "Director of IT",
-    company: "Pinecrest Hospitality Group", phone: "(512) 555-0911",
-    email: "mbell@pinecrest.com", address: "905 Congress Ave, Austin, TX 78701",
-    type: "Decision Maker", source: "Web Form", assignedTo: "JK",
-    stage: "Lead", tags: ["Commercial"],
-    customerType: "commercial",
-    notes: "Evaluating multiple vendors. Budget confirmed at $200k+.",
-    openOpps: [{ id: "AV-238", title: "Lobby video wall (7×3 LED)", value: 212000 }],
-    recentJobs: [],
-    activity: [
-      { kind: "call",  text: "Call logged — intro call with Marcus",           date: "Jun 01" },
-      { kind: "quote", text: "Quote Q-2026-0417 sent — $212,000",             date: "May 31" },
-      { kind: "call",  text: "Call logged — confirmed budget, next steps",     date: "May 20" },
-    ],
-  },
-  {
-    id: "p3", name: "Priya Anand", title: "Facilities Manager",
-    company: "Helio Health Systems", phone: "(303) 555-2230",
-    email: "panand@heliohealth.org", address: "1719 E 19th Ave, Denver, CO 80218",
-    type: "Site Contact", source: "Referral", assignedTo: "RT",
-    stage: "Customer", tags: ["Commercial"],
-    customerType: "commercial",
-    notes: "On-site coordinator for all installs. CC on all scheduling.",
-    openOpps: [{ id: "AV-235", title: "Surgical center A/V overhaul", value: 148000 }],
-    recentJobs: [{ id: "pr2", title: "Surgical center overhaul", date: "Aug 21" }],
-    activity: [
-      { kind: "quote",   text: "Quote Q-2026-0412 sent — $148,000",         date: "May 18" },
-      { kind: "job",     text: "Telehealth cart deployment — completed",      date: "May 10" },
-      { kind: "invoice", text: "INV-04806 paid — $74,000",                   date: "Apr 28" },
-    ],
-  },
-  {
-    id: "p4", name: "Theodore Fox", title: "Homeowner",
-    phone: "(305) 555-1108",
-    email: "tfox@quay.dev", address: "1408 Bayshore Dr, Miami, FL 33132",
-    source: "Referral", assignedTo: "SN",
-    stage: "Customer", tags: ["VIP", "Residential"],
-    customerType: "residential",
-    notes: "High-value residential client. Very detail-oriented.",
-    openOpps: [],
-    recentJobs: [{ id: "pr3", title: "Smart home — Fox residence", date: "Jun 19" }],
-    activity: [
-      { kind: "invoice", text: "INV-04811 paid — $48,200",              date: "Jun 12" },
-      { kind: "job",     text: "Smart home commissioning — completed",   date: "Jun 01" },
-      { kind: "invoice", text: "INV-04809 paid — $48,200 (deposit)",    date: "May 01" },
-    ],
-  },
-  {
-    id: "p5", name: "Lena Romero", title: "Head of Production",
-    company: "Arden & Loom Studios", phone: "(323) 555-7741",
-    email: "lena@ardenloom.tv", address: "5200 Lankershim Blvd, LA, CA 91601",
-    type: "Decision Maker", source: "Phone", assignedTo: "AV",
-    stage: "Lead", tags: ["Commercial"],
-    customerType: "commercial",
-    notes: "Wants full sound stage control room. Budget TBD.",
-    openOpps: [{ id: "AV-230", title: "Sound stage 3 — control room", value: 142800 }],
-    recentJobs: [{ id: "pr4", title: "Sound stage 3 control room", date: "Oct 02" }],
-    activity: [
-      { kind: "quote", text: "Quote Q-2026-0410 drafted — $142,800",  date: "Jun 03" },
-      { kind: "call",  text: "Call logged — requirements gathering",   date: "May 28" },
-      { kind: "call",  text: "Call logged — intro, facility walkthrough", date: "May 10" },
-    ],
-  },
-  {
-    id: "p6", name: "Damon Reyes", title: "Superintendent",
-    company: "Halcyon Public Schools", phone: "(503) 555-4422",
-    email: "dreyes@halcyon.k12.or.us", address: "1010 SE Powell Blvd, Portland, OR 97202",
-    type: "Billing Contact", source: "Email", assignedTo: "EM",
-    stage: "Customer", tags: ["Commercial"],
-    customerType: "commercial",
-    notes: "Approves all POs. Prefers invoices via email.",
-    openOpps: [{ id: "AV-229", title: "District-wide classroom standardization", value: 521000 }],
-    recentJobs: [{ id: "pr6", title: "Auditorium AV — Halcyon HS", date: "Aug 04" }],
-    activity: [
-      { kind: "invoice", text: "INV-04802 paid — $48,000",                   date: "Jun 05" },
-      { kind: "job",     text: "Auditorium AV install — phase 1 complete",    date: "May 30" },
-      { kind: "call",    text: "Call logged — PO approval discussion",         date: "May 12" },
-    ],
-  },
-  {
-    id: "p7", name: "Iris Wang", title: "VP Operations",
-    company: "Vertex Capital Partners", phone: "(312) 555-9090",
-    email: "iwang@vertexcap.io", address: "200 W Madison St, Chicago, IL 60606",
-    type: "Decision Maker", source: "Referral", assignedTo: "EM",
-    stage: "Customer", tags: ["VIP", "Commercial"],
-    customerType: "commercial",
-    notes: "Key decision maker. High priority account.",
-    openOpps: [{ id: "AV-218", title: "Trading floor latency upgrade", value: 234400 }],
-    recentJobs: [{ id: "pr5", title: "Vertex 14F boardroom", date: "Jun 12" }],
-    activity: [
-      { kind: "invoice", text: "INV-04811 partial — $42,250",            date: "Jun 08" },
-      { kind: "job",     text: "Vertex 14F boardroom — closeout",         date: "Jun 04" },
-      { kind: "quote",   text: "Quote Q-2026-0406 sent — $234,400",       date: "May 25" },
-      { kind: "call",    text: "Call logged — trading floor scope review", date: "May 18" },
-    ],
-  },
-  {
-    id: "p8", name: "Hugo Albright", title: "General Manager",
-    company: "Cinder & Oak Hospitality", phone: "(615) 555-3201",
-    email: "hugo@cinderoak.co", address: "112 3rd Ave S, Nashville, TN 37201",
-    type: "Decision Maker", source: "Walk-in", assignedTo: "JK",
-    stage: "Inactive", tags: ["Commercial"],
-    customerType: "commercial",
-    notes: "Lost bid in May. Follow up Q4 — new location opening.",
-    openOpps: [],
-    recentJobs: [],
-    activity: [
-      { kind: "call",    text: "Call logged — project cancelled, budget cut", date: "May 22" },
-      { kind: "quote",   text: "Quote Q-2026-0402 expired — $38,400",         date: "Apr 28" },
-      { kind: "call",    text: "Call logged — walked through requirements",    date: "Apr 10" },
-    ],
-  },
-  {
-    id: "p9", name: "Noor Saleh", title: "CTO",
-    company: "Vertex Capital Partners", phone: "(312) 555-9111",
-    email: "nsaleh@vertexcap.io", address: "200 W Madison St, Chicago, IL 60606",
-    type: "Site Contact", source: "Referral", assignedTo: "RT",
-    stage: "Customer", tags: ["Commercial"],
-    customerType: "commercial",
-    notes: "Technical point of contact. Coordinates with Iris on approvals.",
-    openOpps: [],
-    recentJobs: [{ id: "pr5", title: "Vertex 14F boardroom", date: "Jun 12" }],
-    activity: [
-      { kind: "job",  text: "Vertex 14F — rack & cable sign-off", date: "Jun 04" },
-      { kind: "call", text: "Call logged — reviewed low-voltage specs", date: "May 20" },
-    ],
-  },
-  {
-    id: "p10", name: "Caleb Ortiz", title: "Project Architect",
-    company: "Northbeam Architects", phone: "(718) 555-0188",
-    email: "caleb@northbeam.co", address: "44 Berry St, Brooklyn, NY 11211",
-    type: "Influencer", source: "Referral", assignedTo: "MO",
-    stage: "Lead", tags: ["Referral Source", "Commercial"],
-    customerType: "commercial",
-    notes: "Referred Audrey Chen. Potential to influence future residential projects.",
-    openOpps: [],
-    recentJobs: [],
-    activity: [
-      { kind: "call", text: "Call logged — intro, discussed referral program", date: "Jun 02" },
-    ],
-  },
-  {
-    id: "p11", name: "Sandra Mitchell", title: "Homeowner",
-    phone: "(614) 555-0374",
-    email: "smitchell@gmail.com", address: "219 Birchwood Ln, Columbus, OH 43215",
-    source: "Referral", assignedTo: "SN",
-    stage: "Customer", tags: ["Residential"],
-    customerType: "residential",
-    notes: "Referred by Theodore Fox. Interested in full home automation and whole-home audio.",
-    openOpps: [{ id: "AV-241", title: "Whole-home audio — Mitchell residence", value: 28400 }],
-    recentJobs: [],
-    activity: [
-      { kind: "quote", text: "Quote Q-2026-0419 sent — $28,400", date: "Jun 04" },
-      { kind: "call",  text: "Call logged — walkthrough and scope review",   date: "May 29" },
-    ],
-  },
-  {
-    id: "p12", name: "James Whitfield", title: "Homeowner",
-    phone: "(919) 555-2287",
-    email: "jwhitfield@outlook.com", address: "17 Oak Ridge Ct, Raleigh, NC 27615",
-    source: "Web Form", assignedTo: "JK",
-    stage: "Lead", tags: ["Residential"],
-    customerType: "residential",
-    notes: "Looking for home theater and outdoor speaker install. Lot of natural light — projector vs display TBD.",
-    openOpps: [{ id: "AV-243", title: "Home theater — Whitfield residence", value: 54000 }],
-    recentJobs: [],
-    activity: [
-      { kind: "call",  text: "Call logged — initial consultation",         date: "Jun 05" },
-      { kind: "quote", text: "Quote Q-2026-0421 drafted — $54,000",        date: "Jun 05" },
-    ],
-  },
-  {
-    id: "p13", name: "Elena Vasquez", title: "Homeowner",
-    phone: "(210) 555-8819",
-    email: "evasquez@icloud.com", address: "832 Sycamore Ave, San Antonio, TX 78210",
-    source: "Phone", assignedTo: "RT",
-    stage: "Customer", tags: ["Residential"],
-    customerType: "residential",
-    notes: "Completed smart lighting and security camera install last quarter. Wants to add door locks and thermostat control.",
-    openOpps: [],
-    recentJobs: [{ id: "pr7", title: "Smart lighting & security — Vasquez residence", date: "Apr 18" }],
-    activity: [
-      { kind: "call",    text: "Call logged — follow-up, add-on scope discussion", date: "Jun 03" },
-      { kind: "invoice", text: "INV-04798 paid — $11,650",                          date: "Apr 22" },
-      { kind: "job",     text: "Smart lighting & security — project completed",      date: "Apr 18" },
-    ],
-  },
-];
+async function fetchContacts(): Promise<DbContact[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("*, company:companies(id, name), assignee:user_profiles!assigned_to(id, full_name)")
+    .order("full_name");
+  if (error) throw error;
+  return (data ?? []) as DbContact[];
+}
+
+async function fetchTeamMembers(): Promise<TeamMember[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("id, full_name")
+    .eq("is_active", true)
+    .order("full_name");
+  if (error) throw error;
+  return data ?? [];
+}
+
+async function fetchCompanyOptions(): Promise<CompanyOption[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("companies")
+    .select("id, name")
+    .order("name");
+  if (error) throw error;
+  return data ?? [];
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -325,73 +124,83 @@ function StageBadge({ stage }: { stage: LifecycleStage }) {
   );
 }
 
-function TagPill({ tag }: { tag: ContactTag }) {
-  return (
-    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium", tagCls[tag])}>
-      {tag}
-    </span>
-  );
-}
-
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function ContactsPage() {
   const { setMeta } = useMeta();
-  const [selected, setSelected] = useState<Contact | null>(null);
+  const [selected, setSelected] = useState<DbContact | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<ContactType | "all">("all");
-  const [customerTypeFilter, setCustomerTypeFilter] = useState<CustomerType | "all">("all");
-  const [sourceFilter, setSourceFilter] = useState<ContactSource | "all">("all");
-  const [assignedFilter, setAssignedFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [customerTypeFilter, setCustomerTypeFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [assignedFilter, setAssignedFilter] = useState("all");
+
+  const { data: contacts = [], isLoading } = useQuery({
+    queryKey: ["contacts"],
+    queryFn: fetchContacts,
+  });
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ["team-members-slim"],
+    queryFn: fetchTeamMembers,
+  });
 
   useEffect(() => {
     setMeta({
       title: "Contacts",
-      subtitle: `${CONTACTS.length} contacts`,
+      subtitle: `${contacts.length} contacts`,
       onNew: () => setNewOpen(true),
       newLabel: "New Contact",
     });
-  }, [setMeta]);
+  }, [setMeta, contacts.length]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    return CONTACTS.filter((c) => {
-      if (q && !c.name.toLowerCase().includes(q) && !(c.company?.toLowerCase().includes(q)) && !c.email.toLowerCase().includes(q)) return false;
-      if (typeFilter !== "all" && c.type !== typeFilter) return false;
-      if (customerTypeFilter !== "all" && c.customerType !== customerTypeFilter) return false;
+    return contacts.filter((c) => {
+      if (q && !c.full_name.toLowerCase().includes(q)
+        && !(c.company?.name.toLowerCase().includes(q))
+        && !(c.email?.toLowerCase().includes(q))) return false;
+      if (typeFilter !== "all" && c.contact_type !== typeFilter) return false;
+      if (customerTypeFilter !== "all" && c.customer_type !== customerTypeFilter) return false;
       if (sourceFilter !== "all" && c.source !== sourceFilter) return false;
-      if (assignedFilter !== "all" && c.assignedTo !== assignedFilter) return false;
+      if (assignedFilter !== "all" && c.assigned_to !== assignedFilter) return false;
       return true;
     });
-  }, [search, typeFilter, customerTypeFilter, sourceFilter, assignedFilter]);
+  }, [contacts, search, typeFilter, customerTypeFilter, sourceFilter, assignedFilter]);
 
-  const openDrawer = useCallback((c: Contact) => setSelected(c), []);
+  const openDrawer = useCallback((c: DbContact) => setSelected(c), []);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-16 text-[12.5px] text-muted-foreground">Loading…</div>;
+  }
 
   return (
     <div className="flex flex-col">
       {/* Filter bar */}
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search contacts…" />
-        <FilterSelect value={customerTypeFilter} onChange={(v) => setCustomerTypeFilter(v as CustomerType | "all")}>
+        <FilterSelect value={customerTypeFilter} onChange={setCustomerTypeFilter}>
           <option value="all">All Customers</option>
           <option value="commercial">Commercial</option>
           <option value="residential">Residential</option>
         </FilterSelect>
-        <FilterSelect value={typeFilter} onChange={(v) => setTypeFilter(v as ContactType | "all")}>
+        <FilterSelect value={typeFilter} onChange={setTypeFilter}>
           <option value="all">All Types</option>
           {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
         </FilterSelect>
-        <FilterSelect value={sourceFilter} onChange={(v) => setSourceFilter(v as ContactSource | "all")}>
+        <FilterSelect value={sourceFilter} onChange={setSourceFilter}>
           <option value="all">All Sources</option>
           {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
         </FilterSelect>
-        <FilterSelect value={assignedFilter} onChange={(v) => setAssignedFilter(v)}>
+        <FilterSelect value={assignedFilter} onChange={setAssignedFilter}>
           <option value="all">All Assigned</option>
-          {Object.entries(ownerNames).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          {teamMembers.map((m) => (
+            <option key={m.id} value={m.id}>{m.full_name ?? "—"}</option>
+          ))}
         </FilterSelect>
         <span className="text-[11px] text-muted-foreground font-mono">
-          {filtered.length} of {CONTACTS.length}
+          {filtered.length} of {contacts.length}
         </span>
       </FilterBar>
 
@@ -420,44 +229,45 @@ function ContactsPage() {
                 >
                   <td className="py-2.5 px-3">
                     <div className="flex items-center gap-2.5">
-                      <Avatar initials={getInitials(c.name)} />
+                      <Avatar initials={getInitials(c.full_name)} />
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold leading-snug">{c.name}</div>
-                        <div className="text-[11px] text-muted-foreground">{c.title}</div>
+                        <div className="font-semibold leading-snug">{c.full_name}</div>
+                        <div className="text-[11px] text-muted-foreground">{c.title ?? "—"}</div>
                       </div>
-                      {c.customerType === "commercial"
+                      {c.customer_type === "commercial"
                         ? <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
                         : <Home className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
                       }
                     </div>
                   </td>
                   <td className="py-2.5 px-3">
-                    {c.customerType === "commercial" && c.company
-                      ? (
-                        <span className="text-foreground/75 hover:text-foreground hover:underline cursor-pointer text-[12px]">
-                          {c.company}
-                        </span>
-                      )
+                    {c.company
+                      ? <span className="text-foreground/75 text-[12px]">{c.company.name}</span>
                       : <span className="text-muted-foreground/40 text-[12px]">—</span>
                     }
                   </td>
                   <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground whitespace-nowrap">
-                    {c.phone}
+                    {c.phone ?? "—"}
                   </td>
                   <td className="py-2.5 px-3 text-muted-foreground text-[11.5px]">
-                    <span className="truncate block max-w-[180px]">{c.email}</span>
+                    <span className="truncate block max-w-[180px]">{c.email ?? "—"}</span>
                   </td>
                   <td className="py-2.5 px-3">
-                    {c.type
-                      ? <TypeBadge type={c.type} />
+                    {c.contact_type
+                      ? <TypeBadge type={c.contact_type} />
                       : <span className="text-muted-foreground/40 text-[12px]">—</span>
                     }
                   </td>
                   <td className="py-2.5 px-3">
-                    <div className="flex items-center gap-1.5">
-                      <Avatar initials={c.assignedTo} />
-                      <span className="text-[11.5px]">{ownerNames[c.assignedTo]?.split(" ")[0]}</span>
-                    </div>
+                    {c.assignee?.full_name
+                      ? (
+                        <div className="flex items-center gap-1.5">
+                          <Avatar initials={getInitials(c.assignee.full_name)} />
+                          <span className="text-[11.5px]">{c.assignee.full_name.split(" ")[0]}</span>
+                        </div>
+                      )
+                      : <span className="text-muted-foreground/40 text-[12px]">—</span>
+                    }
                   </td>
                   <td className="py-2.5 px-3">
                     <StageBadge stage={c.stage} />
@@ -485,7 +295,9 @@ function ContactsPage() {
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-[12.5px] text-muted-foreground">
-                    No contacts match the current filters.
+                    {contacts.length === 0
+                      ? "No contacts yet. Add your first one."
+                      : "No contacts match the current filters."}
                   </td>
                 </tr>
               )}
@@ -501,7 +313,7 @@ function ContactsPage() {
 
       {/* New contact modal */}
       <Dialog open={newOpen} onOpenChange={setNewOpen}>
-        <NewContactModal onClose={() => setNewOpen(false)} />
+        <NewContactModal onClose={() => setNewOpen(false)} teamMembers={teamMembers} />
       </Dialog>
     </div>
   );
@@ -509,24 +321,28 @@ function ContactsPage() {
 
 // ─── Contact detail drawer ────────────────────────────────────────────────────
 
-function ContactDrawer({ contact: c }: { contact: Contact }) {
-  const isResidential = c.customerType === "residential";
+function ContactDrawer({ contact: c }: { contact: DbContact }) {
+  const isResidential = c.customer_type === "residential";
 
   return (
     <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4">
         <div className="flex items-center gap-3">
-          <Avatar initials={getInitials(c.name)} className="!h-11 !w-11 !text-[15px] !rounded-xl" />
+          <Avatar initials={getInitials(c.full_name)} className="!h-11 !w-11 !text-[15px] !rounded-xl" />
           <div>
-            <SheetTitle className="text-[15px] font-semibold leading-tight">{c.name}</SheetTitle>
+            <SheetTitle className="text-[15px] font-semibold leading-tight">{c.full_name}</SheetTitle>
             <p className="text-[12px] text-muted-foreground">
-              {c.title}{!isResidential && c.company ? ` · ${c.company}` : ""}
+              {c.title}{!isResidential && c.company ? ` · ${c.company.name}` : ""}
             </p>
           </div>
         </div>
-        {c.tags.filter((tag) => tag !== "Commercial" && tag !== "Residential").length > 0 && (
+        {c.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {c.tags.filter((tag) => tag !== "Commercial" && tag !== "Residential").map((tag) => <TagPill key={tag} tag={tag} />)}
+            {c.tags.map((tag) => (
+              <span key={tag} className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                {tag}
+              </span>
+            ))}
           </div>
         )}
       </SheetHeader>
@@ -536,15 +352,19 @@ function ContactDrawer({ contact: c }: { contact: Contact }) {
         <section>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Contact Info</p>
           <div className="space-y-2 text-[12.5px]">
-            <div className="flex items-center gap-2.5 text-muted-foreground">
-              <Phone className="h-3.5 w-3.5 shrink-0" />
-              <span className="font-mono text-[12px]">{c.phone}</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-muted-foreground">
-              <Mail className="h-3.5 w-3.5 shrink-0" />
-              <span>{c.email}</span>
-            </div>
-            {!isResidential && (
+            {c.phone && (
+              <div className="flex items-center gap-2.5 text-muted-foreground">
+                <Phone className="h-3.5 w-3.5 shrink-0" />
+                <span className="font-mono text-[12px]">{c.phone}</span>
+              </div>
+            )}
+            {c.email && (
+              <div className="flex items-center gap-2.5 text-muted-foreground">
+                <Mail className="h-3.5 w-3.5 shrink-0" />
+                <span>{c.email}</span>
+              </div>
+            )}
+            {!isResidential && c.address && (
               <div className="flex items-start gap-2.5 text-muted-foreground">
                 <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                 <span>{c.address}</span>
@@ -554,7 +374,7 @@ function ContactDrawer({ contact: c }: { contact: Contact }) {
         </section>
 
         {/* Property address — residential only */}
-        {isResidential && (
+        {isResidential && c.address && (
           <section>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Property Address</p>
             <div className="flex items-start gap-2.5 rounded-md border border-border bg-surface/50 px-3 py-2.5 text-[12.5px]">
@@ -570,19 +390,24 @@ function ContactDrawer({ contact: c }: { contact: Contact }) {
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[12.5px]">
             <div>
               <p className="text-[10px] text-muted-foreground mb-0.5">Assigned To</p>
-              <div className="flex items-center gap-1.5">
-                <Avatar initials={c.assignedTo} />
-                <span>{ownerNames[c.assignedTo]}</span>
-              </div>
+              {c.assignee?.full_name
+                ? (
+                  <div className="flex items-center gap-1.5">
+                    <Avatar initials={getInitials(c.assignee.full_name)} />
+                    <span>{c.assignee.full_name}</span>
+                  </div>
+                )
+                : <span className="text-muted-foreground">—</span>
+              }
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground mb-0.5">Lead Source</p>
-              <span>{c.source}</span>
+              <span>{c.source ?? "—"}</span>
             </div>
-            {!isResidential && c.type && (
+            {!isResidential && c.contact_type && (
               <div>
                 <p className="text-[10px] text-muted-foreground mb-0.5">Type</p>
-                <TypeBadge type={c.type} />
+                <TypeBadge type={c.contact_type} />
               </div>
             )}
             <div>
@@ -600,67 +425,10 @@ function ContactDrawer({ contact: c }: { contact: Contact }) {
               <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface">
                 <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <span className="text-primary hover:underline cursor-pointer">{c.company}</span>
+              <span className="text-primary hover:underline cursor-pointer">{c.company.name}</span>
             </div>
           </section>
         )}
-
-        {/* Open opportunities */}
-        {c.openOpps.length > 0 && (
-          <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">
-              Open Opportunities <span className="ml-1 text-foreground font-mono">{c.openOpps.length}</span>
-            </p>
-            <div className="space-y-1.5">
-              {c.openOpps.map((opp) => (
-                <div key={opp.id} className="flex items-center justify-between rounded-md border border-border bg-surface/50 px-3 py-2 text-[12px]">
-                  <span className="truncate text-foreground">{opp.title}</span>
-                  <span className="ml-2 shrink-0 font-mono text-muted-foreground">
-                    ${opp.value.toLocaleString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Recent jobs */}
-        {c.recentJobs.length > 0 && (
-          <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">
-              Recent Jobs <span className="ml-1 text-foreground font-mono">{c.recentJobs.length}</span>
-            </p>
-            <div className="space-y-1.5">
-              {c.recentJobs.map((job) => (
-                <div key={job.id} className="flex items-center justify-between rounded-md border border-border bg-surface/50 px-3 py-2 text-[12px]">
-                  <span className="truncate text-foreground">{job.title}</span>
-                  <span className="ml-2 shrink-0 font-mono text-muted-foreground">{job.date}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Activity timeline */}
-        <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Activity</p>
-          <ul className="space-y-3">
-            {c.activity.map((a, i) => {
-              const Icon = kindIcon[a.kind];
-              return (
-                <li key={i} className="flex gap-3 text-[12px]">
-                  <div className={cn("mt-0.5 shrink-0", kindColor[a.kind])}>
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
-                  <div>
-                    <div>{a.text}</div>
-                    <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.date}</div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
 
         {/* Notes */}
         {c.notes && (
@@ -676,17 +444,64 @@ function ContactDrawer({ contact: c }: { contact: Contact }) {
 
 // ─── New contact modal ────────────────────────────────────────────────────────
 
-function NewContactModal({ onClose }: { onClose: () => void }) {
+const initialForm = {
+  firstName: "", lastName: "", title: "",
+  company_id: "", phone: "", email: "", address: "",
+  contact_type: "" as ContactType | "",
+  source: "Phone" as ContactSource,
+  assigned_to: "",
+  stage: "Lead" as LifecycleStage,
+  customer_type: "commercial" as CustomerType,
+  notes: "",
+};
+
+function NewContactModal({ onClose, teamMembers }: { onClose: () => void; teamMembers: TeamMember[] }) {
+  const qc = useQueryClient();
   const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
   const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
   const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
-  const allTags: ContactTag[] = ["VIP", "Referral Source", "Commercial", "Residential"];
-  const [selectedTags, setSelectedTags] = useState<ContactTag[]>([]);
-  const [customerModalType, setCustomerModalType] = useState<CustomerType>("commercial");
+  const [form, setForm] = useState(initialForm);
 
-  const toggleTag = (tag: ContactTag) =>
-    setSelectedTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]);
+  const set = (k: keyof typeof form) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const { data: companyOptions = [] } = useQuery({
+    queryKey: ["company-options"],
+    queryFn: fetchCompanyOptions,
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      const supabase = createClient();
+      const tenant = qc.getQueryData<{ id: string }>(["tenant"]);
+      const fullName = [form.firstName.trim(), form.lastName.trim()].filter(Boolean).join(" ");
+      const { error } = await supabase.from("contacts").insert({
+        tenant_id: tenant!.id,
+        full_name: fullName,
+        title: form.title.trim() || null,
+        company_id: form.company_id || null,
+        phone: form.phone.trim() || null,
+        email: form.email.trim() || null,
+        address: form.address.trim() || null,
+        contact_type: (form.contact_type || null) as ContactType | null,
+        source: form.source || null,
+        assigned_to: form.assigned_to || null,
+        stage: form.stage,
+        customer_type: form.customer_type,
+        notes: form.notes.trim() || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["contacts"] });
+      onClose();
+    },
+  });
+
+  const isCommercial = form.customer_type === "commercial";
+  const fullName = [form.firstName.trim(), form.lastName.trim()].filter(Boolean).join(" ");
 
   return (
     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -700,12 +515,10 @@ function NewContactModal({ onClose }: { onClose: () => void }) {
           <div className="flex rounded-md border border-border overflow-hidden">
             <button
               type="button"
-              onClick={() => setCustomerModalType("commercial")}
+              onClick={() => setForm((f) => ({ ...f, customer_type: "commercial" }))}
               className={cn(
                 "flex-1 h-8 flex items-center justify-center gap-1.5 text-[12px] font-medium transition-colors",
-                customerModalType === "commercial"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface text-muted-foreground hover:text-foreground",
+                isCommercial ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground",
               )}
             >
               <Building2 className="h-3.5 w-3.5" />
@@ -713,12 +526,10 @@ function NewContactModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               type="button"
-              onClick={() => setCustomerModalType("residential")}
+              onClick={() => setForm((f) => ({ ...f, customer_type: "residential" }))}
               className={cn(
                 "flex-1 h-8 flex items-center justify-center gap-1.5 text-[12px] font-medium transition-colors border-l border-border",
-                customerModalType === "residential"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface text-muted-foreground hover:text-foreground",
+                !isCommercial ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground",
               )}
             >
               <Home className="h-3.5 w-3.5" />
@@ -728,88 +539,73 @@ function NewContactModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div>
-          <label className={labelCls}>First Name</label>
-          <input className={inputCls} placeholder="First name" />
+          <label className={labelCls}>First Name <span className="text-rose-500">*</span></label>
+          <input className={inputCls} value={form.firstName} onChange={set("firstName")} placeholder="First name" />
         </div>
         <div>
           <label className={labelCls}>Last Name</label>
-          <input className={inputCls} placeholder="Last name" />
+          <input className={inputCls} value={form.lastName} onChange={set("lastName")} placeholder="Last name" />
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Job Title</label>
-          <input className={inputCls} placeholder={customerModalType === "residential" ? "e.g. Homeowner" : "e.g. Facilities Manager"} />
+          <input className={inputCls} value={form.title} onChange={set("title")} placeholder={isCommercial ? "e.g. Facilities Manager" : "e.g. Homeowner"} />
         </div>
 
-        {/* Company — commercial only */}
-        {customerModalType === "commercial" && (
+        {isCommercial && (
           <div className="col-span-2">
-            <label className={labelCls}>Company <span className="text-rose-500">*</span></label>
-            <input className={inputCls} placeholder="Company name" required />
+            <label className={labelCls}>Company</label>
+            <select className={selectCls} value={form.company_id} onChange={set("company_id")}>
+              <option value="">— None —</option>
+              {companyOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
           </div>
         )}
 
         <div>
           <label className={labelCls}>Phone</label>
-          <input className={inputCls} placeholder="(555) 000-0000" type="tel" />
+          <input className={inputCls} value={form.phone} onChange={set("phone")} placeholder="(555) 000-0000" type="tel" />
         </div>
         <div>
           <label className={labelCls}>Email</label>
-          <input className={inputCls} placeholder="email@example.com" type="email" />
+          <input className={inputCls} value={form.email} onChange={set("email")} placeholder="email@example.com" type="email" />
         </div>
-
-        {/* Address field — label changes by type */}
         <div className="col-span-2">
-          <label className={labelCls}>{customerModalType === "residential" ? "Property Address" : "Address"}</label>
-          <input className={inputCls} placeholder="Street, City, State ZIP" />
+          <label className={labelCls}>{isCommercial ? "Address" : "Property Address"}</label>
+          <input className={inputCls} value={form.address} onChange={set("address")} placeholder="Street, City, State ZIP" />
         </div>
 
-        {/* Contact type — commercial only */}
-        {customerModalType === "commercial" && (
+        {isCommercial && (
           <div>
             <label className={labelCls}>Contact Type</label>
-            <select className={selectCls}>
+            <select className={selectCls} value={form.contact_type} onChange={set("contact_type")}>
+              <option value="">— None —</option>
               {typeOptions.map((t) => <option key={t}>{t}</option>)}
             </select>
           </div>
         )}
 
-        <div className={customerModalType === "commercial" ? "" : "col-span-2"}>
+        <div className={isCommercial ? "" : "col-span-2"}>
           <label className={labelCls}>Lead Source</label>
-          <select className={selectCls}>
+          <select className={selectCls} value={form.source} onChange={set("source")}>
             {sourceOptions.map((s) => <option key={s}>{s}</option>)}
           </select>
         </div>
 
         <div className="col-span-2">
           <label className={labelCls}>Assign To</label>
-          <select className={selectCls}>
-            {Object.entries(ownerNames).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
-        </div>
-        <div className="col-span-2">
-          <label className={labelCls}>Tags</label>
-          <div className="flex flex-wrap gap-1.5">
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => toggleTag(tag)}
-                className={cn(
-                  "rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors",
-                  selectedTags.includes(tag)
-                    ? cn(tagCls[tag], "border-transparent")
-                    : "border-border text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {tag}
-              </button>
+          <select className={selectCls} value={form.assigned_to} onChange={set("assigned_to")}>
+            <option value="">— Unassigned —</option>
+            {teamMembers.map((m) => (
+              <option key={m.id} value={m.id}>{m.full_name ?? "—"}</option>
             ))}
-          </div>
+          </select>
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Notes</label>
           <textarea
             rows={3}
+            value={form.notes}
+            onChange={set("notes")}
             placeholder="Add any notes…"
             className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
@@ -823,10 +619,11 @@ function NewContactModal({ onClose }: { onClose: () => void }) {
           Cancel
         </button>
         <button
-          onClick={onClose}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+          onClick={() => mutate()}
+          disabled={!fullName || isPending}
+          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
         >
-          Add Contact
+          {isPending ? "Saving…" : "Add Contact"}
         </button>
       </div>
     </DialogContent>

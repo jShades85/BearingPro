@@ -31,7 +31,6 @@ import { Route as SettingsWorkOrderTypesRouteImport } from './routes/settings/wo
 import { Route as SettingsUnitsOfMeasureRouteImport } from './routes/settings/units-of-measure'
 import { Route as SettingsTeamMembersRouteImport } from './routes/settings/team-members'
 import { Route as SettingsTaxRatesRouteImport } from './routes/settings/tax-rates'
-import { Route as SettingsServicePlanTiersRouteImport } from './routes/settings/service-plan-tiers'
 import { Route as SettingsSecurityRouteImport } from './routes/settings/security'
 import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
 import { Route as SettingsQuoteTemplatesRouteImport } from './routes/settings/quote-templates'
@@ -188,12 +187,6 @@ const SettingsTaxRatesRoute = SettingsTaxRatesRouteImport.update({
   path: '/tax-rates',
   getParentRoute: () => SettingsRoute,
 } as any)
-const SettingsServicePlanTiersRoute =
-  SettingsServicePlanTiersRouteImport.update({
-    id: '/service-plan-tiers',
-    path: '/service-plan-tiers',
-    getParentRoute: () => SettingsRoute,
-  } as any)
 const SettingsSecurityRoute = SettingsSecurityRouteImport.update({
   id: '/security',
   path: '/security',
@@ -470,7 +463,6 @@ export interface FileRoutesByFullPath {
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
   '/settings/security': typeof SettingsSecurityRoute
-  '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/settings/tax-rates': typeof SettingsTaxRatesRoute
   '/settings/team-members': typeof SettingsTeamMembersRoute
   '/settings/units-of-measure': typeof SettingsUnitsOfMeasureRoute
@@ -528,7 +520,6 @@ export interface FileRoutesByTo {
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
   '/settings/security': typeof SettingsSecurityRoute
-  '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/settings/tax-rates': typeof SettingsTaxRatesRoute
   '/settings/team-members': typeof SettingsTeamMembersRoute
   '/settings/units-of-measure': typeof SettingsUnitsOfMeasureRoute
@@ -599,7 +590,6 @@ export interface FileRoutesById {
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
   '/settings/roles': typeof SettingsRolesRoute
   '/settings/security': typeof SettingsSecurityRoute
-  '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/settings/tax-rates': typeof SettingsTaxRatesRoute
   '/settings/team-members': typeof SettingsTeamMembersRoute
   '/settings/units-of-measure': typeof SettingsUnitsOfMeasureRoute
@@ -671,7 +661,6 @@ export interface FileRouteTypes {
     | '/settings/quote-templates'
     | '/settings/roles'
     | '/settings/security'
-    | '/settings/service-plan-tiers'
     | '/settings/tax-rates'
     | '/settings/team-members'
     | '/settings/units-of-measure'
@@ -729,7 +718,6 @@ export interface FileRouteTypes {
     | '/settings/quote-templates'
     | '/settings/roles'
     | '/settings/security'
-    | '/settings/service-plan-tiers'
     | '/settings/tax-rates'
     | '/settings/team-members'
     | '/settings/units-of-measure'
@@ -799,7 +787,6 @@ export interface FileRouteTypes {
     | '/settings/quote-templates'
     | '/settings/roles'
     | '/settings/security'
-    | '/settings/service-plan-tiers'
     | '/settings/tax-rates'
     | '/settings/team-members'
     | '/settings/units-of-measure'
@@ -991,13 +978,6 @@ declare module '@tanstack/react-router' {
       path: '/tax-rates'
       fullPath: '/settings/tax-rates'
       preLoaderRoute: typeof SettingsTaxRatesRouteImport
-      parentRoute: typeof SettingsRoute
-    }
-    '/settings/service-plan-tiers': {
-      id: '/settings/service-plan-tiers'
-      path: '/service-plan-tiers'
-      fullPath: '/settings/service-plan-tiers'
-      preLoaderRoute: typeof SettingsServicePlanTiersRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/settings/security': {
@@ -1515,7 +1495,6 @@ interface SettingsRouteChildren {
   SettingsQuoteTemplatesRoute: typeof SettingsQuoteTemplatesRoute
   SettingsRolesRoute: typeof SettingsRolesRoute
   SettingsSecurityRoute: typeof SettingsSecurityRoute
-  SettingsServicePlanTiersRoute: typeof SettingsServicePlanTiersRoute
   SettingsTaxRatesRoute: typeof SettingsTaxRatesRoute
   SettingsTeamMembersRoute: typeof SettingsTeamMembersRoute
   SettingsUnitsOfMeasureRoute: typeof SettingsUnitsOfMeasureRoute
@@ -1539,7 +1518,6 @@ const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsQuoteTemplatesRoute: SettingsQuoteTemplatesRoute,
   SettingsRolesRoute: SettingsRolesRoute,
   SettingsSecurityRoute: SettingsSecurityRoute,
-  SettingsServicePlanTiersRoute: SettingsServicePlanTiersRoute,
   SettingsTaxRatesRoute: SettingsTaxRatesRoute,
   SettingsTeamMembersRoute: SettingsTeamMembersRoute,
   SettingsUnitsOfMeasureRoute: SettingsUnitsOfMeasureRoute,
