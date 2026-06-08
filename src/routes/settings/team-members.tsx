@@ -218,11 +218,12 @@ function InvitePanel({
   const selectedRole = roles.find((r) => r.id === roleId);
 
   function generateLink() {
-    const params = new URLSearchParams({ invite: "1", tenant_id: tenantId });
-    if (selectedRole) params.set("role_name", selectedRole.name);
-    if (name.trim())  params.set("full_name", name.trim());
-    if (email.trim()) params.set("email", email.trim());
-    setLink(`${window.location.origin}/auth/signup?${params.toString()}`);
+    const payload: Record<string, string> = { tenant_id: tenantId };
+    if (selectedRole)  payload.role_name = selectedRole.name;
+    if (name.trim())   payload.full_name = name.trim();
+    if (email.trim())  payload.email     = email.trim();
+    const token = btoa(JSON.stringify(payload));
+    setLink(`${window.location.origin}/auth/signup?t=${token}`);
   }
 
   function handleCopy() {

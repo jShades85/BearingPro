@@ -3,20 +3,28 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 export const Route = createFileRoute("/auth/signup")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    invite:    typeof search.invite    === "string" ? search.invite    : undefined,
-    tenant_id: typeof search.tenant_id === "string" ? search.tenant_id : undefined,
-    role_name: typeof search.role_name === "string" ? search.role_name : undefined,
-    full_name: typeof search.full_name === "string" ? search.full_name : undefined,
-    email:     typeof search.email     === "string" ? search.email     : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    if (typeof search.t === "string") {
+      try {
+        const d = JSON.parse(atob(search.t)) as Record<string, string>;
+        return {
+          t:         search.t,
+          tenant_id: d.tenant_id ?? "",
+          role_name: d.role_name ?? "",
+          full_name: d.full_name ?? "",
+          email:     d.email     ?? "",
+        };
+      } catch { /* malformed token — fall through */ }
+    }
+    return { t: undefined, tenant_id: undefined, role_name: undefined, full_name: undefined, email: undefined };
+  },
   component: SignupPage,
 });
 
 function SignupPage() {
   const navigate    = useNavigate();
   const search      = Route.useSearch();
-  const isInvite    = search.invite === "1";
+  const isInvite    = !!search.t;
   const tenantId    = search.tenant_id ?? "";
   const roleName    = search.role_name ?? "";
 
