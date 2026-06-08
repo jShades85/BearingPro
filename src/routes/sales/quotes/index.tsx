@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   CheckCircle2, Clock, Eye, FileText, XCircle,
 } from "lucide-react";
+import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 
 export const Route = createFileRoute("/sales/quotes/")({
   head: () => ({ meta: [{ title: "Quotes & Estimates · Port City Sound & Security" }] }),
@@ -100,32 +101,24 @@ function QuotesPage() {
     [navigate],
   );
 
-  const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="flex flex-col">
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search quotes..."
-          className="h-7 min-w-[180px] flex-1 rounded-md border border-border bg-surface px-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as QuoteStatus | "all")} className={selectCls}>
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search quotes…" />
+        <FilterSelect value={statusFilter} onChange={(v) => setStatusFilter(v as QuoteStatus | "all")}>
           <option value="all">All Statuses</option>
           {(["draft", "sent", "viewed", "accepted", "expired"] as QuoteStatus[]).map((s) => (
             <option key={s} value={s}>{statusStyle[s].label}</option>
           ))}
-        </select>
-        <select value={dateRange} onChange={(e) => setDateRange(e.target.value as DateRange)} className={selectCls}>
+        </FilterSelect>
+        <FilterSelect value={dateRange} onChange={(v) => setDateRange(v as DateRange)}>
           {DATE_RANGES.map((r) => <option key={r} value={r}>{r}</option>)}
-        </select>
+        </FilterSelect>
         <span className="text-[11px] text-muted-foreground font-mono">
           {filtered.length} of {quotes.length}
         </span>
-      </div>
+      </FilterBar>
 
       {/* Table */}
       <div className="p-4 overflow-x-auto">

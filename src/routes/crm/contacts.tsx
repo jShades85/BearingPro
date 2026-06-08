@@ -8,6 +8,7 @@ import {
   Building2, CheckCircle2, CreditCard, Eye, FileText,
   Home, Mail, MapPin, Pencil, Phone,
 } from "lucide-react";
+import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -367,40 +368,32 @@ function ContactsPage() {
 
   const openDrawer = useCallback((c: Contact) => setSelected(c), []);
 
-  const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="flex flex-col">
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search contacts…"
-          className="h-7 min-w-[180px] flex-1 rounded-md border border-border bg-surface px-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <select value={customerTypeFilter} onChange={(e) => setCustomerTypeFilter(e.target.value as CustomerType | "all")} className={selectCls}>
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search contacts…" />
+        <FilterSelect value={customerTypeFilter} onChange={(v) => setCustomerTypeFilter(v as CustomerType | "all")}>
           <option value="all">All Customers</option>
           <option value="commercial">Commercial</option>
           <option value="residential">Residential</option>
-        </select>
-        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as ContactType | "all")} className={selectCls}>
+        </FilterSelect>
+        <FilterSelect value={typeFilter} onChange={(v) => setTypeFilter(v as ContactType | "all")}>
           <option value="all">All Types</option>
           {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value as ContactSource | "all")} className={selectCls}>
+        </FilterSelect>
+        <FilterSelect value={sourceFilter} onChange={(v) => setSourceFilter(v as ContactSource | "all")}>
           <option value="all">All Sources</option>
           {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <select value={assignedFilter} onChange={(e) => setAssignedFilter(e.target.value)} className={selectCls}>
+        </FilterSelect>
+        <FilterSelect value={assignedFilter} onChange={(v) => setAssignedFilter(v)}>
           <option value="all">All Assigned</option>
           {Object.entries(ownerNames).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
+        </FilterSelect>
         <span className="text-[11px] text-muted-foreground font-mono">
           {filtered.length} of {CONTACTS.length}
         </span>
-      </div>
+      </FilterBar>
 
       {/* Table */}
       <div className="p-4 overflow-x-auto">

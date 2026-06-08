@@ -8,6 +8,10 @@ import {
   FileText, Pencil, X,
 } from "lucide-react";
 import {
+  StatBar, StatItem, FilterBar, SearchInput, FilterSelect,
+  PageTabs, PageTab,
+} from "@/components/ui/page-components";
+import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
 import {
@@ -56,7 +60,6 @@ const METHOD_LABELS: Record<string, string> = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
 const inputCls  = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
 const labelCls  = "block text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-1";
 
@@ -624,72 +627,33 @@ function InvoicesPage() {
   return (
     <div className="flex flex-col">
       {/* Stat bar */}
-      <div className="flex items-center gap-0 border-b border-border overflow-x-auto">
-        {[
-          { icon: CreditCard,   label: "Outstanding",   value: currency(outstanding),          accent: false },
-          { icon: AlertCircle,  label: "Overdue",        value: `${currency(overdueTotal)} (${overdueCount})`, accent: overdueCount > 0 },
-          { icon: CheckCircle2, label: "Collected MTD",  value: currency(paidMTD),              accent: false },
-          { icon: FileText,     label: "Total Invoices", value: String(invoices.length),        accent: false },
-        ].map(({ icon: Icon, label, value, accent }) => (
-          <div key={label} className="flex items-center gap-3 px-5 py-3 border-r border-border shrink-0">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-muted">
-              <Icon className={cn("h-3.5 w-3.5", accent ? "text-red-500" : "text-muted-foreground")} />
-            </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
-              <p className={cn("text-[14px] font-semibold tabular-nums leading-tight", accent && "text-red-500")}>
-                {value}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <StatBar>
+        <StatItem icon={CreditCard}   label="Outstanding"   value={currency(outstanding)} />
+        <StatItem icon={AlertCircle}  label="Overdue"       value={`${currency(overdueTotal)} (${overdueCount})`} accent={overdueCount > 0} />
+        <StatItem icon={CheckCircle2} label="Collected MTD" value={currency(paidMTD)} />
+        <StatItem icon={FileText}     label="Total Invoices" value={String(invoices.length)} />
+      </StatBar>
 
       {/* Status tabs */}
-      <div className="flex items-center gap-0 border-b border-border overflow-x-auto">
+      <PageTabs>
         {TABS.map(({ key, label }) => {
           const count = key === "all" ? invoices.length : invoices.filter((i) => i.status === key).length;
           return (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={cn(
-                "flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap",
-                tab === key
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
-              )}
-            >
+            <PageTab key={key} active={tab === key} onClick={() => setTab(key)} count={count}>
               {label}
-              <span className={cn(
-                "rounded px-1.5 py-0.5 text-[10px] font-semibold",
-                tab === key ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
-              )}>
-                {count}
-              </span>
-            </button>
+            </PageTab>
           );
         })}
-      </div>
+      </PageTabs>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search invoices…"
-          className="h-7 min-w-40 flex-1 rounded-md border border-border bg-surface px-2.5 text-[12px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <select
-          value={customerFilter}
-          onChange={(e) => setCustomerFilter(e.target.value)}
-          className={selectCls}
-        >
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search invoices…" />
+        <FilterSelect value={customerFilter} onChange={setCustomerFilter}>
           <option value="all">All Customers</option>
           {customers.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </div>
+        </FilterSelect>
+      </FilterBar>
 
       {/* Table */}
       <div className="flex-1 overflow-auto">

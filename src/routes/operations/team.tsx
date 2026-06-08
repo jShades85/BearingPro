@@ -6,9 +6,10 @@ import { z } from "zod";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { cn } from "@/lib/utils";
 import {
-  Briefcase, ChevronDown, Mail, Pencil, Phone, Search, TriangleAlert, X,
+  Briefcase, ChevronDown, Mail, Pencil, Phone, TriangleAlert, X,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -782,38 +783,17 @@ function TeamPage() {
     });
   }, [members, search, roleFilter, availFilter, skillsFilter]);
 
-  const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="flex flex-col">
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        <div className="relative min-w-[160px] max-w-xs flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search members…"
-            className="h-7 w-full rounded-md border border-border bg-surface pl-7 pr-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-        </div>
-
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value as MemberRole | "all")}
-          className={selectCls}
-        >
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search members…" />
+        <FilterSelect value={roleFilter} onChange={(v) => setRoleFilter(v as MemberRole | "all")}>
           {ROLE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-
-        <select
-          value={availFilter}
-          onChange={(e) => setAvailFilter(e.target.value as Availability | "all")}
-          className={selectCls}
-        >
+        </FilterSelect>
+        <FilterSelect value={availFilter} onChange={(v) => setAvailFilter(v as Availability | "all")}>
           {AVAIL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
+        </FilterSelect>
 
         {/* Skills multi-select */}
         <Popover open={skillsPopOpen} onOpenChange={setSkillsPopOpen}>
@@ -870,7 +850,7 @@ function TeamPage() {
         <span className="ml-auto font-mono text-[11px] text-muted-foreground">
           {filtered.length} of {members.length}
         </span>
-      </div>
+      </FilterBar>
 
       {/* Card grid */}
       <div className="p-4">

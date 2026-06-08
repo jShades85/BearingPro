@@ -7,9 +7,9 @@ import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import {
-  Camera, ChevronRight, ImagePlus, LayoutGrid, List, Pencil,
-  Search, X,
+  Camera, ChevronRight, ImagePlus, LayoutGrid, List, Pencil, X,
 } from "lucide-react";
+import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
@@ -938,12 +938,11 @@ function CatalogPage() {
   return (
     <div className="flex flex-col h-full">
 
-      {/* ── Top bar ──────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-
+      {/* ── Filter bar ───────────────────────────────────────────── */}
+      <FilterBar>
         {/* Breadcrumb / drill-in label */}
-        {drillMfr && activeMfr ? (
-          <div className="flex items-center gap-1 text-[12.5px] mr-2">
+        {drillMfr && activeMfr && (
+          <div className="flex items-center gap-1 text-[12.5px] mr-2 shrink-0">
             <button
               type="button"
               onClick={() => { setDrillMfr(null); setListSearch(""); setCatFilter("all"); setStatusFilter("all"); }}
@@ -962,65 +961,37 @@ function CatalogPage() {
               <X className="h-3 w-3" />
             </button>
           </div>
-        ) : null}
+        )}
 
         {/* Search */}
         {(view === "grid" && !drillMfr) ? (
-          <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 h-7 w-48">
-            <Search className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <input
-              value={gridSearch}
-              onChange={(e) => setGridSearch(e.target.value)}
-              placeholder="Search manufacturers…"
-              className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
-            />
-          </div>
+          <SearchInput value={gridSearch} onChange={setGridSearch} placeholder="Search manufacturers…" />
         ) : (
-          <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 h-7 w-48">
-            <Search className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <input
-              value={listSearch}
-              onChange={(e) => setListSearch(e.target.value)}
-              placeholder="Search items…"
-              className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
-            />
-          </div>
+          <SearchInput value={listSearch} onChange={setListSearch} placeholder="Search items…" />
         )}
 
         {/* List-view filters */}
         {(view === "list" || drillMfr) && (
           <>
             {view === "list" && !drillMfr && (
-              <select
-                value={mfrFilter}
-                onChange={(e) => setMfrFilter(e.target.value)}
-                className="h-7 rounded-md border border-border bg-surface px-2 text-[12px] focus:outline-none"
-              >
+              <FilterSelect value={mfrFilter} onChange={setMfrFilter}>
                 <option value="all">All Manufacturers</option>
                 {manufacturers.map((m) => (
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
-              </select>
+              </FilterSelect>
             )}
-            <select
-              value={catFilter}
-              onChange={(e) => setCatFilter(e.target.value as Category | "all")}
-              className="h-7 rounded-md border border-border bg-surface px-2 text-[12px] focus:outline-none"
-            >
+            <FilterSelect value={catFilter} onChange={(v) => setCatFilter(v as Category | "all")}>
               <option value="all">All Categories</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>{categoryMeta[c].label}</option>
               ))}
-            </select>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
-              className="h-7 rounded-md border border-border bg-surface px-2 text-[12px] focus:outline-none"
-            >
+            </FilterSelect>
+            <FilterSelect value={statusFilter} onChange={(v) => setStatusFilter(v as "all" | "active" | "inactive")}>
               <option value="all">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-            </select>
+            </FilterSelect>
           </>
         )}
 
@@ -1054,7 +1025,7 @@ function CatalogPage() {
           </div>
         )}
 
-      </div>
+      </FilterBar>
 
       {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto p-4">

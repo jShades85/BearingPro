@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { FilterBar, FilterSelect } from "@/components/ui/page-components";
 
 export const Route = createFileRoute("/operations/scheduling")({
   head: () => ({ meta: [{ title: "Scheduling · Crosscurrent" }] }),
@@ -1151,9 +1152,6 @@ function SchedulingPage() {
     if (!v) setEditingJob(null);
   };
 
-  const selectCls =
-    "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="flex flex-col">
       {/* Top navigation bar */}
@@ -1205,7 +1203,7 @@ function SchedulingPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
+      <FilterBar>
         <MultiSelect
           label="Techs"
           options={TECH_NAMES}
@@ -1224,21 +1222,20 @@ function SchedulingPage() {
             </span>
           )}
         />
-        <select
+        <FilterSelect
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as JobStatus | "all")}
-          className={selectCls}
+          onChange={(v) => setStatusFilter(v as JobStatus | "all")}
         >
           <option value="all">All Statuses</option>
           {(Object.keys(STATUS_LABELS) as JobStatus[]).map((s) => (
             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
-        </select>
+        </FilterSelect>
 
         <span className="ml-auto text-[11px] font-mono text-muted-foreground">
           {visibleJobs.length} job{visibleJobs.length !== 1 ? "s" : ""}
         </span>
-      </div>
+      </FilterBar>
 
       {/* Calendar grid */}
       <div className="flex-1 overflow-auto">

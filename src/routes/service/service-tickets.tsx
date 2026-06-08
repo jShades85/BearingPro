@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Avatar, Tab } from "@/components/ui-bits";
+import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { ownerNames } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { FilterBar, FilterSelect, PageTabs, PageTab } from "@/components/ui/page-components";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -93,39 +94,32 @@ function ServiceTicketsPage() {
     setSelected((prev) => (prev !== null && prev.id === id ? { ...prev, ...patch } : prev));
   }, []);
 
-  const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="flex flex-col">
-      {/* Status tab bar */}
-      <div className="flex flex-wrap items-center gap-x-1 gap-y-2 border-b border-border px-4 py-2">
+      {/* Status tabs */}
+      <PageTabs>
         {(["all", ...STATUS_ORDER] as (TicketStatus | "all")[]).map((s) => (
-          <Tab key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)}>
+          <PageTab key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} count={statusCounts[s]}>
             {s === "all" ? "All" : statusMeta[s].label}
-            <span className={cn(
-              "ml-1.5 rounded px-1 py-0.5 text-[10px] font-mono",
-              statusFilter === s ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
-            )}>
-              {statusCounts[s]}
-            </span>
-          </Tab>
+          </PageTab>
         ))}
+      </PageTabs>
 
-        <div className="ml-auto flex items-center gap-2">
-          <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value as TicketPriority | "all")} className={selectCls}>
-            <option value="all">All Priorities</option>
-            {PRIORITY_OPTIONS.map((p) => <option key={p} value={p}>{priorityMeta[p].label}</option>)}
-          </select>
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value as TicketCategory | "all")} className={selectCls}>
-            <option value="all">All Categories</option>
-            {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={assignedFilter} onChange={(e) => setAssignedFilter(e.target.value)} className={selectCls}>
-            <option value="all">All Techs</option>
-            {Object.entries(ownerNames).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
-        </div>
-      </div>
+      {/* Filters */}
+      <FilterBar>
+        <FilterSelect value={priorityFilter} onChange={(v) => setPriorityFilter(v as TicketPriority | "all")}>
+          <option value="all">All Priorities</option>
+          {PRIORITY_OPTIONS.map((p) => <option key={p} value={p}>{priorityMeta[p].label}</option>)}
+        </FilterSelect>
+        <FilterSelect value={categoryFilter} onChange={(v) => setCategoryFilter(v as TicketCategory | "all")}>
+          <option value="all">All Categories</option>
+          {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+        </FilterSelect>
+        <FilterSelect value={assignedFilter} onChange={setAssignedFilter}>
+          <option value="all">All Techs</option>
+          {Object.entries(ownerNames).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </FilterSelect>
+      </FilterBar>
 
       {/* Table */}
       <div className="p-4">

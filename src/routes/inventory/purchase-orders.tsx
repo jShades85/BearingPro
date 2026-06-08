@@ -8,8 +8,12 @@ import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle, Briefcase, Check, CheckCircle2, ChevronsUpDown, Circle, Clock,
-  ExternalLink, FileText, Package, PackageCheck, Pencil, Plus, Search, Truck, X,
+  DollarSign, ExternalLink, FileText, Package, PackageCheck, Pencil, Plus, Truck, X,
 } from "lucide-react";
+import {
+  StatBar, StatItem, FilterBar, SearchInput, FilterSelect,
+  PageTabs, PageTab,
+} from "@/components/ui/page-components";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
@@ -1288,83 +1292,33 @@ function PurchaseOrdersPage() {
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Stats bar */}
-      <div className="grid grid-cols-4 gap-4 border-b border-border bg-surface/30 px-6 py-4">
-        <div>
-          <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium">Open POs</p>
-          <p className="mt-1 text-[26px] font-bold tabular-nums leading-none">{stats.openCount}</p>
-        </div>
-        <div>
-          <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium">Open Value</p>
-          <p className="mt-1 text-[26px] font-bold tabular-nums leading-none font-mono">{currency(stats.openVal)}</p>
-        </div>
-        <div>
-          <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium">Awaiting Receipt</p>
-          <p className="mt-1 text-[26px] font-bold tabular-nums leading-none">{stats.awaiting}</p>
-        </div>
-        <div>
-          <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium">Overdue</p>
-          <p className={cn(
-            "mt-1 text-[26px] font-bold tabular-nums leading-none",
-            stats.overdueCount > 0 ? "text-red-600 dark:text-red-400" : "",
-          )}>
-            {stats.overdueCount}
-          </p>
-        </div>
-      </div>
+      {/* Stat bar */}
+      <StatBar>
+        <StatItem icon={Package}     label="Open POs"        value={String(stats.openCount)} />
+        <StatItem icon={DollarSign}  label="Open Value"      value={currency(stats.openVal)} />
+        <StatItem icon={Truck}       label="Awaiting Receipt" value={String(stats.awaiting)} />
+        <StatItem icon={AlertTriangle} label="Overdue"       value={String(stats.overdueCount)} accent={stats.overdueCount > 0} />
+      </StatBar>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-border px-6 pt-3">
+      <PageTabs>
         {TABS.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => setActiveTab(tab.value)}
-            className={cn(
-              "relative flex items-center gap-1.5 pb-2.5 px-1 text-[12.5px] transition-colors",
-              activeTab === tab.value
-                ? "text-foreground font-medium after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:rounded-full after:bg-primary"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
+          <PageTab key={tab.value} active={activeTab === tab.value} onClick={() => setActiveTab(tab.value)} count={tabCounts[tab.value]}>
             {tab.label}
-            {tabCounts[tab.value] > 0 && (
-              <span className={cn(
-                "rounded px-1 py-0.5 text-[10px] tabular-nums",
-                activeTab === tab.value ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground",
-              )}>
-                {tabCounts[tab.value]}
-              </span>
-            )}
-          </button>
+          </PageTab>
         ))}
-      </div>
+      </PageTabs>
 
-      {/* Filters */}
-      <div className="flex items-center gap-2 px-6 py-3 border-b border-border">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search PO # or vendor…"
-            className="h-8 pl-8 text-[12.5px]"
-          />
-        </div>
-        <select
-          value={vendorFilter}
-          onChange={(e) => setVendorFilter(e.target.value)}
-          className="h-8 rounded-md border border-input bg-background px-3 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-ring"
-        >
+      {/* Filter bar */}
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search PO # or vendor…" />
+        <FilterSelect value={vendorFilter} onChange={setVendorFilter}>
           <option value="all">All Vendors</option>
           {VENDORS.map((v) => (
             <option key={v.id} value={v.id}>{v.name}</option>
           ))}
-        </select>
-        <select
-          value={jobFilter}
-          onChange={(e) => setJobFilter(e.target.value)}
-          className="h-8 rounded-md border border-input bg-background px-3 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-ring"
-        >
+        </FilterSelect>
+        <FilterSelect value={jobFilter} onChange={setJobFilter}>
           <option value="all">All Jobs</option>
           <option value="none">General Stock</option>
           <optgroup label="── Projects ──">
@@ -1377,21 +1331,17 @@ function PurchaseOrdersPage() {
               <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
             ))}
           </optgroup>
-        </select>
+        </FilterSelect>
         {(search || vendorFilter !== "all" || jobFilter !== "all") && (
           <button
             type="button"
             onClick={() => { setSearch(""); setVendorFilter("all"); setJobFilter("all"); }}
-            className="flex items-center gap-1 h-8 px-2.5 rounded-md border border-border text-[12px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="flex items-center gap-1 h-7 px-2.5 rounded-md border border-border text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
           >
-            <X className="h-3 w-3" />
-            Clear
+            <X className="h-3 w-3" /> Clear
           </button>
         )}
-        <p className="ml-auto text-[12px] text-muted-foreground">
-          {filtered.length} {filtered.length === 1 ? "order" : "orders"}
-        </p>
-      </div>
+      </FilterBar>
 
       {/* Table */}
       <div className="flex-1 overflow-y-auto px-6 py-4">

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import {
   Building2, Eye, LayoutGrid, List, MapPin, Pencil,
 } from "lucide-react";
+import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { COMPANIES, type CompanyIndustry, type CompanyStage, type CompanyRecord } from "@/data/companies";
 
@@ -83,29 +84,21 @@ function CompaniesPage() {
     [navigate],
   );
 
-  const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="flex flex-col">
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search companies…"
-          className="h-7 min-w-[180px] flex-1 rounded-md border border-border bg-surface px-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <select value={industryFilter} onChange={(e) => setIndustryFilter(e.target.value as CompanyIndustry | "all")} className={selectCls}>
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search companies…" />
+        <FilterSelect value={industryFilter} onChange={(v) => setIndustryFilter(v as CompanyIndustry | "all")}>
           <option value="all">All Industries</option>
           {industryOptions.map((i) => <option key={i} value={i}>{i}</option>)}
-        </select>
-        <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value as CompanyStage | "all")} className={selectCls}>
+        </FilterSelect>
+        <FilterSelect value={stageFilter} onChange={(v) => setStageFilter(v as CompanyStage | "all")}>
           <option value="all">All Stages</option>
           <option value="active">Active</option>
           <option value="prospect">Prospect</option>
           <option value="inactive">Inactive</option>
-        </select>
+        </FilterSelect>
         <span className="text-[11px] text-muted-foreground font-mono">
           {filtered.length} of {COMPANIES.length}
         </span>
@@ -134,7 +127,7 @@ function CompaniesPage() {
             <List className="h-3.5 w-3.5" />
           </button>
         </div>
-      </div>
+      </FilterBar>
 
       {/* Card view */}
       {view === "cards" && (

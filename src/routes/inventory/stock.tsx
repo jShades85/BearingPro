@@ -9,8 +9,9 @@ import { cn } from "@/lib/utils";
 import {
   AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Camera,
   ChevronRight, ImagePlus, Info, LayoutGrid, List, Lock, MapPin, Pencil,
-  RefreshCw, RotateCcw, Search, SlidersHorizontal, X,
+  RefreshCw, RotateCcw, SlidersHorizontal, X,
 } from "lucide-react";
+import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
@@ -1436,16 +1437,13 @@ function StockPage() {
     setStatusFilter("all");
   }
 
-  const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[12px] focus:outline-none";
-
   return (
     <div className="flex flex-col h-full">
 
-      {/* ── Top bar ──────────────────────────────────────────────── */}
-      <div className="flex items-center flex-wrap gap-2 border-b border-border px-4 py-2.5">
-
+      {/* ── Filter bar ───────────────────────────────────────────── */}
+      <FilterBar>
         {drillMfr && activeMfr && (
-          <div className="flex items-center gap-1 text-[12.5px] mr-1">
+          <div className="flex items-center gap-1 text-[12.5px] mr-1 shrink-0">
             <button type="button" onClick={clearDrill} className="text-muted-foreground hover:text-foreground transition-colors">
               Stock
             </button>
@@ -1459,40 +1457,36 @@ function StockPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 h-7 w-48">
-          <Search className="h-3 w-3 shrink-0 text-muted-foreground" />
-          <input
-            value={view === "grid" && !drillMfr ? gridSearch : listSearch}
-            onChange={(e) => view === "grid" && !drillMfr ? setGridSearch(e.target.value) : setListSearch(e.target.value)}
-            placeholder={view === "grid" && !drillMfr ? "Search manufacturers…" : "Search items…"}
-            className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
-          />
-        </div>
+        <SearchInput
+          value={view === "grid" && !drillMfr ? gridSearch : listSearch}
+          onChange={(v) => view === "grid" && !drillMfr ? setGridSearch(v) : setListSearch(v)}
+          placeholder={view === "grid" && !drillMfr ? "Search manufacturers…" : "Search items…"}
+        />
 
         {(view === "list" || drillMfr) && (
           <>
             {view === "list" && !drillMfr && (
-              <select value={mfrFilter} onChange={(e) => setMfrFilter(e.target.value)} className={selectCls}>
+              <FilterSelect value={mfrFilter} onChange={setMfrFilter}>
                 <option value="all">All Manufacturers</option>
                 {manufacturers.map((m) => (
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
-              </select>
+              </FilterSelect>
             )}
-            <select value={catFilter} onChange={(e) => setCatFilter(e.target.value as Category | "all")} className={selectCls}>
+            <FilterSelect value={catFilter} onChange={(v) => setCatFilter(v as Category | "all")}>
               <option value="all">All Categories</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>{categoryMeta[c].label}</option>
               ))}
-            </select>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilterValue)} className={selectCls}>
+            </FilterSelect>
+            <FilterSelect value={statusFilter} onChange={(v) => setStatusFilter(v as StatusFilterValue)}>
               <option value="all">All Statuses</option>
               <option value="needs_attention">Needs Attention</option>
               <option value="in_stock">In Stock</option>
               <option value="low_stock">Low Stock</option>
               <option value="out_of_stock">Out of Stock</option>
               <option value="overstocked">Overstocked</option>
-            </select>
+            </FilterSelect>
           </>
         )}
 
@@ -1524,7 +1518,7 @@ function StockPage() {
             })}
           </div>
         )}
-      </div>
+      </FilterBar>
 
       {/* ── Stock alerts banner ───────────────────────────────────── */}
       {!bannerDismissed && alertItems.length > 0 && (

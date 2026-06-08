@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Avatar, Tab } from "@/components/ui-bits";
+import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency, ownerNames } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
-import { Clock, MapPin, Phone, RefreshCw } from "lucide-react";
+import { AlertCircle, Clock, DollarSign, MapPin, Phone, RefreshCw, Shield, TrendingUp } from "lucide-react";
+import { StatBar, StatItem, PageTabs, PageTab } from "@/components/ui/page-components";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -100,36 +101,21 @@ function ServicePlansPage() {
   return (
     <div className="flex flex-col">
       {/* Stat bar */}
-      <div className="grid grid-cols-4 divide-x divide-border border-b border-border">
-        {[
-          { label: "Active Plans",    value: String(activePlans.length) },
-          { label: "Monthly Revenue", value: currency(mrr) },
-          { label: "Annual Revenue",  value: currency(mrr * 12) },
-          { label: "Expiring Soon",   value: String(expiringCount), warn: expiringCount > 0 },
-        ].map(({ label, value, warn }) => (
-          <div key={label} className="px-6 py-3">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
-            <p className={cn("mt-0.5 text-[20px] font-semibold tabular-nums", warn ? "text-amber-600 dark:text-amber-400" : "text-foreground")}>
-              {value}
-            </p>
-          </div>
-        ))}
-      </div>
+      <StatBar>
+        <StatItem icon={Shield}       label="Active Plans"    value={String(activePlans.length)} />
+        <StatItem icon={DollarSign}   label="Monthly Revenue" value={currency(mrr)} />
+        <StatItem icon={TrendingUp}   label="Annual Revenue"  value={currency(mrr * 12)} />
+        <StatItem icon={AlertCircle}  label="Expiring Soon"   value={String(expiringCount)} accent={expiringCount > 0} accentColor="amber" />
+      </StatBar>
 
-      {/* Filter tab bar */}
-      <div className="flex flex-wrap items-center gap-x-1 gap-y-2 border-b border-border px-4 py-2">
+      {/* Status tabs */}
+      <PageTabs>
         {(["all", ...STATUS_ORDER] as (PlanStatus | "all")[]).map((s) => (
-          <Tab key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)}>
+          <PageTab key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} count={statusCounts[s]}>
             {s === "all" ? "All" : statusMeta[s].label}
-            <span className={cn(
-              "ml-1.5 rounded px-1 py-0.5 text-[10px] font-mono",
-              statusFilter === s ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
-            )}>
-              {statusCounts[s]}
-            </span>
-          </Tab>
+          </PageTab>
         ))}
-      </div>
+      </PageTabs>
 
       {/* Card grid */}
       <div className="p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

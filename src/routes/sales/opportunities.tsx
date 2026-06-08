@@ -9,6 +9,7 @@ import {
   KanbanSquare, List, MapPin, MessageSquare, Phone, Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/sales/opportunities")({
@@ -357,29 +358,21 @@ function Opportunities() {
   const moveStage = (id: number, stage: OpportunityStage) =>
     setOpps((prev) => prev.map((o) => (o.id === id ? { ...o, stage } : o)));
 
-  const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="flex h-full flex-col">
       {/* Filter + view toggle bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search opportunities…"
-          className="h-7 min-w-[180px] flex-1 rounded-md border border-border bg-surface px-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value as Priority | "all")} className={selectCls}>
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search opportunities…" />
+        <FilterSelect value={priorityFilter} onChange={(v) => setPriorityFilter(v as Priority | "all")}>
           <option value="all">All Priorities</option>
           <option value="high">High</option>
           <option value="med">Medium</option>
           <option value="low">Low</option>
-        </select>
-        <select value={assignedFilter} onChange={(e) => setAssignedFilter(e.target.value)} className={selectCls}>
+        </FilterSelect>
+        <FilterSelect value={assignedFilter} onChange={(v) => setAssignedFilter(v)}>
           <option value="all">All Assigned</option>
           {reps.map((r) => <option key={r} value={r}>{r}</option>)}
-        </select>
+        </FilterSelect>
         <span className="text-[11px] text-muted-foreground font-mono">
           {filtered.length} of {opps.length}
         </span>
@@ -408,7 +401,7 @@ function Opportunities() {
             <List className="h-3.5 w-3.5" />
           </button>
         </div>
-      </div>
+      </FilterBar>
 
       {view === "kanban"
         ? <KanbanView opps={filtered} onMove={moveStage} onSelect={setSelected} />

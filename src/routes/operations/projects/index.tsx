@@ -4,7 +4,8 @@ import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency, ownerNames } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
-import { Calendar, Search } from "lucide-react";
+import { Calendar } from "lucide-react";
+import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   PROJECTS, STATUS_OPTIONS, statusMeta,
@@ -73,48 +74,24 @@ function ProjectsListPage() {
     [navigate],
   );
 
-  const selectCls = "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div className="flex flex-col">
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        {/* Search */}
-        <div className="relative flex-1 min-w-[160px] max-w-xs">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search projects…"
-            className="h-7 w-full rounded-md border border-border bg-surface pl-7 pr-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-        </div>
-
-        {/* Status filter */}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as ProjectStatus | "all")}
-          className={selectCls}
-        >
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search projects…" />
+        <FilterSelect value={statusFilter} onChange={(v) => setStatusFilter(v as ProjectStatus | "all")}>
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
-        </select>
-
-        {/* Date range placeholder */}
+        </FilterSelect>
         <button
           type="button"
-          className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+          className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors shrink-0"
         >
           <Calendar className="h-3.5 w-3.5" />
           <span>Date Range</span>
         </button>
-
-        <span className="text-[11px] font-mono text-muted-foreground">
-          {filtered.length} of {PROJECTS.length}
-        </span>
-      </div>
+      </FilterBar>
 
       {/* Table */}
       <div className="overflow-x-auto">

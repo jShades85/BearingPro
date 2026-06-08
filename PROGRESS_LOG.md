@@ -18,12 +18,84 @@ Before writing any code in a new session, read these files:
 ## Current Status
 
 **Phase:** Frontend UI Build
-**Last Updated:** Session 014
-**Last Session:** Session 014
+**Last Updated:** Session 015
+**Last Session:** Session 015
 
 ---
 
 ## Session Log
+
+---
+
+### Session 015 — UI Consistency Pass
+
+**Date:** June 8, 2026
+**Focus:** Full UI consistency sweep — shared component library + uniform layout across all modules
+
+**Completed:**
+
+- **`src/components/ui/page-components.tsx`** (NEW): Central shared component library for all list pages:
+  - `StatBar` / `StatItem` — icon chip + label/value stat bar with optional accent color (`red` | `amber` | `green`)
+  - `FilterBar` / `SearchInput` / `FilterSelect` — composable filter bar; `SearchInput` defaults to `flex-1 min-w-40` so it fills available space
+  - `PageTabs` / `PageTab` — tab bar with `border-b-2` underline and inline count badge; replaces `Tab` from ui-bits on all list pages
+  - `StatusBadge`, `EmptyState`, `DrawerFooter`, `FieldLabel` — shared detail UI primitives
+
+- **Standard layout order enforced on every page:** `stat bar → tabs → filter bar` — components omitted if not needed for that page, never reordered
+
+- **Finance module:**
+  - `invoices.tsx` — replaced inline stat bar, tabs, and filter bar with shared components
+  - `payments.tsx` — major restructure: lifted filter state up, moved stat bar above tabs (was inside each tab), three tabs now use `PageTabs`/`PageTab`
+
+- **Inventory module:**
+  - `catalog.tsx`, `stock.tsx` — filter bar replaced with `FilterBar`/`SearchInput`/`FilterSelect`; removed `selectCls` variable and inline `Search` icon
+  - `purchase-orders.tsx` — `grid grid-cols-4` stat bar → `StatBar`/`StatItem`; pseudo-underline tabs → `PageTabs`/`PageTab`; filter bar replaced
+  - `vendors.tsx` — inline `.map()` stat bar → `StatBar`/`StatItem`; filter bar replaced
+
+- **Service module:**
+  - `service-tickets.tsx` — separated combined tab+filter row into `PageTabs` (status tabs with counts) + `FilterBar` (priority/category/tech selects)
+  - `service-plans.tsx` — `grid grid-cols-4` stat bar → `StatBar`/`StatItem` with `accentColor="amber"` on Expiring Soon; `Tab` (ui-bits) → `PageTabs`/`PageTab`
+
+- **Operations module:**
+  - `projects/index.tsx`, `work-orders/index.tsx` — filter bar replaced; custom Date Range button kept as `FilterBar` child
+  - `team.tsx` — filter bar replaced; Skills `Popover` (custom multi-select) kept as `FilterBar` child; `selectCls` removed
+  - `scheduling.tsx` — calendar nav bar left untouched (it's a date navigator, not a tab component); filter bar replaced with `FilterBar`/`FilterSelect`; `selectCls` removed
+
+- **Sales module:**
+  - `lead-inbox.tsx` — separated combined status+filter row into `PageTabs`/`PageTab` + `FilterBar`; `Tab` from ui-bits replaced with `PageTab`
+  - `opportunities.tsx` — filter bar replaced; view toggle (kanban/list) kept as custom `FilterBar` child
+  - `quotes/index.tsx` — filter bar replaced
+
+- **CRM module:**
+  - `contacts.tsx` — filter bar replaced (4 selects + search)
+  - `companies/index.tsx` — filter bar replaced; view toggle (card/list) kept as custom `FilterBar` child
+
+- **Inbox page (`/inbox`):**
+  - Both columns now use `space-y-3` (was `space-y-2` on activity feed) — gaps match
+  - Activity items: `min-h-[72px]`
+  - Request cards: `min-h-[156px]` with `flex flex-col` — exactly 2× activity height + 1 gap (2×72+12=156), creating a 2:1 visual rhythm
+  - Actions row changed from `mt-3` → `mt-auto pt-3` so it pins to the bottom of each card regardless of content
+
+**Design Decisions Made:**
+
+- `stat bar → tabs → filter bar` is the locked layout order for every list page — any component not needed for a page is simply omitted
+- `SearchInput` defaults to `flex-1 min-w-40` — grows to fill available space without callers needing to pass width props
+- Scheduling calendar nav is NOT a tab component — it's a date navigator and was left as custom HTML
+- Drawer/form selects (which use `w-full h-8` sizing) were intentionally left unchanged — `FilterSelect` is filter UI only, not a form component
+- Inbox 2:1 height ratio: 1 request card = 2 activity items stacked with gap, so first 4 request cards align with all 8 activity items
+
+**Next Session Goal:**
+
+- Settings module — Service Plan Tier Features config page (tenant-configurable per-tier inclusions: response time, visits, covered systems, extras)
+- Or Reports module — placeholder with key report categories
+- Backend session is getting close — Supabase keys needed before data connections begin
+
+**Open Questions:**
+
+- Supabase project status — still needed before backend session
+- Demo data consolidation into single demo-data.ts before backend work
+
+**Schema Changes This Session:** None (UI only)
+**New Env Variables This Session:** None
 
 ---
 

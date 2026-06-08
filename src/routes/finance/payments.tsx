@@ -16,6 +16,10 @@ import {
   CommandItem, CommandList, CommandSeparator,
 } from "@/components/ui/command";
 import { INVOICES, type Invoice, type InvoiceStatus } from "@/data/invoices";
+import {
+  StatBar, StatItem, FilterBar, SearchInput, FilterSelect,
+  PageTabs, PageTab,
+} from "@/components/ui/page-components";
 
 // ─── Route ────────────────────────────────────────────────────────────────────
 
@@ -102,34 +106,6 @@ function MethodBadge({ method }: { method: string }) {
   );
 }
 
-// ─── StatBar ──────────────────────────────────────────────────────────────────
-
-interface StatItem {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  accent?: boolean;
-}
-
-function StatBar({ stats }: { stats: StatItem[] }) {
-  return (
-    <div className="flex items-center gap-0 border-b border-border overflow-x-auto">
-      {stats.map(({ icon: Icon, label, value, accent }) => (
-        <div key={label} className="flex items-center gap-3 px-5 py-3 border-r border-border shrink-0">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-muted">
-            <Icon className={cn("h-3.5 w-3.5", accent ? "text-red-500" : "text-muted-foreground")} />
-          </div>
-          <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
-            <p className={cn("text-[14px] font-semibold tabular-nums leading-tight", accent && "text-red-500")}>
-              {value}
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ─── InvoiceCombobox ──────────────────────────────────────────────────────────
 
@@ -217,9 +193,7 @@ function InvoiceCombobox({
 
 // ─── OutstandingTab ───────────────────────────────────────────────────────────
 
-function OutstandingTab({ onCollect }: { onCollect: (id: string) => void }) {
-  const [search, setSearch] = useState("");
-
+function OutstandingTab({ search, onCollect }: { search: string; onCollect: (id: string) => void }) {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return OUTSTANDING;
@@ -230,29 +204,8 @@ function OutstandingTab({ onCollect }: { onCollect: (id: string) => void }) {
     );
   }, [search]);
 
-  const totalOutstanding = OUTSTANDING.reduce((s, i) => s + i.balanceDue, 0);
-  const overdueList = OUTSTANDING.filter((i) => i.status === "overdue");
-  const overdueTotal = overdueList.reduce((s, i) => s + i.balanceDue, 0);
-  const partialBalance = OUTSTANDING.filter((i) => i.status === "partial").reduce((s, i) => s + i.balanceDue, 0);
-
   return (
     <>
-      <StatBar stats={[
-        { icon: DollarSign,  label: "Total Outstanding",               value: currency(totalOutstanding), accent: false },
-        { icon: AlertCircle, label: `Overdue (${overdueList.length})`, value: currency(overdueTotal),     accent: overdueList.length > 0 },
-        { icon: TrendingUp,  label: "Partial — Remaining",             value: currency(partialBalance),   accent: false },
-        { icon: FileText,    label: "Open Invoices",                   value: String(OUTSTANDING.length), accent: false },
-      ]} />
-
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-        <input
-          type="text"
-          placeholder="Search invoice #, customer, project…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="h-7 w-72 rounded-md border border-border bg-background px-3 text-[12px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
-        />
-      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-[12.5px]">
@@ -318,10 +271,7 @@ function OutstandingTab({ onCollect }: { onCollect: (id: string) => void }) {
 
 // ─── AllPaymentsTab ───────────────────────────────────────────────────────────
 
-function AllPaymentsTab() {
-  const [search, setSearch] = useState("");
-  const [methodFilter, setMethodFilter] = useState("all");
-
+function AllPaymentsTab({ search, methodFilter }: { search: string; methodFilter: string }) {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return ALL_PAYMENTS.filter((p) => {
@@ -335,40 +285,8 @@ function AllPaymentsTab() {
     });
   }, [search, methodFilter]);
 
-  const totalCollected = ALL_PAYMENTS.reduce((s, p) => s + p.amount, 0);
-  const thisMonth = ALL_PAYMENTS.filter((p) => p.date.startsWith("Jun")).reduce((s, p) => s + p.amount, 0);
-  const lastMonth = ALL_PAYMENTS.filter((p) => p.date.startsWith("May")).reduce((s, p) => s + p.amount, 0);
-
   return (
     <>
-      <StatBar stats={[
-        { icon: CheckCircle2, label: "Total Collected", value: currency(totalCollected), accent: false },
-        { icon: TrendingUp,   label: "This Month",      value: currency(thisMonth),      accent: false },
-        { icon: Receipt,      label: "Last Month",      value: currency(lastMonth),      accent: false },
-        { icon: FileText,     label: "Payments",        value: String(ALL_PAYMENTS.length), accent: false },
-      ]} />
-
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        <input
-          type="text"
-          placeholder="Search invoice #, customer, reference…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="h-7 w-72 rounded-md border border-border bg-background px-3 text-[12px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
-        />
-        <select
-          value={methodFilter}
-          onChange={(e) => setMethodFilter(e.target.value)}
-          className="h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-        >
-          <option value="all">All Methods</option>
-          <option value="check">Check</option>
-          <option value="ach">ACH</option>
-          <option value="credit_card">Credit Card</option>
-          <option value="wire">Wire</option>
-          <option value="cash">Cash</option>
-        </select>
-      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-[12.5px]">
@@ -817,6 +735,20 @@ function PaymentsPage() {
   const { setMeta } = useMeta();
   const [tab, setTab] = useState<MainTab>("outstanding");
   const [collectInvoiceId, setCollectInvoiceId] = useState("");
+  const [outSearch, setOutSearch] = useState("");
+  const [allSearch, setAllSearch] = useState("");
+  const [methodFilter, setMethodFilter] = useState("all");
+
+  // Outstanding stats
+  const totalOutstanding = OUTSTANDING.reduce((s, i) => s + i.balanceDue, 0);
+  const overdueList      = OUTSTANDING.filter((i) => i.status === "overdue");
+  const overdueTotal     = overdueList.reduce((s, i) => s + i.balanceDue, 0);
+  const partialBalance   = OUTSTANDING.filter((i) => i.status === "partial").reduce((s, i) => s + i.balanceDue, 0);
+
+  // All Payments stats
+  const totalCollected = ALL_PAYMENTS.reduce((s, p) => s + p.amount, 0);
+  const thisMonth      = ALL_PAYMENTS.filter((p) => p.date.startsWith("Jun")).reduce((s, p) => s + p.amount, 0);
+  const lastMonth      = ALL_PAYMENTS.filter((p) => p.date.startsWith("May")).reduce((s, p) => s + p.amount, 0);
 
   useEffect(() => {
     setMeta({ title: "Payments", subtitle: "Finance" });
@@ -829,32 +761,54 @@ function PaymentsPage() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center gap-0 border-b border-border overflow-x-auto">
-        {(["outstanding", "all", "collect"] as MainTab[]).map((key) => {
-          const labels: Record<MainTab, string> = {
-            outstanding: "Outstanding",
-            all: "All Payments",
-            collect: "Collect Payment",
-          };
-          return (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={cn(
-                "px-4 py-2.5 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap",
-                tab === key
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {labels[key]}
-            </button>
-          );
-        })}
-      </div>
+      {/* Stat bar */}
+      {tab === "outstanding" && (
+        <StatBar>
+          <StatItem icon={DollarSign}  label="Total Outstanding"                 value={currency(totalOutstanding)} />
+          <StatItem icon={AlertCircle} label={`Overdue (${overdueList.length})`} value={currency(overdueTotal)} accent={overdueList.length > 0} />
+          <StatItem icon={TrendingUp}  label="Partial — Remaining"               value={currency(partialBalance)} />
+          <StatItem icon={FileText}    label="Open Invoices"                     value={String(OUTSTANDING.length)} />
+        </StatBar>
+      )}
+      {tab === "all" && (
+        <StatBar>
+          <StatItem icon={CheckCircle2} label="Total Collected" value={currency(totalCollected)} />
+          <StatItem icon={TrendingUp}   label="This Month"      value={currency(thisMonth)} />
+          <StatItem icon={Receipt}      label="Last Month"      value={currency(lastMonth)} />
+          <StatItem icon={FileText}     label="Payments"        value={String(ALL_PAYMENTS.length)} />
+        </StatBar>
+      )}
 
-      {tab === "outstanding" && <OutstandingTab onCollect={handleCollect} />}
-      {tab === "all"         && <AllPaymentsTab />}
+      {/* Tabs */}
+      <PageTabs>
+        <PageTab active={tab === "outstanding"} onClick={() => setTab("outstanding")}>Outstanding</PageTab>
+        <PageTab active={tab === "all"}         onClick={() => setTab("all")}>All Payments</PageTab>
+        <PageTab active={tab === "collect"}     onClick={() => setTab("collect")}>Collect Payment</PageTab>
+      </PageTabs>
+
+      {/* Filter bar */}
+      {tab === "outstanding" && (
+        <FilterBar>
+          <SearchInput value={outSearch} onChange={setOutSearch} placeholder="Search invoice #, customer, project…" />
+        </FilterBar>
+      )}
+      {tab === "all" && (
+        <FilterBar>
+          <SearchInput value={allSearch} onChange={setAllSearch} placeholder="Search invoice #, customer, reference…" />
+          <FilterSelect value={methodFilter} onChange={setMethodFilter}>
+            <option value="all">All Methods</option>
+            <option value="check">Check</option>
+            <option value="ach">ACH</option>
+            <option value="credit_card">Credit Card</option>
+            <option value="wire">Wire</option>
+            <option value="cash">Cash</option>
+          </FilterSelect>
+        </FilterBar>
+      )}
+
+      {/* Tab content */}
+      {tab === "outstanding" && <OutstandingTab search={outSearch} onCollect={handleCollect} />}
+      {tab === "all"         && <AllPaymentsTab search={allSearch} methodFilter={methodFilter} />}
       {tab === "collect"     && (
         <CollectTab invoiceId={collectInvoiceId} onInvoiceChange={setCollectInvoiceId} />
       )}

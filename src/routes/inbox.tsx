@@ -56,14 +56,14 @@ function InboxPage() {
 
 function ActivityFeed() {
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3">
         {activityItems.map((item) => {
           const { icon: Icon, border, iconColor } = categoryMeta[item.category];
           return (
             <li
               key={item.id}
               className={cn(
-                "flex items-start gap-3 rounded-lg border border-border bg-card px-4 py-3 border-l-2",
+                "flex items-start gap-3 rounded-lg border border-border bg-card px-4 py-3 border-l-2 min-h-[72px]",
                 border,
               )}
             >
@@ -109,7 +109,7 @@ function RequestsPanel() {
           <div
             key={req.id}
             className={cn(
-              "rounded-lg border border-border bg-card p-4 transition-opacity",
+              "flex flex-col rounded-lg border border-border bg-card p-4 transition-opacity min-h-[156px]",
               done && "opacity-50",
             )}
           >
@@ -135,7 +135,7 @@ function RequestsPanel() {
             </div>
 
             {/* Requester + actions */}
-            <div className="mt-3 flex items-center gap-3">
+            <div className="mt-auto pt-3 flex items-center gap-3">
               <Avatar initials={req.initials} />
               <div className="flex flex-col leading-tight">
                 <span className="text-[12px] font-medium">{req.requester}</span>
