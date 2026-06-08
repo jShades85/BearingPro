@@ -1,4 +1,4 @@
-import { Link, useRouterState, Outlet } from "@tanstack/react-router";
+import { Link, useRouterState, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Inbox, LayoutDashboard, Target, Building2, Users, FileText, Package,
@@ -79,12 +79,6 @@ const sections: { title?: string; items: NavItem[] }[] = [
       { to: "/reports", label: "Reports", icon: BarChart2 },
     ],
   },
-  {
-    title: "Settings",
-    items: [
-      { to: "/settings/quote-templates", label: "Quote Templates", icon: FileText },
-    ],
-  },
 ];
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
@@ -102,6 +96,7 @@ const pendingRequestCount = requestItems.length;
 function AppShellContent() {
   const { meta } = useMeta();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   useEffect(() => {
@@ -202,7 +197,13 @@ function AppShellContent() {
                   <span className="text-[12px] font-medium">Justin Shader</span>
                   <span className="text-[10px] text-muted-foreground">Admin · Workspace</span>
                 </div>
-                <Settings className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+                <button
+                  onClick={() => navigate({ to: "/settings/company" })}
+                  className="ml-auto rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  aria-label="Settings"
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                </button>
               </>
             )}
           </div>

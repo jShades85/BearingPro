@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Inbox, Target, FileText, Users, Building2, Briefcase,
   CalendarDays, Package, Receipt, HardHat, Boxes, Truck, CreditCard,
   BarChart2, Plus, ClipboardList, Headphones, ShieldCheck, ShoppingCart,
-  GanttChart,
+  GanttChart, Layers, Puzzle, Settings,
 } from "lucide-react";
 import { COMPANIES } from "@/data/companies";
 import { PROJECTS } from "@/data/projects";
@@ -37,6 +37,10 @@ const NAV = [
   { to: "/finance/invoices",           label: "Invoices",         icon: Receipt,          group: "Finance"    },
   { to: "/finance/payments",           label: "Payments",         icon: CreditCard,       group: "Finance"    },
   { to: "/reports",                    label: "Reports",          icon: BarChart2,        group: "Reports"    },
+  { to: "/settings/company",           label: "Company Profile",  icon: Settings,         group: "Settings"   },
+  { to: "/settings/service-plan-tiers", label: "Service Plan Tiers", icon: Layers,        group: "Settings"   },
+  { to: "/settings/quote-templates",   label: "Quote Templates",  icon: FileText,         group: "Settings"   },
+  { to: "/settings/integrations",      label: "Integrations",     icon: Puzzle,           group: "Settings"   },
 ];
 
 // ─── Quick actions ────────────────────────────────────────────────────────────

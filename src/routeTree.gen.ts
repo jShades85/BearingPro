@@ -19,13 +19,17 @@ import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as CrmRouteImport } from './routes/crm'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as ServiceIndexRouteImport } from './routes/service/index'
 import { Route as SalesIndexRouteImport } from './routes/sales/index'
 import { Route as OperationsIndexRouteImport } from './routes/operations/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
 import { Route as FinanceIndexRouteImport } from './routes/finance/index'
 import { Route as CrmIndexRouteImport } from './routes/crm/index'
+import { Route as SettingsServicePlanTiersRouteImport } from './routes/settings/service-plan-tiers'
 import { Route as SettingsQuoteTemplatesRouteImport } from './routes/settings/quote-templates'
+import { Route as SettingsIntegrationsRouteImport } from './routes/settings/integrations'
+import { Route as SettingsCompanyRouteImport } from './routes/settings/company'
 import { Route as ServiceServiceTicketsRouteImport } from './routes/service/service-tickets'
 import { Route as ServiceServicePlansRouteImport } from './routes/service/service-plans'
 import { Route as SalesQuotesRouteImport } from './routes/sales/quotes'
@@ -105,6 +109,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const ServiceIndexRoute = ServiceIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -135,9 +144,25 @@ const CrmIndexRoute = CrmIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CrmRoute,
 } as any)
+const SettingsServicePlanTiersRoute =
+  SettingsServicePlanTiersRouteImport.update({
+    id: '/service-plan-tiers',
+    path: '/service-plan-tiers',
+    getParentRoute: () => SettingsRoute,
+  } as any)
 const SettingsQuoteTemplatesRoute = SettingsQuoteTemplatesRouteImport.update({
   id: '/quote-templates',
   path: '/quote-templates',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsIntegrationsRoute = SettingsIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsCompanyRoute = SettingsCompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
   getParentRoute: () => SettingsRoute,
 } as any)
 const ServiceServiceTicketsRoute = ServiceServiceTicketsRouteImport.update({
@@ -313,13 +338,17 @@ export interface FileRoutesByFullPath {
   '/sales/quotes': typeof SalesQuotesRouteWithChildren
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
+  '/settings/company': typeof SettingsCompanyRoute
+  '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
+  '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
   '/inventory/': typeof InventoryIndexRoute
   '/operations/': typeof OperationsIndexRoute
   '/sales/': typeof SalesIndexRoute
   '/service/': typeof ServiceIndexRoute
+  '/settings/': typeof SettingsIndexRoute
   '/crm/companies/$companyId': typeof CrmCompaniesCompanyIdRoute
   '/operations/projects/$projectId': typeof OperationsProjectsProjectIdRoute
   '/operations/work-orders/$workOrderId': typeof OperationsWorkOrdersWorkOrderIdRoute
@@ -335,7 +364,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
   '/reports': typeof ReportsRoute
-  '/settings': typeof SettingsRouteWithChildren
   '/crm/contacts': typeof CrmContactsRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
@@ -349,13 +377,17 @@ export interface FileRoutesByTo {
   '/sales/opportunities': typeof SalesOpportunitiesRoute
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
+  '/settings/company': typeof SettingsCompanyRoute
+  '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
+  '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/crm': typeof CrmIndexRoute
   '/finance': typeof FinanceIndexRoute
   '/inventory': typeof InventoryIndexRoute
   '/operations': typeof OperationsIndexRoute
   '/sales': typeof SalesIndexRoute
   '/service': typeof ServiceIndexRoute
+  '/settings': typeof SettingsIndexRoute
   '/crm/companies/$companyId': typeof CrmCompaniesCompanyIdRoute
   '/operations/projects/$projectId': typeof OperationsProjectsProjectIdRoute
   '/operations/work-orders/$workOrderId': typeof OperationsWorkOrdersWorkOrderIdRoute
@@ -397,13 +429,17 @@ export interface FileRoutesById {
   '/sales/quotes': typeof SalesQuotesRouteWithChildren
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
+  '/settings/company': typeof SettingsCompanyRoute
+  '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/quote-templates': typeof SettingsQuoteTemplatesRoute
+  '/settings/service-plan-tiers': typeof SettingsServicePlanTiersRoute
   '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
   '/inventory/': typeof InventoryIndexRoute
   '/operations/': typeof OperationsIndexRoute
   '/sales/': typeof SalesIndexRoute
   '/service/': typeof ServiceIndexRoute
+  '/settings/': typeof SettingsIndexRoute
   '/crm/companies/$companyId': typeof CrmCompaniesCompanyIdRoute
   '/operations/projects/$projectId': typeof OperationsProjectsProjectIdRoute
   '/operations/work-orders/$workOrderId': typeof OperationsWorkOrdersWorkOrderIdRoute
@@ -446,13 +482,17 @@ export interface FileRouteTypes {
     | '/sales/quotes'
     | '/service/service-plans'
     | '/service/service-tickets'
+    | '/settings/company'
+    | '/settings/integrations'
     | '/settings/quote-templates'
+    | '/settings/service-plan-tiers'
     | '/crm/'
     | '/finance/'
     | '/inventory/'
     | '/operations/'
     | '/sales/'
     | '/service/'
+    | '/settings/'
     | '/crm/companies/$companyId'
     | '/operations/projects/$projectId'
     | '/operations/work-orders/$workOrderId'
@@ -468,7 +508,6 @@ export interface FileRouteTypes {
     | '/'
     | '/inbox'
     | '/reports'
-    | '/settings'
     | '/crm/contacts'
     | '/finance/invoices'
     | '/finance/payments'
@@ -482,13 +521,17 @@ export interface FileRouteTypes {
     | '/sales/opportunities'
     | '/service/service-plans'
     | '/service/service-tickets'
+    | '/settings/company'
+    | '/settings/integrations'
     | '/settings/quote-templates'
+    | '/settings/service-plan-tiers'
     | '/crm'
     | '/finance'
     | '/inventory'
     | '/operations'
     | '/sales'
     | '/service'
+    | '/settings'
     | '/crm/companies/$companyId'
     | '/operations/projects/$projectId'
     | '/operations/work-orders/$workOrderId'
@@ -529,13 +572,17 @@ export interface FileRouteTypes {
     | '/sales/quotes'
     | '/service/service-plans'
     | '/service/service-tickets'
+    | '/settings/company'
+    | '/settings/integrations'
     | '/settings/quote-templates'
+    | '/settings/service-plan-tiers'
     | '/crm/'
     | '/finance/'
     | '/inventory/'
     | '/operations/'
     | '/sales/'
     | '/service/'
+    | '/settings/'
     | '/crm/companies/$companyId'
     | '/operations/projects/$projectId'
     | '/operations/work-orders/$workOrderId'
@@ -633,6 +680,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/': {
+      id: '/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/service/': {
       id: '/service/'
       path: '/'
@@ -675,11 +729,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CrmIndexRouteImport
       parentRoute: typeof CrmRoute
     }
+    '/settings/service-plan-tiers': {
+      id: '/settings/service-plan-tiers'
+      path: '/service-plan-tiers'
+      fullPath: '/settings/service-plan-tiers'
+      preLoaderRoute: typeof SettingsServicePlanTiersRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/settings/quote-templates': {
       id: '/settings/quote-templates'
       path: '/quote-templates'
       fullPath: '/settings/quote-templates'
       preLoaderRoute: typeof SettingsQuoteTemplatesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/integrations': {
+      id: '/settings/integrations'
+      path: '/integrations'
+      fullPath: '/settings/integrations'
+      preLoaderRoute: typeof SettingsIntegrationsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/company': {
+      id: '/settings/company'
+      path: '/company'
+      fullPath: '/settings/company'
+      preLoaderRoute: typeof SettingsCompanyRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/service/service-tickets': {
@@ -1051,11 +1126,19 @@ const ServiceRouteWithChildren =
   ServiceRoute._addFileChildren(ServiceRouteChildren)
 
 interface SettingsRouteChildren {
+  SettingsCompanyRoute: typeof SettingsCompanyRoute
+  SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
   SettingsQuoteTemplatesRoute: typeof SettingsQuoteTemplatesRoute
+  SettingsServicePlanTiersRoute: typeof SettingsServicePlanTiersRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
 const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsCompanyRoute: SettingsCompanyRoute,
+  SettingsIntegrationsRoute: SettingsIntegrationsRoute,
   SettingsQuoteTemplatesRoute: SettingsQuoteTemplatesRoute,
+  SettingsServicePlanTiersRoute: SettingsServicePlanTiersRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
 }
 
 const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
