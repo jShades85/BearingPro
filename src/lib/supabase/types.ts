@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      inventory_locations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          tenant_id: string
+          type: Database["public"]["Enums"]["location_type"]
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          tenant_id: string
+          type?: Database["public"]["Enums"]["location_type"]
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          tenant_id?: string
+          type?: Database["public"]["Enums"]["location_type"]
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_locations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_locations_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          is_default: boolean
+          name: string
+          tenant_id: string
+          tier: Database["public"]["Enums"]["permission_tier"]
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          tenant_id: string
+          tier: Database["public"]["Enums"]["permission_tier"]
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          tenant_id?: string
+          tier?: Database["public"]["Enums"]["permission_tier"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           address: string | null
@@ -76,26 +156,87 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
-          role: string
+          role_id: string | null
           tenant_id: string
+          vehicle_id: string | null
         }
         Insert: {
           created_at?: string
           full_name?: string | null
           id: string
-          role?: string
+          role_id?: string | null
           tenant_id: string
+          vehicle_id?: string | null
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: string
-          role?: string
+          role_id?: string | null
           tenant_id?: string
+          vehicle_id?: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "user_profiles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_profiles_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          license_plate: string | null
+          make: string | null
+          model: string | null
+          name: string
+          tenant_id: string
+          year: number | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          license_plate?: string | null
+          make?: string | null
+          model?: string | null
+          name: string
+          tenant_id: string
+          year?: number | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          license_plate?: string | null
+          make?: string | null
+          model?: string | null
+          name?: string
+          tenant_id?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -109,9 +250,17 @@ export type Database = {
     }
     Functions: {
       current_tenant_id: { Args: never; Returns: string }
+      seed_default_roles: { Args: { p_tenant_id: string }; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      location_type: "warehouse" | "vehicle" | "other"
+      permission_tier:
+        | "owner"
+        | "admin"
+        | "office"
+        | "field"
+        | "warehouse"
+        | "readonly"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -238,6 +387,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      location_type: ["warehouse", "vehicle", "other"],
+      permission_tier: [
+        "owner",
+        "admin",
+        "office",
+        "field",
+        "warehouse",
+        "readonly",
+      ],
+    },
   },
 } as const
