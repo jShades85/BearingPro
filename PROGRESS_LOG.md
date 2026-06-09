@@ -6,8 +6,8 @@
 
 ## Current Status
 
-**Phase:** Backend — Operations edit live, Inventory next
-**Last Updated:** Session 028
+**Phase:** Backend — Inventory Catalog live, Stock next
+**Last Updated:** Session 029
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -17,7 +17,7 @@
 
 **Start here next session:**
 
-1. **Inventory module** — `catalog_items` + `stock_locations` tables + wire Inventory pages
+1. **Inventory → Stock** — `stock_locations` + `stock` tables + wire Stock page (quantities per location)
 2. **Service Plans** — `service_plans` table + wire Service Plans page
 
 ---
@@ -45,7 +45,8 @@
 | Sales (Opps, Quotes) | ✅ Opps live | Opportunities reads/writes DB; kanban stage moves + new opp modal wired; Quotes still demo |
 | Operations (Projects, Work Orders, Team, Scheduling) | ✅ Projects + WOs live | Schema + RLS live; list + detail pages read/write DB; status persists; Edit drawer live (name, dates, PM, value); Convert from Opportunity wired; Team + Scheduling still demo |
 | Service (Tickets, Plans) | ✅ Tickets live | Schema + RLS live; list reads/writes DB; status updates + notes persist; New Ticket modal wired; Service Plans still demo |
-| Inventory (Catalog, Stock, POs, Vendors) | 🟡 Demo data | Full UI built |
+| Inventory → Catalog | ✅ Live | Schema + RLS live; category landing + item grid wired; tenant-defined categories with trade templates + icon picker; CategorySetupModal on first visit; New Category / New Item context-aware button |
+| Inventory → Stock, POs, Vendors | 🟡 Demo data | Full UI built |
 | Finance (Invoices, Payments) | 🟡 Demo data | Full UI built |
 | Reports | 🟡 Placeholder | 27-report catalog defined, all coming soon |
 | Settings (Company, Tiers, Integrations) | ✅ Company live | Company Profile reads/writes `tenants` table; Tiers + Integrations still demo |
@@ -82,6 +83,9 @@
 | `20260610000007_operations_seed` | 5 seed projects + 5 work orders for test tenant | ✅ Live |
 | `20260610000008_service_tickets` | `service_tickets` table + full RLS | ✅ Live |
 | `20260610000009_service_tickets_seed` | 6 seed service tickets for test tenant | ✅ Live |
+| `20260610000012_categories_catalog` | `categories` + `catalog_items` tables, full RLS, `set_updated_at()` trigger, AV/Security seed data (6 categories, 12 items) | ✅ Live |
+| `20260610000013_catalog_image_urls` | Seed `image_url` for Axis P3245-V item | ✅ Live |
+| `20260610000014_categories_icon` | `icon` column on `categories` (default `Package2`), backfill for seeded categories | ✅ Live |
 
 **Trigger logic:** New signup → creates `tenants` row + `user_profiles` row (Owner role). Invited user (has `tenant_id` in metadata) → joins existing tenant with assigned role. Upserts on conflict so re-inviting a removed user reactivates their profile.
 
@@ -279,3 +283,31 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 **Patterns to remember (also in Claude memory):**
 - Query key collision: if a page crashes only when coming from a specific other page, check for two queries using the same key but different select shapes
 - React error #185: look for derived objects (created inline during render) inside `useEffect` dependency arrays — wrap them in `useMemo`
+
+---
+
+## Session 029 — Inventory Catalog Live
+
+**Date:** June 9, 2026
+
+**Completed:**
+
+- **Migration 20260610000012**: `categories` + `catalog_items` tables with full RLS; `set_updated_at()` trigger on catalog_items; AV/Security seed data (6 categories, 12 items) for test tenant
+- **Catalog page fully rewritten** (`/inventory/catalog`): wired to Supabase — no more demo data
+  - **Category landing**: colored card grid per tenant category; click to drill in; breadcrumb nav back
+  - **CategorySetupModal**: auto-appears on first visit (no categories yet); multi-select trade templates (AV, Security, HVAC, Plumbing, Electrical, General Contractor); custom category input; Labor deduped across templates; color palette auto-assigned; icon included per category from template config
+  - **Item card grid**: product photo when `image_url` set, falls back to category initial; manufacturer badge; category chip; MSRP; hover Edit shortcut
+  - **Item list view**: full table with category chip, cost, MSRP, UoM, status, hover Edit
+  - **ItemDrawer**: view mode (pricing grid with margin %, labor details, product image if set) + edit mode (all fields, category select, manufacturer datalist, UoM suggestions, labor attach with hours + rate override)
+  - **Search**: bypasses category hierarchy, shows Category chip on results, global across all items
+  - **Context-aware New button**: "New Category" on landing → `NewCategoryDialog` (name + color swatches + searchable icon picker); "New Item" when drilled in → item drawer
+- **Icon system**: `src/data/catalog-icons.ts` — 70-icon curated set across 8 trade groups (Security, AV, Networking, Electrical, HVAC, Plumbing, Construction, General); `ICON_MAP` for dynamic Lucide rendering; `ICON_GROUPS` for searchable picker UI
+- **Migration 20260610000014**: `icon` column on `categories`; backfilled for seeded AV/Security categories
+- **CategoryCard**: renders Lucide icon (h-10, colored) instead of initials
+- **Trade templates updated**: `src/data/trade-templates.ts` — categories now `{ name, icon }[]`; all 30 template categories pre-assigned relevant icons
+- **Product image**: Axis P3245-V image URL seeded (migration 20260610000013); `ItemCard` + drawer view show `<img>` when `image_url` is set, fall back to category initial otherwise
+
+**Architecture decisions:**
+- Catalog = master data (what you can quote/sell); Stock = transactional (quantities per location) — separate tables, confirmed industry standard
+- Categories are tenant-defined — no hardcoded enum; trade-type templates are static app config inserted to DB on first setup
+- Icon stored as Lucide component name string in DB (e.g. `"Camera"`); rendered via `ICON_MAP[icon]` lookup; falls back to `Package2`
