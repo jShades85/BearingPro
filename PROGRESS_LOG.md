@@ -43,7 +43,7 @@
 | Vercel Deployment | ✅ Live | bearingpro.tech, nitro vercel preset |
 | CRM (Contacts/Companies/Lead Inbox) | ✅ Live | Schema + RLS live; all pages wired; Lead Inbox reads/writes `leads` table; Convert button creates Contact + Opportunity atomically |
 | Sales (Opps, Quotes) | ✅ Opps live | Opportunities reads/writes DB; kanban stage moves + new opp modal wired; Quotes still demo |
-| Operations (Projects, Work Orders, Team, Scheduling) | ✅ Projects + WOs live | Schema + RLS live; list + detail pages read/write DB; status persists; Convert from Opportunity wired; Team + Scheduling still demo |
+| Operations (Projects, Work Orders, Team, Scheduling) | ✅ Projects + WOs live | Schema + RLS live; list + detail pages read/write DB; status persists; Edit drawer live (name, dates, PM, value); Convert from Opportunity wired; Team + Scheduling still demo |
 | Service (Tickets, Plans) | ✅ Tickets live | Schema + RLS live; list reads/writes DB; status updates + notes persist; New Ticket modal wired; Service Plans still demo |
 | Inventory (Catalog, Stock, POs, Vendors) | 🟡 Demo data | Full UI built |
 | Finance (Invoices, Payments) | 🟡 Demo data | Full UI built |
@@ -51,7 +51,7 @@
 | Settings (Company, Tiers, Integrations) | ✅ Company live | Company Profile reads/writes `tenants` table; Tiers + Integrations still demo |
 | Settings → Roles | ✅ Live | Full CRUD, module-level read/write permissions, color picker, expandable permission grid |
 | Settings → Team Members | ✅ Live | Member list, edit panel (role/vehicle), invite flow (base64 token link), soft delete |
-| Quote Builder | ⏸ Deferred | Needs backend |
+| Quote Builder | ⏸ Deferred | Needs Inventory/catalog backend first; triggers from Estimating stage on Opportunity |
 | Planner / Gantt | ⏸ Deferred | Needs backend |
 
 ---
@@ -97,6 +97,9 @@
 - **Schema follows UI** — build the page first, derive the schema from what it needs
 - **Invite-only for existing companies** — signup creates new tenant; teammates join via invite link (tenant_id in metadata)
 - **Stripe** for payments — card + ACH, payment links for commercial NET 30 clients
+- **Full data trail** — every record links back to its origin: Lead → Contact → Opportunity → Quote (versioned) → Project → Work Orders → Invoices. No orphaned records.
+- **Quote Builder triggers from Estimating stage** — "Create Quote" button on opp in Estimating; "Edit Quote" in Negotiation (versioned v1→v2→v3); opp value stays in sync with latest revision. Closed Won converts accepted quote to Project.
+- **Catalog (Inventory) is a prerequisite for Quote Builder** — can't build real quotes without priceable line items. Build order: Inventory → Quote Builder → Project conversion.
 - **Email confirmation disabled** in dev (`mailer_autoconfirm: true` via Management API)
 - **Nitro preset: `vercel`** — set in `vite.config.ts`; Lovable config defaults to cloudflare and skips nitro outside sandbox
 - **`.npmrc`** — `legacy-peer-deps=true` required for Vercel installs
