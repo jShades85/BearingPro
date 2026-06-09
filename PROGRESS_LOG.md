@@ -7,7 +7,7 @@
 ## Current Status
 
 **Phase:** Backend — Operations edit live, Inventory next
-**Last Updated:** Session 027
+**Last Updated:** Session 028
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -252,6 +252,16 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - Opportunity fields auto-populated from lead: name, assigned rep, linked contact, notes
 - Opportunity fields filled in later by rep: deal value, close date, probability
 - Build order: `opportunities` table first → `leads` table second → wire Convert button third
+
+---
+
+## Session 028 — Disable Stub Dropdown Actions
+
+**Date:** June 9, 2026
+
+**Completed:**
+
+- **Disabled unimplemented dropdown actions** on Project detail (`/operations/projects/$projectId`) and Work Order detail (`/operations/work-orders/$workOrderId`): Duplicate / Archive / Delete items had `onClick={() => console.log(...)}` stubs — replaced with `disabled` so they visually signal unavailability instead of silently doing nothing.
 
 ---
 
