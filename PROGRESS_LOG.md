@@ -6,8 +6,8 @@
 
 ## Current Status
 
-**Phase:** Backend — Service Tickets live, Inventory next
-**Last Updated:** Session 026
+**Phase:** Backend — Operations edit live, Inventory next
+**Last Updated:** Session 027
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -17,9 +17,8 @@
 
 **Start here next session:**
 
-1. **Operations → Project/WO detail edit** — "Edit" button on detail pages (project name, dates, PM, contract value)
-2. **Inventory module** — `catalog_items` + `stock_locations` tables + wire Inventory pages
-3. **Service Plans** — `service_plans` table + wire Service Plans page
+1. **Inventory module** — `catalog_items` + `stock_locations` tables + wire Inventory pages
+2. **Service Plans** — `service_plans` table + wire Service Plans page
 
 ---
 
