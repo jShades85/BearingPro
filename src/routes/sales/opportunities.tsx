@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
 import { Avatar, PriorityDot } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
@@ -11,9 +13,10 @@ import {
 import { cn } from "@/lib/utils";
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/sales/opportunities")({
-  head: () => ({ meta: [{ title: "Opportunities · Port City Sound & Security" }] }),
+  head: () => ({ meta: [{ title: "Opportunities · BearingPro" }] }),
   component: Opportunities,
 });
 
@@ -23,24 +26,29 @@ type OpportunityStage =
   | "site-visit" | "estimating" | "proposal-sent"
   | "negotiation" | "closed-won" | "closed-lost";
 
-type Source = "Referral" | "Repeat Client" | "Cold Outreach" | "Bid/RFP";
+type OppSource = "Referral" | "Repeat Client" | "Cold Outreach" | "Bid/RFP" | "Phone" | "Web Form" | "Email" | "Walk-in";
 type ActivityKind = "call" | "quote" | "site-visit" | "proposal" | "note";
 type QuoteStatus = "draft" | "sent" | "viewed" | "accepted" | "expired";
 
-interface LinkedQuote {
-  number: string;
-  value: number;
-  status: QuoteStatus;
-}
+interface LinkedQuote { number: string; value: number; status: QuoteStatus }
+interface ActivityEntry { kind: ActivityKind; text: string; date: string }
 
-interface ActivityEntry {
-  kind: ActivityKind;
-  text: string;
-  date: string;
+interface DbOpportunity {
+  id: string;
+  title: string;
+  value: number | null;
+  stage: OpportunityStage;
+  close_date: string | null;
+  source: OppSource | null;
+  priority: Priority;
+  notes: string | null;
+  company: { id: string; name: string } | null;
+  contact: { id: string; full_name: string } | null;
+  assignee: { id: string; full_name: string | null } | null;
 }
 
 interface Opportunity {
-  id: number;
+  id: string;
   title: string;
   company: string;
   contact: string;
@@ -48,13 +56,18 @@ interface Opportunity {
   stage: OpportunityStage;
   closeDate: string;
   rep: string;
+  repId: string;
   repInitials: string;
-  source: Source;
+  source: OppSource;
   priority: Priority;
   notes: string;
   linkedQuote?: LinkedQuote;
   activityFeed: ActivityEntry[];
 }
+
+interface TeamMember { id: string; full_name: string | null }
+interface CompanyOption { id: string; name: string }
+interface ContactOption { id: string; full_name: string }
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -94,219 +107,93 @@ const quoteStatusMeta: Record<QuoteStatus, { label: string; cls: string }> = {
 };
 
 const activityIcon: Record<ActivityKind, React.ComponentType<{ className?: string }>> = {
-  call:       Phone,
-  quote:      FileText,
-  "site-visit": MapPin,
-  proposal:   Send,
-  note:       MessageSquare,
+  call: Phone, quote: FileText, "site-visit": MapPin, proposal: Send, note: MessageSquare,
 };
 
 const activityColor: Record<ActivityKind, string> = {
-  call:       "text-green-500",
-  quote:      "text-blue-500",
-  "site-visit": "text-teal-500",
-  proposal:   "text-amber-500",
-  note:       "text-violet-500",
+  call: "text-green-500", quote: "text-blue-500",
+  "site-visit": "text-teal-500", proposal: "text-amber-500", note: "text-violet-500",
 };
 
-// ─── Demo data ────────────────────────────────────────────────────────────────
+const sourceOptions: OppSource[] = ["Referral", "Repeat Client", "Cold Outreach", "Bid/RFP", "Phone", "Web Form", "Email", "Walk-in"];
 
-const INITIAL: Opportunity[] = [
-  {
-    id: 1,
-    title: "Ballroom A/V + control room",
-    company: "Harborview Hotel",
-    contact: "Marcus Bell",
-    value: 76400,
-    stage: "site-visit",
-    closeDate: "2026-07-15",
-    rep: "Damon Reyes",
-    repInitials: "DR",
-    source: "Repeat Client",
-    priority: "high",
-    notes: "Large ballroom with tricky acoustics. Need to see the space before finalizing scope.",
-    activityFeed: [
-      { kind: "call",       text: "Call — confirmed site visit for Jun 18",        date: "Jun 05" },
-      { kind: "call",       text: "Call — intro, discussed ballroom AV needs",     date: "Jun 03" },
-      { kind: "note",       text: "Opportunity created from repeat client request", date: "Jun 01" },
-    ],
-  },
-  {
-    id: 2,
-    title: "Exam room A/V systems",
-    company: "Riverside Medical Center",
-    contact: "Dr. Lena Park",
-    value: 84200,
-    stage: "proposal-sent",
-    closeDate: "2026-06-28",
-    rep: "Audrey Chen",
-    repInitials: "AC",
-    source: "Bid/RFP",
-    priority: "high",
-    linkedQuote: { number: "Q-2026-0392", value: 84200, status: "sent" },
-    notes: "RFP response submitted. Waiting for procurement committee review. Decision expected June 25.",
-    activityFeed: [
-      { kind: "quote",      text: "Quote Q-2026-0392 sent — $84,200",              date: "Jun 01" },
-      { kind: "proposal",   text: "Proposal delivered to procurement committee",    date: "May 29" },
-      { kind: "site-visit", text: "Site visit — 12 exam rooms measured",           date: "May 20" },
-      { kind: "call",       text: "Call — reviewed RFP requirements with Dr. Park", date: "May 15" },
-    ],
-  },
-  {
-    id: 3,
-    title: "Conference room refresh — 3 floors",
-    company: "Downtown Office Retrofit",
-    contact: "Eli Voss",
-    value: 52000,
-    stage: "negotiation",
-    closeDate: "2026-06-20",
-    rep: "Damon Reyes",
-    repInitials: "DR",
-    source: "Repeat Client",
-    priority: "med",
-    notes: "Client requesting 15% discount. We can offer 8% if they sign by month end.",
-    activityFeed: [
-      { kind: "call",       text: "Call — negotiating final scope and pricing",    date: "Jun 05" },
-      { kind: "proposal",   text: "Proposal sent — $52,000",                       date: "May 25" },
-      { kind: "site-visit", text: "Site walkthrough — floors 3, 7, 12",           date: "May 10" },
-      { kind: "call",       text: "Call — confirmed conference room count",         date: "May 02" },
-    ],
-  },
-  {
-    id: 4,
-    title: "Multi-room audio system",
-    company: "Northbeam Architects",
-    contact: "Iris Wang",
-    value: 38500,
-    stage: "estimating",
-    closeDate: "2026-07-30",
-    rep: "Marcus Bell",
-    repInitials: "MB",
-    source: "Referral",
-    priority: "med",
-    notes: "Referred by Caleb Ortiz. New office build-out — AV being spec'd into design drawings.",
-    activityFeed: [
-      { kind: "site-visit", text: "Site visit — reviewed design drawings",         date: "Jun 02" },
-      { kind: "call",       text: "Call — intro meeting, collected requirements",  date: "May 28" },
-    ],
-  },
-  {
-    id: 7,
-    title: "Office PA and paging system",
-    company: "Lakeside Comfort Systems",
-    contact: "Carla Ruiz",
-    value: 18500,
-    stage: "site-visit",
-    closeDate: "2026-07-18",
-    rep: "Audrey Chen",
-    repInitials: "AC",
-    source: "Referral",
-    priority: "med",
-    notes: "Small warehouse office. PA system + 4-zone paging. Should be a straightforward install.",
-    activityFeed: [
-      { kind: "call", text: "Call — confirmed site visit for Jun 12", date: "Jun 04" },
-      { kind: "call", text: "Call — intro, discussed paging needs",   date: "May 30" },
-    ],
-  },
-  {
-    id: 8,
-    title: "2-room conference AV",
-    company: "River North Plumbing",
-    contact: "James Pruitt",
-    value: 9800,
-    stage: "estimating",
-    closeDate: "2026-07-05",
-    rep: "Iris Wang",
-    repInitials: "IW",
-    source: "Bid/RFP",
-    priority: "low",
-    notes: "Two conference rooms, basic AV. Labor-heavy given tight ceiling clearance.",
-    activityFeed: [
-      { kind: "site-visit", text: "Site visit — rooms measured, ceiling noted",   date: "Jun 01" },
-      { kind: "call",       text: "Call — initial scope discussion",               date: "May 26" },
-    ],
-  },
-  {
-    id: 9,
-    title: "Tenant showroom display wall",
-    company: "Coastal Electric Co",
-    contact: "Nina Torres",
-    value: 34000,
-    stage: "proposal-sent",
-    closeDate: "2026-07-01",
-    rep: "Marcus Bell",
-    repInitials: "MB",
-    source: "Cold Outreach",
-    priority: "med",
-    linkedQuote: { number: "Q-2026-0388", value: 34000, status: "viewed" },
-    notes: "Showroom LED wall + ambient audio. Quote was viewed 3× — strong signal.",
-    activityFeed: [
-      { kind: "quote",      text: "Quote Q-2026-0388 sent — $34,000",             date: "May 31" },
-      { kind: "site-visit", text: "Site visit — showroom floor measured",          date: "May 22" },
-      { kind: "call",       text: "Call — intro, discussed display concept",       date: "May 14" },
-    ],
-  },
-  {
-    id: 10,
-    title: "Common area A/V + access control",
-    company: "Harbor View Apartments",
-    contact: "Greg Moss",
-    value: 67500,
-    stage: "closed-won",
-    closeDate: "2026-06-05",
-    rep: "Audrey Chen",
-    repInitials: "AC",
-    source: "Repeat Client",
-    priority: "med",
-    linkedQuote: { number: "Q-2026-0381", value: 67500, status: "accepted" },
-    notes: "Contract signed. Project kick-off scheduled for June 23.",
-    activityFeed: [
-      { kind: "note",     text: "Contract signed — kick-off scheduled Jun 23",   date: "Jun 05" },
-      { kind: "quote",    text: "Quote Q-2026-0381 accepted — $67,500",          date: "Jun 02" },
-      { kind: "proposal", text: "Final proposal delivered",                        date: "May 28" },
-      { kind: "call",     text: "Call — scope finalized with Greg Moss",          date: "May 20" },
-    ],
-  },
-  {
-    id: 11,
-    title: "District-wide classroom AV",
-    company: "Tri-County School Dist.",
-    contact: "Supt. D. Hale",
-    value: 180000,
-    stage: "closed-lost",
-    closeDate: "2026-05-30",
-    rep: "Damon Reyes",
-    repInitials: "DR",
-    source: "Bid/RFP",
-    priority: "high",
-    notes: "Lost to lower bid. Follow up when contract is up for renewal (2028).",
-    activityFeed: [
-      { kind: "call",     text: "Call — notified of award to competitor",         date: "May 30" },
-      { kind: "proposal", text: "Final proposal submitted — $180,000",            date: "May 01" },
-      { kind: "site-visit", text: "Site visits — 14 schools surveyed",           date: "Apr 15" },
-      { kind: "call",     text: "Call — pre-bid conference with district",         date: "Mar 28" },
-    ],
-  },
-  {
-    id: 12,
-    title: "Training room AV install",
-    company: "Midwest Plumbing Supply",
-    contact: "Phil Garza",
-    value: 4200,
-    stage: "negotiation",
-    closeDate: "2026-06-18",
-    rep: "Iris Wang",
-    repInitials: "IW",
-    source: "Referral",
-    priority: "low",
-    notes: "Small job but great relationship. Phil referred two clients last year.",
-    activityFeed: [
-      { kind: "call",     text: "Call — negotiating display mount pricing",       date: "Jun 04" },
-      { kind: "proposal", text: "Proposal sent — $4,200",                         date: "May 28" },
-      { kind: "call",     text: "Call — single training room, scope confirmed",   date: "May 20" },
-    ],
-  },
-];
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+function toUiOpp(d: DbOpportunity): Opportunity {
+  const repName = d.assignee?.full_name ?? "—";
+  return {
+    id:           d.id,
+    title:        d.title,
+    company:      d.company?.name ?? "—",
+    contact:      d.contact?.full_name ?? "—",
+    value:        Number(d.value ?? 0),
+    stage:        d.stage,
+    closeDate:    d.close_date ?? "—",
+    rep:          repName,
+    repId:        d.assignee?.id ?? "",
+    repInitials:  repName.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase(),
+    source:       d.source ?? "Referral",
+    priority:     d.priority ?? "med",
+    notes:        d.notes ?? "",
+    activityFeed: [],
+  };
+}
+
+async function fetchOpportunities(): Promise<DbOpportunity[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("opportunities")
+    .select("*, company:companies(id,name), contact:contacts(id,full_name), assignee:user_profiles!assigned_to(id,full_name)")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as DbOpportunity[];
+}
+
+async function fetchTeamMembers(): Promise<TeamMember[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("user_profiles").select("id,full_name").eq("is_active", true).order("full_name");
+  if (error) throw error;
+  return data ?? [];
+}
+
+async function fetchCompanyOptions(): Promise<CompanyOption[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("companies").select("id,name").order("name");
+  if (error) throw error;
+  return data ?? [];
+}
+
+async function fetchContactOptions(): Promise<ContactOption[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("contacts").select("id,full_name").order("full_name");
+  if (error) throw error;
+  return data ?? [];
+}
+
+async function updateStage(id: string, stage: OpportunityStage) {
+  const supabase = createClient();
+  const { error } = await supabase.from("opportunities").update({ stage }).eq("id", id);
+  if (error) throw error;
+}
+
+async function updateNotes(id: string, notes: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("opportunities").update({ notes }).eq("id", id);
+  if (error) throw error;
+}
+
+async function insertOpportunity(values: {
+  title: string; company_id: string | null; contact_id: string | null;
+  assigned_to: string | null; value: number | null; stage: OpportunityStage;
+  close_date: string | null; source: OppSource | null; priority: Priority; notes: string;
+}) {
+  const supabase = createClient();
+  const { data: tenantRow } = await supabase.from("tenants").select("id").single();
+  if (!tenantRow) throw new Error("No tenant");
+  const { error } = await supabase.from("opportunities").insert({ ...values, tenant_id: tenantRow.id });
+  if (error) throw error;
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -324,23 +211,30 @@ function StageBadge({ stage }: { stage: OpportunityStage }) {
 
 function Opportunities() {
   const { setMeta } = useMeta();
-  const [opps, setOpps] = useState<Opportunity[]>(INITIAL);
+  const qc = useQueryClient();
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [search, setSearch] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
   const [assignedFilter, setAssignedFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Opportunity | null>(null);
+  const [newOpen, setNewOpen] = useState(false);
 
-  const reps = useMemo(() => Array.from(new Set(opps.map((o) => o.rep))).sort(), [opps]);
+  const { data: dbOpps = [] } = useQuery({ queryKey: ["opportunities"], queryFn: fetchOpportunities });
+  const { data: team = [] } = useQuery({ queryKey: ["team-members"], queryFn: fetchTeamMembers });
+
+  const opps = useMemo(() => dbOpps.map(toUiOpp), [dbOpps]);
+
+  const stageMutation = useMutation({
+    mutationFn: ({ id, stage }: { id: string; stage: OpportunityStage }) => updateStage(id, stage),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
+  });
 
   useEffect(() => {
-    const pipeline = opps
-      .filter((o) => o.stage !== "closed-lost")
-      .reduce((s, o) => s + o.value, 0);
+    const pipeline = opps.filter((o) => o.stage !== "closed-lost").reduce((s, o) => s + o.value, 0);
     setMeta({
       title: "Opportunities",
-      subtitle: `${opps.length} opportunities · ${currency(pipeline)} pipeline`,
-      onNew: () => console.log("New opportunity"),
+      subtitle: opps.length ? `${opps.length} opportunities · ${currency(pipeline)} pipeline` : "Opportunities",
+      onNew: () => setNewOpen(true),
       newLabel: "New Opportunity",
     });
   }, [setMeta, opps]);
@@ -350,52 +244,42 @@ function Opportunities() {
     return opps.filter((o) => {
       if (q && !o.title.toLowerCase().includes(q) && !o.company.toLowerCase().includes(q) && !o.contact.toLowerCase().includes(q)) return false;
       if (priorityFilter !== "all" && o.priority !== priorityFilter) return false;
-      if (assignedFilter !== "all" && o.rep !== assignedFilter) return false;
+      if (assignedFilter !== "all" && o.repId !== assignedFilter) return false;
       return true;
     });
   }, [opps, search, priorityFilter, assignedFilter]);
 
-  const moveStage = (id: number, stage: OpportunityStage) =>
-    setOpps((prev) => prev.map((o) => (o.id === id ? { ...o, stage } : o)));
+  const moveStage = (id: string, stage: OpportunityStage) => stageMutation.mutate({ id, stage });
 
   return (
     <div className="flex h-full flex-col">
-      {/* Filter + view toggle bar */}
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search opportunities…" />
         <FilterSelect value={priorityFilter} onChange={(v) => setPriorityFilter(v as Priority | "all")}>
           <option value="all">All Priorities</option>
+          <option value="urgent">Urgent</option>
           <option value="high">High</option>
           <option value="med">Medium</option>
           <option value="low">Low</option>
         </FilterSelect>
         <FilterSelect value={assignedFilter} onChange={(v) => setAssignedFilter(v)}>
           <option value="all">All Assigned</option>
-          {reps.map((r) => <option key={r} value={r}>{r}</option>)}
+          {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
         </FilterSelect>
         <span className="text-[11px] text-muted-foreground font-mono">
           {filtered.length} of {opps.length}
         </span>
-        {/* View toggle */}
         <div className="ml-auto flex items-center rounded-md border border-border overflow-hidden">
           <button
-            type="button"
-            onClick={() => setView("kanban")}
-            className={cn(
-              "flex h-7 w-7 items-center justify-center transition-colors",
-              view === "kanban" ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground",
-            )}
+            type="button" onClick={() => setView("kanban")}
+            className={cn("flex h-7 w-7 items-center justify-center transition-colors", view === "kanban" ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground")}
             aria-label="Kanban view"
           >
             <KanbanSquare className="h-3.5 w-3.5" />
           </button>
           <button
-            type="button"
-            onClick={() => setView("list")}
-            className={cn(
-              "flex h-7 w-7 items-center justify-center border-l border-border transition-colors",
-              view === "list" ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground",
-            )}
+            type="button" onClick={() => setView("list")}
+            className={cn("flex h-7 w-7 items-center justify-center border-l border-border transition-colors", view === "list" ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground")}
             aria-label="List view"
           >
             <List className="h-3.5 w-3.5" />
@@ -407,10 +291,30 @@ function Opportunities() {
         ? <KanbanView opps={filtered} onMove={moveStage} onSelect={setSelected} />
         : <ListView opps={filtered} onSelect={setSelected} />}
 
-      {/* Detail drawer */}
       <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-        {selected !== null && <OpportunityDrawer key={selected.id} opp={selected} />}
+        {selected !== null && (
+          <OpportunityDrawer
+            key={selected.id}
+            opp={selected}
+            onNotesChange={(notes) => {
+              updateNotes(selected.id, notes);
+              qc.invalidateQueries({ queryKey: ["opportunities"] });
+            }}
+          />
+        )}
       </Sheet>
+
+      <Dialog open={newOpen} onOpenChange={setNewOpen}>
+        <NewOpportunityModal
+          team={team}
+          onClose={() => setNewOpen(false)}
+          onSave={async (values) => {
+            await insertOpportunity(values);
+            qc.invalidateQueries({ queryKey: ["opportunities"] });
+            setNewOpen(false);
+          }}
+        />
+      </Dialog>
     </div>
   );
 }
@@ -418,22 +322,18 @@ function Opportunities() {
 // ─── Kanban view ──────────────────────────────────────────────────────────────
 
 function KanbanView({
-  opps,
-  onMove,
-  onSelect,
+  opps, onMove, onSelect,
 }: {
   opps: Opportunity[];
-  onMove: (id: number, stage: OpportunityStage) => void;
+  onMove: (id: string, stage: OpportunityStage) => void;
   onSelect: (opp: Opportunity) => void;
 }) {
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   return (
     <div style={{ flex: 1, overflowX: "auto", overflowY: "hidden", paddingRight: "24px" }}>
       <div className="relative flex h-full flex-row gap-3 p-4" style={{ minWidth: "max-content" }}>
-        {openId !== null && (
-          <div className="fixed inset-0 z-10" onClick={() => setOpenId(null)} />
-        )}
+        {openId !== null && <div className="fixed inset-0 z-10" onClick={() => setOpenId(null)} />}
         {stageOrder.map((stage) => {
           const items = opps.filter((o) => o.stage === stage);
           const total = items.reduce((s, o) => s + o.value, 0);
@@ -477,11 +377,7 @@ function KanbanView({
 }
 
 function KanbanCard({
-  opp,
-  selectorOpen,
-  onOpenSelector,
-  onMove,
-  onSelect,
+  opp, selectorOpen, onOpenSelector, onMove, onSelect,
 }: {
   opp: Opportunity;
   selectorOpen: boolean;
@@ -508,10 +404,7 @@ function KanbanCard({
               <button
                 key={s}
                 onClick={(e) => { e.stopPropagation(); onMove(s); }}
-                className={cn(
-                  "flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] hover:bg-accent",
-                  s === opp.stage && "bg-accent/60",
-                )}
+                className={cn("flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] hover:bg-accent", s === opp.stage && "bg-accent/60")}
               >
                 <StageBadge stage={s} />
               </button>
@@ -519,7 +412,6 @@ function KanbanCard({
           </div>
         )}
       </div>
-
       <div className="mt-1.5 text-[12.5px] font-semibold leading-snug truncate">{opp.title}</div>
       <div className="text-[11px] text-muted-foreground truncate">{opp.company} · {opp.contact}</div>
       <div className="mt-2.5 flex items-center justify-between">
@@ -549,13 +441,10 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
   const rows = useMemo(() => {
     return [...opps].sort((a, b) => {
       let av: number, bv: number;
-      if (sortCol === "value") {
-        av = a.value; bv = b.value;
-      } else if (sortCol === "stage") {
-        av = stageOrder.indexOf(a.stage); bv = stageOrder.indexOf(b.stage);
-      } else if (sortCol === "priority") {
-        av = priorityOrder[a.priority]; bv = priorityOrder[b.priority];
-      } else {
+      if (sortCol === "value") { av = a.value; bv = b.value; }
+      else if (sortCol === "stage") { av = stageOrder.indexOf(a.stage); bv = stageOrder.indexOf(b.stage); }
+      else if (sortCol === "priority") { av = priorityOrder[a.priority]; bv = priorityOrder[b.priority]; }
+      else {
         const as = String(a[sortCol]).toLowerCase();
         const bs = String(b[sortCol]).toLowerCase();
         return (as < bs ? -1 : as > bs ? 1 : 0) * (sortDir === "asc" ? 1 : -1);
@@ -570,13 +459,9 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
   };
 
   const SortIcon = ({ col }: { col: SortCol }) =>
-    sortCol !== col ? (
-      <ChevronsUpDown className="inline h-3 w-3 ml-0.5 text-muted-foreground/40" />
-    ) : sortDir === "asc" ? (
-      <ChevronUp className="inline h-3 w-3 ml-0.5" />
-    ) : (
-      <ChevronDown className="inline h-3 w-3 ml-0.5" />
-    );
+    sortCol !== col ? <ChevronsUpDown className="inline h-3 w-3 ml-0.5 text-muted-foreground/40" />
+    : sortDir === "asc" ? <ChevronUp className="inline h-3 w-3 ml-0.5" />
+    : <ChevronDown className="inline h-3 w-3 ml-0.5" />;
 
   return (
     <div className="p-4">
@@ -586,18 +471,17 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
             <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
               {(
                 [
-                  ["title",     "Opportunity",  "text-left"],
-                  ["company",   "Company",      "text-left"],
-                  ["value",     "Value",        "text-right"],
-                  ["stage",     "Stage",        "text-left"],
-                  ["closeDate", "Close Date",   "text-left"],
-                  ["rep",       "Assigned",     "text-left"],
-                  ["priority",  "Priority",     "text-left pr-3"],
+                  ["title",     "Opportunity", "text-left"],
+                  ["company",   "Company",     "text-left"],
+                  ["value",     "Value",       "text-right"],
+                  ["stage",     "Stage",       "text-left"],
+                  ["closeDate", "Close Date",  "text-left"],
+                  ["rep",       "Assigned",    "text-left"],
+                  ["priority",  "Priority",    "text-left pr-3"],
                 ] as [SortCol, string, string][]
               ).map(([col, label, align]) => (
                 <th
-                  key={col}
-                  onClick={() => toggleSort(col)}
+                  key={col} onClick={() => toggleSort(col)}
                   className={cn("py-2 px-2 font-medium cursor-pointer select-none hover:text-foreground whitespace-nowrap", align)}
                 >
                   {label}<SortIcon col={col} />
@@ -607,11 +491,7 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
           </thead>
           <tbody>
             {rows.map((o) => (
-              <tr
-                key={o.id}
-                onClick={() => onSelect(o)}
-                className="row-hover border-b border-border/60 cursor-pointer"
-              >
+              <tr key={o.id} onClick={() => onSelect(o)} className="row-hover border-b border-border/60 cursor-pointer">
                 <td className="py-2.5 px-2">
                   <div className="font-medium leading-snug">{o.title}</div>
                   <div className="text-[11px] text-muted-foreground">{o.contact}</div>
@@ -632,7 +512,7 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
             {rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-8 text-center text-[12.5px] text-muted-foreground">
-                  No opportunities match the current filters.
+                  {rows.length === 0 ? "No opportunities yet — create the first one." : "No opportunities match the current filters."}
                 </td>
               </tr>
             )}
@@ -645,10 +525,11 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
 
 // ─── Opportunity detail drawer ────────────────────────────────────────────────
 
-function OpportunityDrawer({ opp }: { opp: Opportunity }) {
+function OpportunityDrawer({ opp, onNotesChange }: { opp: Opportunity; onNotesChange: (notes: string) => void }) {
+  const [notes, setNotes] = useState(opp.notes);
+
   return (
     <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
-      {/* Header */}
       <SheetHeader className="border-b border-border px-5 py-4">
         <SheetTitle className="text-[15px] font-semibold leading-tight">{opp.title}</SheetTitle>
         <p className="text-[12px] text-muted-foreground">{opp.company} · {opp.contact}</p>
@@ -660,10 +541,7 @@ function OpportunityDrawer({ opp }: { opp: Opportunity }) {
         </div>
       </SheetHeader>
 
-      {/* Body */}
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
-
-        {/* Details */}
         <section>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Details</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[12.5px]">
@@ -689,7 +567,6 @@ function OpportunityDrawer({ opp }: { opp: Opportunity }) {
           </div>
         </section>
 
-        {/* Linked quote */}
         <section>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Linked Quote</p>
           {opp.linkedQuote ? (
@@ -705,47 +582,46 @@ function OpportunityDrawer({ opp }: { opp: Opportunity }) {
           ) : (
             <div className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2.5 text-[12px]">
               <span className="text-muted-foreground">No quote linked yet</span>
-              <button className="text-primary text-[11.5px] font-medium hover:underline">
-                Create Quote
-              </button>
+              <button className="text-primary text-[11.5px] font-medium hover:underline">Create Quote</button>
             </div>
           )}
         </section>
 
-        {/* Notes */}
         <section>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
           <textarea
             rows={3}
-            defaultValue={opp.notes}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] text-muted-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            onBlur={() => onNotesChange(notes)}
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
             placeholder="Add notes…"
           />
         </section>
 
-        {/* Activity */}
-        <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Activity</p>
-          <ul className="space-y-3">
-            {opp.activityFeed.map((a, i) => {
-              const Icon = activityIcon[a.kind];
-              return (
-                <li key={i} className="flex gap-3 text-[12px]">
-                  <div className={cn("mt-0.5 shrink-0", activityColor[a.kind])}>
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
-                  <div>
-                    <div>{a.text}</div>
-                    <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.date}</div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+        {opp.activityFeed.length > 0 && (
+          <section>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Activity</p>
+            <ul className="space-y-3">
+              {opp.activityFeed.map((a, i) => {
+                const Icon = activityIcon[a.kind];
+                return (
+                  <li key={i} className="flex gap-3 text-[12px]">
+                    <div className={cn("mt-0.5 shrink-0", activityColor[a.kind])}>
+                      <Icon className="h-3.5 w-3.5" />
+                    </div>
+                    <div>
+                      <div>{a.text}</div>
+                      <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.date}</div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
       </div>
 
-      {/* Footer actions */}
       <div className="border-t border-border px-5 py-4 space-y-2">
         {opp.stage === "closed-won" && (
           <button className="w-full h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
@@ -757,5 +633,131 @@ function OpportunityDrawer({ opp }: { opp: Opportunity }) {
         </button>
       </div>
     </SheetContent>
+  );
+}
+
+// ─── New opportunity modal ────────────────────────────────────────────────────
+
+function NewOpportunityModal({
+  team,
+  onClose,
+  onSave,
+}: {
+  team: TeamMember[];
+  onClose: () => void;
+  onSave: (values: Parameters<typeof insertOpportunity>[0]) => Promise<void>;
+}) {
+  const [saving, setSaving] = useState(false);
+  const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
+  const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
+
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
+  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    try {
+      await onSave({
+        title:       fd.get("title") as string,
+        company_id:  (fd.get("company_id") as string) || null,
+        contact_id:  (fd.get("contact_id") as string) || null,
+        assigned_to: (fd.get("assigned_to") as string) || null,
+        value:       fd.get("value") ? parseFloat(fd.get("value") as string) : null,
+        stage:       fd.get("stage") as OpportunityStage,
+        close_date:  (fd.get("close_date") as string) || null,
+        source:      (fd.get("source") as OppSource) || null,
+        priority:    fd.get("priority") as Priority,
+        notes:       fd.get("notes") as string,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <DialogContent className="max-w-md">
+      <DialogHeader>
+        <DialogTitle>New Opportunity</DialogTitle>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="mt-1 space-y-3">
+        <div>
+          <label className={labelCls}>Title *</label>
+          <input name="title" required className={inputCls} placeholder="e.g. Conference room AV" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Company</label>
+            <select name="company_id" className={selectCls}>
+              <option value="">— None —</option>
+              {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Contact</label>
+            <select name="contact_id" className={selectCls}>
+              <option value="">— None —</option>
+              {contacts.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Value ($)</label>
+            <input name="value" type="number" min="0" step="100" className={inputCls} placeholder="0" />
+          </div>
+          <div>
+            <label className={labelCls}>Close Date</label>
+            <input name="close_date" type="date" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Stage</label>
+            <select name="stage" className={selectCls} defaultValue="site-visit">
+              {stageOrder.map((s) => <option key={s} value={s}>{stageMeta[s].label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Priority</label>
+            <select name="priority" className={selectCls} defaultValue="med">
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="med">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Source</label>
+            <select name="source" className={selectCls}>
+              <option value="">— None —</option>
+              {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Assigned To</label>
+            <select name="assigned_to" className={selectCls}>
+              <option value="">— Unassigned —</option>
+              {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>Notes</label>
+          <textarea
+            name="notes"
+            rows={2}
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Any additional context…"
+          />
+        </div>
+        <div className="flex justify-end gap-2 pt-1">
+          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            Cancel
+          </button>
+          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+            {saving ? "Saving…" : "Create Opportunity"}
+          </button>
+        </div>
+      </form>
+    </DialogContent>
   );
 }

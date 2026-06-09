@@ -194,6 +194,172 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          assigned_to: string | null
+          company_name: string | null
+          converted_at: string | null
+          converted_contact_id: string | null
+          converted_opportunity_id: string | null
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          location: string | null
+          notes: string | null
+          phone: string | null
+          service_interest: string | null
+          source: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          company_name?: string | null
+          converted_at?: string | null
+          converted_contact_id?: string | null
+          converted_opportunity_id?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string | null
+          service_interest?: string | null
+          source?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          company_name?: string | null
+          converted_at?: string | null
+          converted_contact_id?: string | null
+          converted_opportunity_id?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string | null
+          service_interest?: string | null
+          source?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_converted_contact_id_fkey"
+            columns: ["converted_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_converted_opportunity_id_fkey"
+            columns: ["converted_opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunities: {
+        Row: {
+          assigned_to: string | null
+          close_date: string | null
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          priority: string
+          source: string | null
+          stage: string
+          tenant_id: string
+          title: string
+          value: number | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          close_date?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          priority?: string
+          source?: string | null
+          stage?: string
+          tenant_id: string
+          title: string
+          value?: number | null
+        }
+        Update: {
+          assigned_to?: string | null
+          close_date?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          priority?: string
+          source?: string | null
+          stage?: string
+          tenant_id?: string
+          title?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           can_write: boolean
@@ -270,6 +436,7 @@ export type Database = {
           logo_url: string | null
           name: string
           phone: string | null
+          slug: string | null
           state: string | null
           tagline: string | null
           timezone: string
@@ -288,6 +455,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           phone?: string | null
+          slug?: string | null
           state?: string | null
           tagline?: string | null
           timezone?: string
@@ -306,6 +474,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           phone?: string | null
+          slug?: string | null
           state?: string | null
           tagline?: string | null
           timezone?: string
@@ -442,6 +611,28 @@ export type Database = {
     Functions: {
       current_tenant_id: { Args: never; Returns: string }
       deactivate_member: { Args: { p_id: string }; Returns: undefined }
+      get_inactive_members: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          role_id: string
+          tenant_id: string
+          vehicle_id: string
+        }[]
+      }
+      get_tenant_by_slug: {
+        Args: { p_slug: string }
+        Returns: {
+          id: string
+          name: string
+          slug: string
+        }[]
+      }
+      reactivate_member: { Args: { p_id: string }; Returns: undefined }
       seed_default_roles: { Args: { p_tenant_id: string }; Returns: undefined }
     }
     Enums: {

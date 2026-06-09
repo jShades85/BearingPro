@@ -1,17 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui-bits";
 import { PageTabs, PageTab, FilterBar, FilterSelect } from "@/components/ui/page-components";
 import { useMeta } from "@/contexts/PageMetaContext";
-import { ownerNames } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/crm/lead-inbox")({
   head: () => ({ meta: [{ title: "Lead Inbox · BearingPro" }] }),
@@ -20,24 +17,29 @@ export const Route = createFileRoute("/crm/lead-inbox")({
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type LeadStatus = "new" | "contacted" | "qualified" | "dismissed";
+type LeadStatus = "new" | "contacted" | "qualified" | "converted" | "dismissed";
 type LeadSource = "Phone" | "Web Form" | "Referral" | "Email" | "Walk-in";
 
-interface Lead {
-  id: number;
-  name: string;
-  company: string;
-  phone: string;
-  email: string;
-  source: LeadSource;
-  service: string;
-  location: string;
-  dateReceived: string;
-  assignedTo: string;
+interface DbLead {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  company_name: string | null;
+  phone: string | null;
+  email: string | null;
+  source: LeadSource | null;
+  service_interest: string | null;
+  location: string | null;
   status: LeadStatus;
-  notes: string;
-  activity: { time: string; text: string }[];
+  notes: string | null;
+  created_at: string;
+  converted_at: string | null;
+  converted_contact_id: string | null;
+  converted_opportunity_id: string | null;
+  assignee: { id: string; full_name: string | null } | null;
 }
+
+interface TeamMember { id: string; full_name: string | null }
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -45,6 +47,7 @@ const statusMeta: Record<LeadStatus, { label: string; cls: string }> = {
   new:       { label: "New",       cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
   contacted: { label: "Contacted", cls: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400" },
   qualified: { label: "Qualified", cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
+  converted: { label: "Converted", cls: "bg-teal-500/15 text-teal-600 dark:text-teal-400" },
   dismissed: { label: "Dismissed", cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
 };
 
@@ -56,82 +59,111 @@ const sourceCls: Record<LeadSource, string> = {
   "Walk-in":  "bg-teal-500/15 text-teal-600 dark:text-teal-400",
 };
 
-const statusOrder: LeadStatus[] = ["new", "contacted", "qualified", "dismissed"];
+const statusOrder: LeadStatus[] = ["new", "contacted", "qualified", "converted", "dismissed"];
 const sourceOptions: LeadSource[] = ["Phone", "Web Form", "Referral", "Email", "Walk-in"];
 
-// ─── Demo data ────────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
-const INITIAL_LEADS: Lead[] = [
-  {
-    id: 1, name: "John Hartwell", company: "Hartwell Properties",
-    phone: "(312) 555-0142", email: "j.hartwell@hartwellprop.com",
-    source: "Phone", service: "Security system install", location: "Chicago, IL",
-    dateReceived: "2026-05-28", assignedTo: "JK", status: "new", notes: "",
-    activity: [{ time: "May 28, 9:14 AM", text: "Lead received via phone call" }],
-  },
-  {
-    id: 2, name: "Sarah Okonkwo", company: "Okonkwo Restaurant Group",
-    phone: "(305) 555-8821", email: "sokonkwo@okonkwo-rg.com",
-    source: "Referral", service: "AV system + background audio", location: "Miami, FL",
-    dateReceived: "2026-05-30", assignedTo: "EM", status: "contacted",
-    notes: "Referred by Quay Residential. Looking to outfit 3 locations.",
-    activity: [
-      { time: "May 30, 10:00 AM", text: "Lead received via referral" },
-      { time: "Jun 01, 2:30 PM",  text: "Called — left voicemail" },
-      { time: "Jun 02, 9:15 AM",  text: "Send intro email with portfolio" },
-    ],
-  },
-  {
-    id: 3, name: "Mike Delaney", company: "Delaney Construction",
-    phone: "(303) 555-4410", email: "mike@delaneyconst.com",
-    source: "Web Form", service: "Access control system", location: "Denver, CO",
-    dateReceived: "2026-06-01", assignedTo: "RT", status: "qualified",
-    notes: "Has a $40k budget. Timeline is Q3 for new office buildout.",
-    activity: [
-      { time: "Jun 01, 8:00 AM",  text: "Lead received via web form" },
-      { time: "Jun 02, 11:00 AM", text: "Called — spoke with Mike, confirmed interest" },
-      { time: "Jun 03, 3:00 PM",  text: "Site visit scheduled for Jun 10" },
-    ],
-  },
-  {
-    id: 4, name: "Rachel Kim", company: "Kim Medical Partners",
-    phone: "(718) 555-0299", email: "rkim@kimmedical.org",
-    source: "Email", service: "Conference room AV", location: "Brooklyn, NY",
-    dateReceived: "2026-06-02", assignedTo: "SN", status: "new", notes: "",
-    activity: [{ time: "Jun 02, 4:45 PM", text: "Lead received via email inquiry" }],
-  },
-  {
-    id: 5, name: "Tom Garza", company: "Garza Family Estates",
-    phone: "(512) 555-7733", email: "tgarza@garzaestates.com",
-    source: "Walk-in", service: "Home theater + smart automation", location: "Austin, TX",
-    dateReceived: "2026-06-03", assignedTo: "AV", status: "contacted",
-    notes: "Came in person. Very interested in full smart home with Lutron lighting.",
-    activity: [
-      { time: "Jun 03, 1:15 PM",  text: "Walk-in visit at showroom" },
-      { time: "Jun 04, 10:00 AM", text: "Sent intro email with smart home brochure" },
-    ],
-  },
-  {
-    id: 6, name: "Lisa Nguyen", company: "Pacific Realty Group",
-    phone: "(615) 555-1908", email: "lnguyen@pacificrealty.com",
-    source: "Referral", service: "Surveillance / IP camera system", location: "Nashville, TN",
-    dateReceived: "2026-06-04", assignedTo: "MO", status: "dismissed",
-    notes: "Timeline too far out — revisit Q1 2027.",
-    activity: [
-      { time: "Jun 04, 9:30 AM", text: "Lead received via referral" },
-      { time: "Jun 04, 2:00 PM", text: "Called — timeline 12+ months out, dismissed" },
-    ],
-  },
-  {
-    id: 7, name: "Carlos Rivera", company: "Rivera Hotel Group",
-    phone: "(323) 555-6641", email: "crivera@riverahotels.com",
-    source: "Web Form", service: "IP cameras + access control", location: "Los Angeles, CA",
-    dateReceived: "2026-06-05", assignedTo: "JK", status: "new", notes: "",
-    activity: [{ time: "Jun 05, 7:55 AM", text: "Lead received via web form" }],
-  },
-];
+function fullName(lead: DbLead) {
+  return [lead.first_name, lead.last_name].filter(Boolean).join(" ") || "—";
+}
 
-// ─── Shared sub-components ────────────────────────────────────────────────────
+async function fetchLeads(): Promise<DbLead[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*, assignee:user_profiles!assigned_to(id,full_name)")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as DbLead[];
+}
+
+async function fetchTeamMembers(): Promise<TeamMember[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("user_profiles").select("id,full_name").eq("is_active", true).order("full_name");
+  if (error) throw error;
+  return data ?? [];
+}
+
+async function updateLeadStatus(id: string, status: LeadStatus) {
+  const supabase = createClient();
+  const { error } = await supabase.from("leads").update({ status }).eq("id", id);
+  if (error) throw error;
+}
+
+async function updateLeadNotes(id: string, notes: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("leads").update({ notes }).eq("id", id);
+  if (error) throw error;
+}
+
+async function insertLead(values: {
+  first_name: string; last_name: string; company_name: string;
+  phone: string; email: string; source: LeadSource;
+  service_interest: string; location: string; assigned_to: string | null;
+}) {
+  const supabase = createClient();
+  const { data: tenantRow } = await supabase.from("tenants").select("id").single();
+  if (!tenantRow) throw new Error("No tenant");
+  const { error } = await supabase.from("leads").insert({ ...values, tenant_id: tenantRow.id });
+  if (error) throw error;
+}
+
+async function convertLead(lead: DbLead): Promise<void> {
+  const supabase = createClient();
+  const { data: tenantRow } = await supabase.from("tenants").select("id").single();
+  if (!tenantRow) throw new Error("No tenant");
+  const tid = tenantRow.id;
+
+  // 1. Create contact
+  const { data: contact, error: ce } = await supabase
+    .from("contacts")
+    .insert({
+      tenant_id:     tid,
+      full_name:     fullName(lead),
+      phone:         lead.phone,
+      email:         lead.email,
+      source:        lead.source,
+      stage:         "Lead",
+      customer_type: "commercial",
+      tags:          [],
+      assigned_to:   lead.assignee?.id ?? null,
+    })
+    .select("id")
+    .single();
+  if (ce || !contact) throw ce ?? new Error("Contact insert failed");
+
+  // 2. Create opportunity
+  const { data: opp, error: oe } = await supabase
+    .from("opportunities")
+    .insert({
+      tenant_id:   tid,
+      title:       lead.service_interest ?? `Opportunity — ${fullName(lead)}`,
+      contact_id:  contact.id,
+      assigned_to: lead.assignee?.id ?? null,
+      source:      lead.source,
+      stage:       "site-visit",
+      priority:    "med",
+    })
+    .select("id")
+    .single();
+  if (oe || !opp) throw oe ?? new Error("Opportunity insert failed");
+
+  // 3. Mark lead converted
+  const { error: le } = await supabase
+    .from("leads")
+    .update({
+      status:                   "converted",
+      converted_at:             new Date().toISOString(),
+      converted_contact_id:     contact.id,
+      converted_opportunity_id: opp.id,
+    })
+    .eq("id", lead.id);
+  if (le) throw le;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: LeadStatus }) {
   const { label, cls } = statusMeta[status];
@@ -155,12 +187,30 @@ function SourceBadge({ source }: { source: LeadSource }) {
 
 function LeadInbox() {
   const { setMeta } = useMeta();
-  const [leads, setLeads] = useState<Lead[]>(INITIAL_LEADS);
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const qc = useQueryClient();
+  const [selectedLead, setSelectedLead] = useState<DbLead | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
   const [assignedFilter, setAssignedFilter] = useState<string>("all");
+
+  const { data: leads = [] } = useQuery({ queryKey: ["leads"], queryFn: fetchLeads });
+  const { data: team = [] } = useQuery({ queryKey: ["team-members"], queryFn: fetchTeamMembers });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: LeadStatus }) => updateLeadStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
+  });
+
+  const convertMutation = useMutation({
+    mutationFn: convertLead,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["opportunities"] });
+      qc.invalidateQueries({ queryKey: ["contacts"] }); // keep contacts page fresh
+      setSelectedLead(null);
+    },
+  });
 
   const unreviewedCount = useMemo(
     () => leads.filter((l) => l.status === "new" || l.status === "contacted").length,
@@ -177,7 +227,7 @@ function LeadInbox() {
   }, [setMeta, unreviewedCount]);
 
   const statusCounts = useMemo(() => {
-    const c: Record<string, number> = { all: leads.length, new: 0, contacted: 0, qualified: 0, dismissed: 0 };
+    const c: Record<string, number> = { all: leads.length, new: 0, contacted: 0, qualified: 0, converted: 0, dismissed: 0 };
     leads.forEach((l) => { c[l.status]++; });
     return c;
   }, [leads]);
@@ -185,18 +235,19 @@ function LeadInbox() {
   const filteredLeads = useMemo(() => leads.filter((l) => {
     if (statusFilter !== "all" && l.status !== statusFilter) return false;
     if (sourceFilter !== "all" && l.source !== sourceFilter) return false;
-    if (assignedFilter !== "all" && l.assignedTo !== assignedFilter) return false;
+    if (assignedFilter !== "all" && l.assignee?.id !== assignedFilter) return false;
     return true;
   }), [leads, statusFilter, sourceFilter, assignedFilter]);
 
-  const updateLead = useCallback((id: number, patch: Partial<Lead>) => {
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
-    setSelectedLead((prev) => (prev !== null && prev.id === id ? { ...prev, ...patch } : prev));
-  }, []);
+  // Keep drawer in sync after mutations
+  useEffect(() => {
+    if (!selectedLead) return;
+    const updated = leads.find((l) => l.id === selectedLead.id);
+    if (updated) setSelectedLead(updated);
+  }, [leads]);
 
   return (
     <div className="flex flex-col">
-      {/* Status tabs */}
       <PageTabs>
         {(["all", ...statusOrder] as (LeadStatus | "all")[]).map((s) => (
           <PageTab key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} count={statusCounts[s]}>
@@ -204,7 +255,7 @@ function LeadInbox() {
           </PageTab>
         ))}
       </PageTabs>
-      {/* Filter bar */}
+
       <FilterBar>
         <FilterSelect value={sourceFilter} onChange={(v) => setSourceFilter(v as LeadSource | "all")}>
           <option value="all">All Sources</option>
@@ -212,13 +263,10 @@ function LeadInbox() {
         </FilterSelect>
         <FilterSelect value={assignedFilter} onChange={(v) => setAssignedFilter(v)}>
           <option value="all">All Assigned</option>
-          {Object.entries(ownerNames).map(([k, v]) => (
-            <option key={k} value={k}>{v}</option>
-          ))}
+          {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
         </FilterSelect>
       </FilterBar>
 
-      {/* Lead list */}
       <div className="p-4">
         <div className="rounded-lg border border-border bg-card overflow-hidden">
           <table className="w-full text-[12.5px]">
@@ -242,40 +290,46 @@ function LeadInbox() {
                   onClick={() => setSelectedLead(lead)}
                 >
                   <td className="py-2.5 px-3">
-                    <div className="font-semibold leading-snug">{lead.name}</div>
-                    <div className="text-[11px] text-muted-foreground">{lead.company}</div>
+                    <div className="font-semibold leading-snug">{fullName(lead)}</div>
+                    <div className="text-[11px] text-muted-foreground">{lead.company_name ?? "—"}</div>
                   </td>
                   <td className="py-2.5 px-3">
-                    <SourceBadge source={lead.source} />
+                    {lead.source ? <SourceBadge source={lead.source} /> : <span className="text-muted-foreground">—</span>}
                   </td>
                   <td className="py-2.5 px-3 text-muted-foreground max-w-[180px]">
-                    <span className="truncate block">{lead.service}</span>
+                    <span className="truncate block">{lead.service_interest ?? "—"}</span>
                   </td>
-                  <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">{lead.location}</td>
+                  <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">{lead.location ?? "—"}</td>
                   <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground whitespace-nowrap">
-                    {lead.dateReceived}
+                    {lead.created_at.slice(0, 10)}
                   </td>
                   <td className="py-2.5 px-3">
-                    <div className="flex items-center gap-1.5">
-                      <Avatar initials={lead.assignedTo} />
-                      <span className="text-[11.5px]">{ownerNames[lead.assignedTo]?.split(" ")[0]}</span>
-                    </div>
+                    {lead.assignee ? (
+                      <div className="flex items-center gap-1.5">
+                        <Avatar initials={(lead.assignee.full_name ?? "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()} />
+                        <span className="text-[11.5px]">{lead.assignee.full_name?.split(" ")[0]}</span>
+                      </div>
+                    ) : <span className="text-muted-foreground text-[11px]">—</span>}
                   </td>
-                  <td className="py-2.5 px-3">
-                    <StatusBadge status={lead.status} />
-                  </td>
+                  <td className="py-2.5 px-3"><StatusBadge status={lead.status} /></td>
                   <td className="py-2.5 px-3 pr-3 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <button
-                        onClick={(e) => { e.stopPropagation(); updateLead(lead.id, { status: "qualified" }); }}
-                        disabled={lead.status === "qualified" || lead.status === "dismissed"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          convertMutation.mutate(lead);
+                        }}
+                        disabled={lead.status === "converted" || lead.status === "dismissed" || convertMutation.isPending}
                         className="h-6 rounded px-2 text-[11px] font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-35 disabled:cursor-default transition-opacity"
                       >
                         Convert
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); updateLead(lead.id, { status: "dismissed" }); }}
-                        disabled={lead.status === "dismissed"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          statusMutation.mutate({ id: lead.id, status: "dismissed" });
+                        }}
+                        disabled={lead.status === "dismissed" || lead.status === "converted"}
                         className="h-6 rounded px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-35 disabled:cursor-default transition-colors"
                       >
                         Dismiss
@@ -287,7 +341,7 @@ function LeadInbox() {
               {filteredLeads.length === 0 && (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-[12.5px] text-muted-foreground">
-                    No leads match the current filters.
+                    {leads.length === 0 ? "No leads yet — create the first one." : "No leads match the current filters."}
                   </td>
                 </tr>
               )}
@@ -296,16 +350,29 @@ function LeadInbox() {
         </div>
       </div>
 
-      {/* Detail drawer */}
       <Sheet open={selectedLead !== null} onOpenChange={(open) => { if (!open) setSelectedLead(null); }}>
         {selectedLead !== null && (
-          <LeadDrawer key={selectedLead.id} lead={selectedLead} onUpdate={updateLead} />
+          <LeadDrawer
+            key={selectedLead.id}
+            lead={selectedLead}
+            converting={convertMutation.isPending}
+            onStatusChange={(status) => statusMutation.mutate({ id: selectedLead.id, status })}
+            onNotesChange={(notes) => updateLeadNotes(selectedLead.id, notes)}
+            onConvert={() => convertMutation.mutate(selectedLead)}
+          />
         )}
       </Sheet>
 
-      {/* New lead modal */}
       <Dialog open={newLeadOpen} onOpenChange={setNewLeadOpen}>
-        <NewLeadModal onClose={() => setNewLeadOpen(false)} />
+        <NewLeadModal
+          team={team}
+          onClose={() => setNewLeadOpen(false)}
+          onSave={async (values) => {
+            await insertLead(values);
+            qc.invalidateQueries({ queryKey: ["leads"] });
+            setNewLeadOpen(false);
+          }}
+        />
       </Dialog>
     </div>
   );
@@ -314,27 +381,38 @@ function LeadInbox() {
 // ─── Lead detail drawer ───────────────────────────────────────────────────────
 
 function LeadDrawer({
-  lead,
-  onUpdate,
+  lead, converting, onStatusChange, onNotesChange, onConvert,
 }: {
-  lead: Lead;
-  onUpdate: (id: number, patch: Partial<Lead>) => void;
+  lead: DbLead;
+  converting: boolean;
+  onStatusChange: (status: LeadStatus) => void;
+  onNotesChange: (notes: string) => void;
+  onConvert: () => void;
 }) {
-  const [notes, setNotes] = useState(lead.notes);
+  const [notes, setNotes] = useState(lead.notes ?? "");
+  const initialized = useRef(false);
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+    setNotes(lead.notes ?? "");
+  }, [lead.notes]);
+
+  const repInitials = lead.assignee?.full_name
+    ? lead.assignee.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
+    : "?";
 
   return (
     <SheetContent className="sm:max-w-[440px] flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4">
-        <SheetTitle className="text-[15px] font-semibold">{lead.name}</SheetTitle>
-        <p className="text-[12.5px] text-muted-foreground -mt-1">{lead.company}</p>
+        <SheetTitle className="text-[15px] font-semibold">{fullName(lead)}</SheetTitle>
+        <p className="text-[12.5px] text-muted-foreground -mt-1">{lead.company_name ?? "—"}</p>
       </SheetHeader>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-        {/* Status / Source / Date / Assigned grid */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 text-[12.5px]">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Source</p>
-            <SourceBadge source={lead.source} />
+            {lead.source ? <SourceBadge source={lead.source} /> : <span>—</span>}
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Status</p>
@@ -342,87 +420,79 @@ function LeadDrawer({
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Date Received</p>
-            <span className="font-mono text-[12px]">{lead.dateReceived}</span>
+            <span className="font-mono text-[12px]">{lead.created_at.slice(0, 10)}</span>
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Assigned To</p>
-            <div className="flex items-center gap-1.5">
-              <Avatar initials={lead.assignedTo} />
-              <span>{ownerNames[lead.assignedTo]}</span>
-            </div>
+            {lead.assignee ? (
+              <div className="flex items-center gap-1.5">
+                <Avatar initials={repInitials} />
+                <span>{lead.assignee.full_name}</span>
+              </div>
+            ) : <span className="text-muted-foreground">—</span>}
           </div>
         </div>
 
-        {/* Service / Location / Contact */}
         <div className="space-y-3 text-[12.5px]">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Service Interested In</p>
-            <span>{lead.service}</span>
+            <span>{lead.service_interest ?? "—"}</span>
           </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Location</p>
-            <span className="flex items-center gap-1.5 text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              {lead.location}
-            </span>
-          </div>
+          {lead.location && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Location</p>
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />{lead.location}
+              </span>
+            </div>
+          )}
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Contact</p>
             <div className="flex flex-col gap-1 text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <Phone className="h-3.5 w-3.5 shrink-0" />
-                {lead.phone}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5 shrink-0" />
-                {lead.email}
-              </span>
+              {lead.phone && <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 shrink-0" />{lead.phone}</span>}
+              {lead.email && <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 shrink-0" />{lead.email}</span>}
             </div>
           </div>
         </div>
 
-        {/* Notes */}
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            onBlur={() => onUpdate(lead.id, { notes })}
+            onBlur={() => onNotesChange(notes)}
             placeholder="Add notes…"
             rows={3}
             className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
-        {/* Activity log */}
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Activity</p>
-          <ul className="space-y-3">
-            {lead.activity.map((a, i) => (
-              <li key={i} className="flex gap-2.5 text-[12px]">
-                <Clock className="h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground/50" />
-                <div>
-                  <div>{a.text}</div>
-                  <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.time}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {lead.status === "converted" && lead.converted_at && (
+          <div className="rounded-md bg-teal-500/10 border border-teal-500/20 px-3 py-2.5 text-[12px] text-teal-600 dark:text-teal-400">
+            Converted on {lead.converted_at.slice(0, 10)} — contact and opportunity created.
+          </div>
+        )}
       </div>
 
-      {/* Footer actions */}
       <div className="border-t border-border px-5 py-4 flex flex-col gap-2">
+        {lead.status !== "converted" && lead.status !== "dismissed" && (
+          <button
+            onClick={() => onStatusChange(lead.status === "new" ? "contacted" : "qualified")}
+            className="w-full h-8 rounded-md bg-accent text-foreground text-[12.5px] font-medium hover:opacity-90 transition-opacity"
+          >
+            Mark as {lead.status === "new" ? "Contacted" : "Qualified"}
+          </button>
+        )}
         <button
-          onClick={() => onUpdate(lead.id, { status: "qualified" })}
-          disabled={lead.status === "qualified"}
+          onClick={onConvert}
+          disabled={lead.status === "converted" || lead.status === "dismissed" || converting}
           className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
         >
-          Convert to Contact
+          {converting ? "Converting…" : "Convert to Contact + Opportunity"}
         </button>
         <button
-          onClick={() => onUpdate(lead.id, { status: "dismissed" })}
-          disabled={lead.status === "dismissed"}
+          onClick={() => onStatusChange("dismissed")}
+          disabled={lead.status === "dismissed" || lead.status === "converted"}
           className="w-full h-8 rounded-md border border-destructive text-destructive text-[12.5px] font-medium hover:bg-destructive/10 disabled:opacity-40 disabled:cursor-default transition-colors"
         >
           Dismiss Lead
@@ -434,78 +504,98 @@ function LeadDrawer({
 
 // ─── New lead modal ───────────────────────────────────────────────────────────
 
-function NewLeadModal({ onClose }: { onClose: () => void }) {
+function NewLeadModal({
+  team,
+  onClose,
+  onSave,
+}: {
+  team: TeamMember[];
+  onClose: () => void;
+  onSave: (values: Parameters<typeof insertLead>[0]) => Promise<void>;
+}) {
+  const [saving, setSaving] = useState(false);
+
   const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
   const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
   const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    try {
+      await onSave({
+        first_name:       fd.get("first_name") as string,
+        last_name:        fd.get("last_name") as string,
+        company_name:     fd.get("company_name") as string,
+        phone:            fd.get("phone") as string,
+        email:            fd.get("email") as string,
+        source:           fd.get("source") as LeadSource,
+        service_interest: fd.get("service_interest") as string,
+        location:         fd.get("location") as string,
+        assigned_to:      (fd.get("assigned_to") as string) || null,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <DialogContent className="max-w-md">
       <DialogHeader>
         <DialogTitle>New Lead</DialogTitle>
       </DialogHeader>
-      <div className="mt-1 grid grid-cols-2 gap-3">
-        <div className="col-span-2">
-          <label className={labelCls}>Contact Name</label>
-          <input className={inputCls} placeholder="Full name" />
+      <form onSubmit={handleSubmit} className="mt-1 grid grid-cols-2 gap-3">
+        <div>
+          <label className={labelCls}>First Name</label>
+          <input name="first_name" className={inputCls} placeholder="Jane" />
+        </div>
+        <div>
+          <label className={labelCls}>Last Name</label>
+          <input name="last_name" className={inputCls} placeholder="Smith" />
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Company</label>
-          <input className={inputCls} placeholder="Company name" />
+          <input name="company_name" className={inputCls} placeholder="Company name" />
         </div>
         <div>
           <label className={labelCls}>Phone</label>
-          <input className={inputCls} placeholder="(555) 000-0000" type="tel" />
+          <input name="phone" className={inputCls} placeholder="(555) 000-0000" type="tel" />
         </div>
         <div>
           <label className={labelCls}>Email</label>
-          <input className={inputCls} placeholder="email@example.com" type="email" />
+          <input name="email" className={inputCls} placeholder="email@example.com" type="email" />
         </div>
         <div>
           <label className={labelCls}>Source</label>
-          <select className={selectCls}>
-            {sourceOptions.map((s) => <option key={s}>{s}</option>)}
+          <select name="source" className={selectCls} defaultValue="Phone">
+            {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div>
           <label className={labelCls}>Assign To</label>
-          <select className={selectCls}>
-            {Object.entries(ownerNames).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
+          <select name="assigned_to" className={selectCls}>
+            <option value="">— Unassigned —</option>
+            {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
           </select>
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Service Interested In</label>
-          <input className={inputCls} placeholder="e.g. Security system install" />
+          <input name="service_interest" className={inputCls} placeholder="e.g. Security system install" />
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Location</label>
-          <input className={inputCls} placeholder="City, State" />
+          <input name="location" className={inputCls} placeholder="City, State" />
         </div>
-        <div className="col-span-2">
-          <label className={labelCls}>Notes</label>
-          <textarea
-            rows={3}
-            placeholder="Add any notes…"
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-          />
+        <div className="col-span-2 flex justify-end gap-2 pt-1">
+          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            Cancel
+          </button>
+          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+            {saving ? "Adding…" : "Add Lead"}
+          </button>
         </div>
-      </div>
-      <div className="mt-3 flex justify-end gap-2">
-        <button
-          onClick={onClose}
-          className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onClose}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          Add Lead
-        </button>
-      </div>
+      </form>
     </DialogContent>
   );
 }

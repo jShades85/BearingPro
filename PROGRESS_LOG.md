@@ -6,8 +6,8 @@
 
 ## Current Status
 
-**Phase:** Backend — CRM live, Sales schema sprint is next
-**Last Updated:** Session 022
+**Phase:** Backend — Opportunities + Lead Inbox live, Operations schema next
+**Last Updated:** Session 023
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -17,14 +17,9 @@
 
 **Start here next session:**
 
-1. **`opportunities` table** — migration + RLS + wire Sales Opportunities page to DB
-2. **`leads` table** — migration + RLS + wire Lead Inbox (`/crm/lead-inbox`) to DB
-3. **Wire Convert button** — modal: creates Contact (already live) + skeleton Opportunity; lead marked `converted`
-   - Convert pre-populates: opportunity name, assigned rep, linked contact, notes
-   - Left for rep to fill in later on opp detail: deal value, close date, probability
-4. **Operations schema** — `projects`, `work_orders` tables + wire Operations pages
-5. **Invite URL cleanup** — `/join/$slug` route using tenant slug (deferred; current base64 token works)
-6. **Soft delete UI** — "Deactivated Members" view + reactivate button (deferred pre-launch)
+1. **Operations schema** — `projects`, `work_orders` tables + wire Operations pages
+2. **Invite URL cleanup** — `/join/$slug` route using tenant slug (deferred; current base64 token works)
+3. **Soft delete UI** — "Deactivated Members" view + reactivate button (deferred pre-launch)
 
 ---
 
@@ -47,8 +42,8 @@
 | Supabase Client | ✅ Complete | Browser + server clients, typed Database |
 | DB: tenants + user_profiles | ✅ Live | RLS + handle_new_user trigger |
 | Vercel Deployment | ✅ Live | bearingpro.tech, nitro vercel preset |
-| CRM (Contacts/Companies/Lead Inbox) | ✅ Live (partial) | Schema + RLS live; list + detail pages wired; contact edit drawer live; company edit modal live; Lead Inbox moved to CRM nav (still demo data — `leads` table not yet built) |
-| Sales (Opps, Quotes) | 🟡 Demo data | Full UI built; Lead Inbox moved to CRM |
+| CRM (Contacts/Companies/Lead Inbox) | ✅ Live | Schema + RLS live; all pages wired; Lead Inbox reads/writes `leads` table; Convert button creates Contact + Opportunity atomically |
+| Sales (Opps, Quotes) | ✅ Opps live | Opportunities reads/writes DB; kanban stage moves + new opp modal wired; Quotes still demo |
 | Operations (Projects, Work Orders, Team, Scheduling) | 🟡 Demo data | Full UI built |
 | Service (Tickets, Plans) | 🟡 Demo data | Full UI built |
 | Inventory (Catalog, Stock, POs, Vendors) | 🟡 Demo data | Full UI built |
