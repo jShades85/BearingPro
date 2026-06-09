@@ -13,8 +13,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 
-export const Route = createFileRoute("/sales/lead-inbox")({
-  head: () => ({ meta: [{ title: "Lead Inbox · Port City Sound & Security" }] }),
+export const Route = createFileRoute("/crm/lead-inbox")({
+  head: () => ({ meta: [{ title: "Lead Inbox · BearingPro" }] }),
   component: LeadInbox,
 });
 
@@ -78,7 +78,7 @@ const INITIAL_LEADS: Lead[] = [
     activity: [
       { time: "May 30, 10:00 AM", text: "Lead received via referral" },
       { time: "Jun 01, 2:30 PM",  text: "Called — left voicemail" },
-      { time: "Jun 02, 9:15 AM",  text: "Sent intro email with portfolio" },
+      { time: "Jun 02, 9:15 AM",  text: "Send intro email with portfolio" },
     ],
   },
   {
@@ -107,7 +107,7 @@ const INITIAL_LEADS: Lead[] = [
     dateReceived: "2026-06-03", assignedTo: "AV", status: "contacted",
     notes: "Came in person. Very interested in full smart home with Lutron lighting.",
     activity: [
-      { time: "Jun 03, 1:15 PM", text: "Walk-in visit at showroom" },
+      { time: "Jun 03, 1:15 PM",  text: "Walk-in visit at showroom" },
       { time: "Jun 04, 10:00 AM", text: "Sent intro email with smart home brochure" },
     ],
   },
@@ -418,7 +418,7 @@ function LeadDrawer({
           disabled={lead.status === "qualified"}
           className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
         >
-          Convert to Opportunity
+          Convert to Contact
         </button>
         <button
           onClick={() => onUpdate(lead.id, { status: "dismissed" })}
@@ -435,9 +435,9 @@ function LeadDrawer({
 // ─── New lead modal ───────────────────────────────────────────────────────────
 
 function NewLeadModal({ onClose }: { onClose: () => void }) {
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
   const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   return (
     <DialogContent className="max-w-md">

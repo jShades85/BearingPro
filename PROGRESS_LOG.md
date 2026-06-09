@@ -6,8 +6,8 @@
 
 ## Current Status
 
-**Phase:** Backend — CRM live, schema sprint underway
-**Last Updated:** Session 021
+**Phase:** Backend — CRM live, Sales schema sprint is next
+**Last Updated:** Session 022
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -15,10 +15,14 @@
 
 ## What's Next
 
-1. **Sales schema** — `opportunities`, `leads` tables + wire Sales pages
-2. **Operations schema** — `projects`, `work_orders` tables + wire Operations pages
-3. **Contact edit** — drawer in Contacts page is view-only; wire an edit form (assign_to, stage, notes, etc.)
-4. **Company detail edit** — notes field in sidebar is read-only; wire a save
+**Start here next session:**
+
+1. **`opportunities` table** — migration + RLS + wire Sales Opportunities page to DB
+2. **`leads` table** — migration + RLS + wire Lead Inbox (`/crm/lead-inbox`) to DB
+3. **Wire Convert button** — modal: creates Contact (already live) + skeleton Opportunity; lead marked `converted`
+   - Convert pre-populates: opportunity name, assigned rep, linked contact, notes
+   - Left for rep to fill in later on opp detail: deal value, close date, probability
+4. **Operations schema** — `projects`, `work_orders` tables + wire Operations pages
 5. **Invite URL cleanup** — `/join/$slug` route using tenant slug (deferred; current base64 token works)
 6. **Soft delete UI** — "Deactivated Members" view + reactivate button (deferred pre-launch)
 
@@ -29,7 +33,6 @@
 - Quote Builder deferred — needs backend (catalog + projects)
 - Planner/Gantt deferred — needs backend (phases + team assignments)
 - D-Tools SI integration: needs real license key from SI software (Control Panel → Manage Integrations)
-- CRM contacts drawer is view-only — no edit form yet
 
 ---
 
@@ -44,8 +47,8 @@
 | Supabase Client | ✅ Complete | Browser + server clients, typed Database |
 | DB: tenants + user_profiles | ✅ Live | RLS + handle_new_user trigger |
 | Vercel Deployment | ✅ Live | bearingpro.tech, nitro vercel preset |
-| CRM (Contacts/Companies) | ✅ Live | Schema + RLS live; list pages read/write DB; detail page loads from DB; contact drawer view-only (no edit yet) |
-| Sales (Lead Inbox, Opps, Quotes) | 🟡 Demo data | Full UI built |
+| CRM (Contacts/Companies/Lead Inbox) | ✅ Live (partial) | Schema + RLS live; list + detail pages wired; contact edit drawer live; company edit modal live; Lead Inbox moved to CRM nav (still demo data — `leads` table not yet built) |
+| Sales (Opps, Quotes) | 🟡 Demo data | Full UI built; Lead Inbox moved to CRM |
 | Operations (Projects, Work Orders, Team, Scheduling) | 🟡 Demo data | Full UI built |
 | Service (Tickets, Plans) | 🟡 Demo data | Full UI built |
 | Inventory (Catalog, Stock, POs, Vendors) | 🟡 Demo data | Full UI built |
@@ -199,3 +202,26 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - Contact edit form (drawer is view-only)
 - Company detail notes save
 - Assign seeded contacts to seeded team members
+
+---
+
+## Session 022 — CRM Polish + Lead Inbox Move + Sales Architecture
+
+**Date:** June 9, 2026
+
+**Completed:**
+
+- **Contact edit drawer** (`/crm/contacts`): drawer now has view/edit modes; pencil icon → edit form; all fields editable; mutation updates DB + invalidates `["contacts"]` cache
+- **Company edit modal** (`/crm/companies/$companyId`): "Edit" button in header opens modal with all company fields (name, industry, stage, phone, email, website, city, state, billing_address, service_address); saves to DB, updates query cache + page title via `onSaved`
+- **Company notes inline edit**: notes textarea in sidebar saves on blur via mutation; `useRef` guard prevents refetch from overwriting in-progress edits
+- **Deactivated Members UI** (`/settings/team-members`): "Deactivated Members" section appears below active table; `get_inactive_members()` + `reactivate_member()` RPCs; optimistic cache swap on remove/reactivate
+- **Invite URL cleanup**: `/join/$slug` public route live; tenant slug auto-generated in `handle_new_user` trigger; `get_tenant_by_slug` RPC (GRANT to `anon`); invite panel generates slug URL when slug exists, falls back to base64 token for pre-migration tenants
+- **Lead Inbox moved to CRM**: route moved from `/sales/lead-inbox` → `/crm/lead-inbox`; sidebar Lead Inbox now first item under CRM section; Sales section now only has Opportunities + Quotes; command palette updated
+- **Migrations**: `20260610000001_inactive_members` (get_inactive_members + reactivate_member RPCs), `20260610000002_tenant_slug` (slug column, backfill, get_tenant_by_slug RPC, updated trigger)
+
+**Architecture decision — Sales schema (Option B):**
+- `leads` table is **separate from contacts** — leads are anonymous/unqualified web inquiries; contacts are known people
+- Lead conversion flow: Convert button → modal pre-filled from lead → creates Contact + skeleton Opportunity → lead marked `converted`
+- Opportunity fields auto-populated from lead: name, assigned rep, linked contact, notes
+- Opportunity fields filled in later by rep: deal value, close date, probability
+- Build order: `opportunities` table first → `leads` table second → wire Convert button third

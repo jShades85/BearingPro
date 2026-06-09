@@ -51,7 +51,6 @@ import { Route as ServiceServiceTicketsRouteImport } from './routes/service/serv
 import { Route as ServiceServicePlansRouteImport } from './routes/service/service-plans'
 import { Route as SalesQuotesRouteImport } from './routes/sales/quotes'
 import { Route as SalesOpportunitiesRouteImport } from './routes/sales/opportunities'
-import { Route as SalesLeadInboxRouteImport } from './routes/sales/lead-inbox'
 import { Route as OperationsWorkOrdersRouteImport } from './routes/operations/work-orders'
 import { Route as OperationsTeamRouteImport } from './routes/operations/team'
 import { Route as OperationsSchedulingRouteImport } from './routes/operations/scheduling'
@@ -64,6 +63,7 @@ import { Route as InventoryPurchaseOrdersRouteImport } from './routes/inventory/
 import { Route as InventoryCatalogRouteImport } from './routes/inventory/catalog'
 import { Route as FinancePaymentsRouteImport } from './routes/finance/payments'
 import { Route as FinanceInvoicesRouteImport } from './routes/finance/invoices'
+import { Route as CrmLeadInboxRouteImport } from './routes/crm/lead-inbox'
 import { Route as CrmContactsRouteImport } from './routes/crm/contacts'
 import { Route as CrmCompaniesRouteImport } from './routes/crm/companies'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
@@ -289,11 +289,6 @@ const SalesOpportunitiesRoute = SalesOpportunitiesRouteImport.update({
   path: '/opportunities',
   getParentRoute: () => SalesRoute,
 } as any)
-const SalesLeadInboxRoute = SalesLeadInboxRouteImport.update({
-  id: '/lead-inbox',
-  path: '/lead-inbox',
-  getParentRoute: () => SalesRoute,
-} as any)
 const OperationsWorkOrdersRoute = OperationsWorkOrdersRouteImport.update({
   id: '/work-orders',
   path: '/work-orders',
@@ -353,6 +348,11 @@ const FinanceInvoicesRoute = FinanceInvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
   getParentRoute: () => FinanceRoute,
+} as any)
+const CrmLeadInboxRoute = CrmLeadInboxRouteImport.update({
+  id: '/lead-inbox',
+  path: '/lead-inbox',
+  getParentRoute: () => CrmRoute,
 } as any)
 const CrmContactsRoute = CrmContactsRouteImport.update({
   id: '/contacts',
@@ -445,6 +445,7 @@ export interface FileRoutesByFullPath {
   '/auth/signup': typeof AuthSignupRoute
   '/crm/companies': typeof CrmCompaniesRouteWithChildren
   '/crm/contacts': typeof CrmContactsRoute
+  '/crm/lead-inbox': typeof CrmLeadInboxRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
   '/inventory/catalog': typeof InventoryCatalogRoute
@@ -457,7 +458,6 @@ export interface FileRoutesByFullPath {
   '/operations/scheduling': typeof OperationsSchedulingRoute
   '/operations/team': typeof OperationsTeamRoute
   '/operations/work-orders': typeof OperationsWorkOrdersRouteWithChildren
-  '/sales/lead-inbox': typeof SalesLeadInboxRoute
   '/sales/opportunities': typeof SalesOpportunitiesRoute
   '/sales/quotes': typeof SalesQuotesRouteWithChildren
   '/service/service-plans': typeof ServiceServicePlansRoute
@@ -508,6 +508,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/crm/contacts': typeof CrmContactsRoute
+  '/crm/lead-inbox': typeof CrmLeadInboxRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
   '/inventory/catalog': typeof InventoryCatalogRoute
@@ -517,7 +518,6 @@ export interface FileRoutesByTo {
   '/join/$slug': typeof JoinSlugRoute
   '/operations/scheduling': typeof OperationsSchedulingRoute
   '/operations/team': typeof OperationsTeamRoute
-  '/sales/lead-inbox': typeof SalesLeadInboxRoute
   '/sales/opportunities': typeof SalesOpportunitiesRoute
   '/service/service-plans': typeof ServiceServicePlansRoute
   '/service/service-tickets': typeof ServiceServiceTicketsRoute
@@ -576,6 +576,7 @@ export interface FileRoutesById {
   '/auth/signup': typeof AuthSignupRoute
   '/crm/companies': typeof CrmCompaniesRouteWithChildren
   '/crm/contacts': typeof CrmContactsRoute
+  '/crm/lead-inbox': typeof CrmLeadInboxRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
   '/inventory/catalog': typeof InventoryCatalogRoute
@@ -588,7 +589,6 @@ export interface FileRoutesById {
   '/operations/scheduling': typeof OperationsSchedulingRoute
   '/operations/team': typeof OperationsTeamRoute
   '/operations/work-orders': typeof OperationsWorkOrdersRouteWithChildren
-  '/sales/lead-inbox': typeof SalesLeadInboxRoute
   '/sales/opportunities': typeof SalesOpportunitiesRoute
   '/sales/quotes': typeof SalesQuotesRouteWithChildren
   '/service/service-plans': typeof ServiceServicePlansRoute
@@ -649,6 +649,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/crm/companies'
     | '/crm/contacts'
+    | '/crm/lead-inbox'
     | '/finance/invoices'
     | '/finance/payments'
     | '/inventory/catalog'
@@ -661,7 +662,6 @@ export interface FileRouteTypes {
     | '/operations/scheduling'
     | '/operations/team'
     | '/operations/work-orders'
-    | '/sales/lead-inbox'
     | '/sales/opportunities'
     | '/sales/quotes'
     | '/service/service-plans'
@@ -712,6 +712,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signup'
     | '/crm/contacts'
+    | '/crm/lead-inbox'
     | '/finance/invoices'
     | '/finance/payments'
     | '/inventory/catalog'
@@ -721,7 +722,6 @@ export interface FileRouteTypes {
     | '/join/$slug'
     | '/operations/scheduling'
     | '/operations/team'
-    | '/sales/lead-inbox'
     | '/sales/opportunities'
     | '/service/service-plans'
     | '/service/service-tickets'
@@ -779,6 +779,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/crm/companies'
     | '/crm/contacts'
+    | '/crm/lead-inbox'
     | '/finance/invoices'
     | '/finance/payments'
     | '/inventory/catalog'
@@ -791,7 +792,6 @@ export interface FileRouteTypes {
     | '/operations/scheduling'
     | '/operations/team'
     | '/operations/work-orders'
-    | '/sales/lead-inbox'
     | '/sales/opportunities'
     | '/sales/quotes'
     | '/service/service-plans'
@@ -1145,13 +1145,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalesOpportunitiesRouteImport
       parentRoute: typeof SalesRoute
     }
-    '/sales/lead-inbox': {
-      id: '/sales/lead-inbox'
-      path: '/lead-inbox'
-      fullPath: '/sales/lead-inbox'
-      preLoaderRoute: typeof SalesLeadInboxRouteImport
-      parentRoute: typeof SalesRoute
-    }
     '/operations/work-orders': {
       id: '/operations/work-orders'
       path: '/work-orders'
@@ -1235,6 +1228,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/finance/invoices'
       preLoaderRoute: typeof FinanceInvoicesRouteImport
       parentRoute: typeof FinanceRoute
+    }
+    '/crm/lead-inbox': {
+      id: '/crm/lead-inbox'
+      path: '/lead-inbox'
+      fullPath: '/crm/lead-inbox'
+      preLoaderRoute: typeof CrmLeadInboxRouteImport
+      parentRoute: typeof CrmRoute
     }
     '/crm/contacts': {
       id: '/crm/contacts'
@@ -1366,12 +1366,14 @@ const CrmCompaniesRouteWithChildren = CrmCompaniesRoute._addFileChildren(
 interface CrmRouteChildren {
   CrmCompaniesRoute: typeof CrmCompaniesRouteWithChildren
   CrmContactsRoute: typeof CrmContactsRoute
+  CrmLeadInboxRoute: typeof CrmLeadInboxRoute
   CrmIndexRoute: typeof CrmIndexRoute
 }
 
 const CrmRouteChildren: CrmRouteChildren = {
   CrmCompaniesRoute: CrmCompaniesRouteWithChildren,
   CrmContactsRoute: CrmContactsRoute,
+  CrmLeadInboxRoute: CrmLeadInboxRoute,
   CrmIndexRoute: CrmIndexRoute,
 }
 
@@ -1498,14 +1500,12 @@ const SalesQuotesRouteWithChildren = SalesQuotesRoute._addFileChildren(
 )
 
 interface SalesRouteChildren {
-  SalesLeadInboxRoute: typeof SalesLeadInboxRoute
   SalesOpportunitiesRoute: typeof SalesOpportunitiesRoute
   SalesQuotesRoute: typeof SalesQuotesRouteWithChildren
   SalesIndexRoute: typeof SalesIndexRoute
 }
 
 const SalesRouteChildren: SalesRouteChildren = {
-  SalesLeadInboxRoute: SalesLeadInboxRoute,
   SalesOpportunitiesRoute: SalesOpportunitiesRoute,
   SalesQuotesRoute: SalesQuotesRouteWithChildren,
   SalesIndexRoute: SalesIndexRoute,

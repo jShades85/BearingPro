@@ -32,6 +32,7 @@ const sections: { title?: string; items: NavItem[] }[] = [
   {
     title: "CRM",
     items: [
+      { to: "/crm/lead-inbox", label: "Lead Inbox", icon: Inbox },
       { to: "/crm/contacts", label: "Contacts", icon: Users },
       { to: "/crm/companies", label: "Companies", icon: Building2 },
     ],
@@ -39,7 +40,6 @@ const sections: { title?: string; items: NavItem[] }[] = [
   {
     title: "Sales",
     items: [
-      { to: "/sales/lead-inbox", label: "Lead Inbox", icon: Inbox },
       { to: "/sales/opportunities", label: "Opportunities", icon: Target },
       { to: "/sales/quotes", label: "Quotes & Estimates", icon: FileText },
     ],

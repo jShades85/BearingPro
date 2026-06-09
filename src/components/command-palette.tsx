@@ -20,7 +20,7 @@ const NAV = [
   { to: "/inbox",                       label: "Inbox",            icon: Inbox,           group: "General"    },
   { to: "/crm/contacts",               label: "Contacts",         icon: Users,           group: "CRM"        },
   { to: "/crm/companies",              label: "Companies",        icon: Building2,        group: "CRM"        },
-  { to: "/sales/lead-inbox",           label: "Lead Inbox",       icon: Inbox,           group: "Sales"      },
+  { to: "/crm/lead-inbox",             label: "Lead Inbox",       icon: Inbox,           group: "CRM"        },
   { to: "/sales/opportunities",        label: "Opportunities",    icon: Target,           group: "Sales"      },
   { to: "/sales/quotes",               label: "Quotes & Estimates", icon: FileText,       group: "Sales"      },
   { to: "/operations/projects",        label: "Projects",         icon: Briefcase,        group: "Operations" },
@@ -46,7 +46,7 @@ const NAV = [
 // ─── Quick actions ────────────────────────────────────────────────────────────
 
 const ACTIONS: { label: string; to: string; icon: typeof Plus }[] = [
-  { label: "New Lead",           to: "/sales/lead-inbox",        icon: Plus },
+  { label: "New Lead",           to: "/crm/lead-inbox",          icon: Plus },
   { label: "New Opportunity",    to: "/sales/opportunities",     icon: Plus },
   { label: "New Quote",          to: "/sales/quotes",            icon: Plus },
   { label: "New Project",        to: "/operations/projects",     icon: Plus },
