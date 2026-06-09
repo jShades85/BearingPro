@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui-bits";
 import { PageTabs, PageTab, FilterBar, FilterSelect } from "@/components/ui/page-components";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { cn } from "@/lib/utils";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -40,6 +40,7 @@ interface DbLead {
 }
 
 interface TeamMember { id: string; full_name: string | null }
+interface ContactMatch { id: string; full_name: string; email: string | null }
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -110,37 +111,54 @@ async function insertLead(values: {
   if (error) throw error;
 }
 
-async function convertLead(lead: DbLead): Promise<void> {
+async function searchContacts(query: string): Promise<ContactMatch[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id,full_name,email")
+    .ilike("full_name", `%${query}%`)
+    .order("full_name")
+    .limit(5);
+  if (error) throw error;
+  return (data ?? []) as ContactMatch[];
+}
+
+async function convertLead(lead: DbLead, existingContactId?: string): Promise<void> {
   const supabase = createClient();
   const { data: tenantRow } = await supabase.from("tenants").select("id").single();
   if (!tenantRow) throw new Error("No tenant");
   const tid = tenantRow.id;
 
-  // 1. Create contact
-  const { data: contact, error: ce } = await supabase
-    .from("contacts")
-    .insert({
-      tenant_id:     tid,
-      full_name:     fullName(lead),
-      phone:         lead.phone,
-      email:         lead.email,
-      source:        lead.source,
-      stage:         "Lead",
-      customer_type: "commercial",
-      tags:          [],
-      assigned_to:   lead.assignee?.id ?? null,
-    })
-    .select("id")
-    .single();
-  if (ce || !contact) throw ce ?? new Error("Contact insert failed");
+  let contactId: string;
 
-  // 2. Create opportunity
+  if (existingContactId) {
+    contactId = existingContactId;
+  } else {
+    const { data: contact, error: ce } = await supabase
+      .from("contacts")
+      .insert({
+        tenant_id:     tid,
+        full_name:     fullName(lead),
+        phone:         lead.phone,
+        email:         lead.email,
+        source:        lead.source,
+        stage:         "Lead",
+        customer_type: "commercial",
+        tags:          [],
+        assigned_to:   lead.assignee?.id ?? null,
+      })
+      .select("id")
+      .single();
+    if (ce || !contact) throw ce ?? new Error("Contact insert failed");
+    contactId = contact.id;
+  }
+
   const { data: opp, error: oe } = await supabase
     .from("opportunities")
     .insert({
       tenant_id:   tid,
       title:       lead.service_interest ?? `Opportunity — ${fullName(lead)}`,
-      contact_id:  contact.id,
+      contact_id:  contactId,
       assigned_to: lead.assignee?.id ?? null,
       source:      lead.source,
       stage:       "site-visit",
@@ -150,13 +168,12 @@ async function convertLead(lead: DbLead): Promise<void> {
     .single();
   if (oe || !opp) throw oe ?? new Error("Opportunity insert failed");
 
-  // 3. Mark lead converted
   const { error: le } = await supabase
     .from("leads")
     .update({
       status:                   "converted",
       converted_at:             new Date().toISOString(),
-      converted_contact_id:     contact.id,
+      converted_contact_id:     contactId,
       converted_opportunity_id: opp.id,
     })
     .eq("id", lead.id);
@@ -190,6 +207,7 @@ function LeadInbox() {
   const qc = useQueryClient();
   const [selectedLead, setSelectedLead] = useState<DbLead | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [convertModalLead, setConvertModalLead] = useState<DbLead | null>(null);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
   const [assignedFilter, setAssignedFilter] = useState<string>("all");
@@ -203,12 +221,14 @@ function LeadInbox() {
   });
 
   const convertMutation = useMutation({
-    mutationFn: convertLead,
+    mutationFn: ({ lead, existingContactId }: { lead: DbLead; existingContactId?: string }) =>
+      convertLead(lead, existingContactId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
       qc.invalidateQueries({ queryKey: ["opportunities"] });
-      qc.invalidateQueries({ queryKey: ["contacts"] }); // keep contacts page fresh
+      qc.invalidateQueries({ queryKey: ["contacts"] });
       setSelectedLead(null);
+      setConvertModalLead(null);
     },
   });
 
@@ -317,7 +337,7 @@ function LeadInbox() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          convertMutation.mutate(lead);
+                          setConvertModalLead(lead);
                         }}
                         disabled={lead.status === "converted" || lead.status === "dismissed" || convertMutation.isPending}
                         className="h-6 rounded px-2 text-[11px] font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-35 disabled:cursor-default transition-opacity"
@@ -358,7 +378,7 @@ function LeadInbox() {
             converting={convertMutation.isPending}
             onStatusChange={(status) => statusMutation.mutate({ id: selectedLead.id, status })}
             onNotesChange={(notes) => updateLeadNotes(selectedLead.id, notes)}
-            onConvert={() => convertMutation.mutate(selectedLead)}
+            onConvert={() => setConvertModalLead(selectedLead)}
           />
         )}
       </Sheet>
@@ -373,6 +393,20 @@ function LeadInbox() {
             setNewLeadOpen(false);
           }}
         />
+      </Dialog>
+
+      <Dialog open={convertModalLead !== null} onOpenChange={(open) => { if (!open) setConvertModalLead(null); }}>
+        {convertModalLead !== null && (
+          <ConvertModal
+            key={convertModalLead.id}
+            lead={convertModalLead}
+            converting={convertMutation.isPending}
+            onClose={() => setConvertModalLead(null)}
+            onConvert={(existingContactId) =>
+              convertMutation.mutate({ lead: convertModalLead, existingContactId })
+            }
+          />
+        )}
       </Dialog>
     </div>
   );
@@ -499,6 +533,117 @@ function LeadDrawer({
         </button>
       </div>
     </SheetContent>
+  );
+}
+
+// ─── Convert modal ────────────────────────────────────────────────────────────
+
+function ConvertModal({
+  lead,
+  converting,
+  onClose,
+  onConvert,
+}: {
+  lead: DbLead;
+  converting: boolean;
+  onClose: () => void;
+  onConvert: (existingContactId?: string) => void;
+}) {
+  const [search, setSearch] = useState(fullName(lead));
+  const [selected, setSelected] = useState<string | "new">("new");
+
+  const { data: matches = [], isFetching } = useQuery({
+    queryKey: ["contact-search", search],
+    queryFn: () => searchContacts(search),
+    enabled: search.trim().length > 1,
+  });
+
+  return (
+    <DialogContent className="max-w-sm">
+      <DialogHeader>
+        <DialogTitle>Convert Lead</DialogTitle>
+      </DialogHeader>
+      <div className="mt-1 space-y-4 text-[12.5px]">
+        <p className="text-muted-foreground">
+          Link <span className="font-medium text-foreground">{fullName(lead)}</span> to an existing contact, or create a new one.
+        </p>
+
+        <div>
+          <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Search contacts</label>
+          <input
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setSelected("new"); }}
+            className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+            placeholder="Search by name…"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          {isFetching && (
+            <p className="text-[12px] text-muted-foreground px-1">Searching…</p>
+          )}
+          {matches.map((c) => (
+            <label
+              key={c.id}
+              className={cn(
+                "flex items-start gap-2.5 rounded-md border px-3 py-2 cursor-pointer transition-colors",
+                selected === c.id ? "border-primary bg-primary/5" : "border-border hover:bg-accent/50",
+              )}
+            >
+              <input
+                type="radio"
+                name="contact"
+                value={c.id}
+                checked={selected === c.id}
+                onChange={() => setSelected(c.id)}
+                className="mt-0.5 accent-primary"
+              />
+              <div>
+                <p className="font-medium leading-snug">{c.full_name}</p>
+                {c.email && <p className="text-[11px] text-muted-foreground">{c.email}</p>}
+              </div>
+            </label>
+          ))}
+          {!isFetching && search.trim().length > 1 && matches.length === 0 && (
+            <p className="text-[12px] text-muted-foreground px-1">No existing contacts match "{search}".</p>
+          )}
+          <label
+            className={cn(
+              "flex items-center gap-2.5 rounded-md border px-3 py-2 cursor-pointer transition-colors",
+              selected === "new" ? "border-primary bg-primary/5" : "border-border hover:bg-accent/50",
+            )}
+          >
+            <input
+              type="radio"
+              name="contact"
+              value="new"
+              checked={selected === "new"}
+              onChange={() => setSelected("new")}
+              className="accent-primary"
+            />
+            <span>Create new contact for <span className="font-medium">{fullName(lead)}</span></span>
+          </label>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-1">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={converting}
+            onClick={() => onConvert(selected === "new" ? undefined : selected)}
+            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {converting ? "Converting…" : "Convert"}
+          </button>
+        </div>
+      </div>
+    </DialogContent>
   );
 }
 
