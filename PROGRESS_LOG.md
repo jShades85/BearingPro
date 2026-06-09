@@ -6,8 +6,8 @@
 
 ## Current Status
 
-**Phase:** Backend — Inventory Stock live, Service Plans next
-**Last Updated:** Session 030
+**Phase:** Backend — Service Plans live, POs/Vendors next
+**Last Updated:** Session 031
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -17,8 +17,7 @@
 
 **Start here next session:**
 
-1. **Service Plans** — `service_plans` table + wire Service Plans page
-2. **Inventory → POs / Vendors** — next inventory module
+1. **Inventory → POs / Vendors** — next inventory module
 
 ---
 
@@ -44,7 +43,7 @@
 | CRM (Contacts/Companies/Lead Inbox) | ✅ Live | Schema + RLS live; all pages wired; Lead Inbox reads/writes `leads` table; Convert button creates Contact + Opportunity atomically |
 | Sales (Opps, Quotes) | ✅ Opps live | Opportunities reads/writes DB; kanban stage moves + new opp modal wired; Quotes still demo |
 | Operations (Projects, Work Orders, Team, Scheduling) | ✅ Projects + WOs live | Schema + RLS live; list + detail pages read/write DB; status persists; Edit drawer live (name, dates, PM, value); Convert from Opportunity wired; Team + Scheduling still demo |
-| Service (Tickets, Plans) | ✅ Tickets live | Schema + RLS live; list reads/writes DB; status updates + notes persist; New Ticket modal wired; Service Plans still demo |
+| Service (Tickets, Plans) | ✅ Live | Tickets: status + notes + new ticket wired; Service Plans: schema + RLS live; 8 seed plans; all CRUD wired (tier/status inline, notes blur-save, Renew/Cancel, New Plan modal) |
 | Inventory → Catalog | ✅ Live | Schema + RLS live; category landing + item grid wired; tenant-defined categories with trade templates + icon picker; CategorySetupModal on first visit; New Category / New Item context-aware button |
 | Inventory → Stock | ✅ Live | Schema + RLS live; 12 seed items + 35 movements; all CRUD wired; Adjust popover writes to DB; movements lazy-loaded per item in drawer; manufacturers derived from live data |
 | Inventory → POs, Vendors | 🟡 Demo data | Full UI built |
@@ -89,6 +88,8 @@
 | `20260610000014_categories_icon` | `icon` column on `categories` (default `Package2`), backfill for seeded categories | ✅ Live |
 | `20260610000015_stock` | `stock_items` + `stock_movements` tables, full RLS, `set_updated_at` trigger on stock_items | ✅ Live |
 | `20260610000016_stock_seed` | 12 seed stock items + 35 movements; links to catalog items by name ilike match | ✅ Live |
+| `20260610000017_service_plans` | `service_plans` table with full RLS, `set_updated_at` trigger | ✅ Live |
+| `20260610000018_service_plans_seed` | 8 seed service plans with activity jsonb; looks up companies + team members by name/offset | ✅ Live |
 
 **Trigger logic:** New signup → creates `tenants` row + `user_profiles` row (Owner role). Invited user (has `tenant_id` in metadata) → joins existing tenant with assigned role. Upserts on conflict so re-inviting a removed user reactivates their profile.
 
@@ -334,3 +335,28 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - Catalog = master data (what you can quote/sell); Stock = transactional (quantities per location) — separate tables, confirmed industry standard
 - Categories are tenant-defined — no hardcoded enum; trade-type templates are static app config inserted to DB on first setup
 - Icon stored as Lucide component name string in DB (e.g. `"Camera"`); rendered via `ICON_MAP[icon]` lookup; falls back to `Package2`
+
+---
+
+## Session 031 — Service Plans Live
+
+**Date:** June 9, 2026
+
+**Completed:**
+
+- **Migration 20260610000017**: `service_plans` table with full RLS (select/insert/update/delete scoped to `current_tenant_id()`); `set_updated_at` trigger reused from catalog migration
+- **Migration 20260610000018**: 8 seed service plans matching prior demo data (Vertex Capital, Helio Health, Pinecrest, Northbeam, Arden & Loom, Quay Residential, Halcyon Schools, Cinder & Oak); activity stored as jsonb with actor names; company FKs looked up by `name ilike`, account manager by `user_profiles` offset
+- **Service Plans page fully rewritten** (`/service/service-plans`): wired to Supabase — no more demo data
+  - **Card grid**: tier badge + status badge; covered systems chips; MRR / SLA / renewal date; visits progress bar; account manager avatar/name; live data from DB
+  - **Stat bar**: Active Plans, MRR, Annual Revenue, Expiring Soon (amber accent)
+  - **Status tabs**: all / active / expiring / expired / pending / cancelled with live counts
+  - **PlanDrawer**: tier dropdown (inline save), status dropdown (inline save), notes textarea (blur-to-save); Renew Plan / Cancel Plan buttons; contact + site info; activity timeline; account manager avatar
+  - **NewPlanModal**: all fields wired — customer, contact, phone, tier, billing cycle, MRR, SLA, visits/year, start date, account manager, site address, covered systems (toggle chips), notes; auto-generates code `SP-YYYY-NNN`; inserts to DB
+  - **Removed** `SERVICE_PLANS` demo data import; removed `ownerNames` import; `@/data/service-plans` import retained for type/config exports only
+- **TypeScript**: used `TablesUpdate<"service_plans">` for update patch type (avoids Supabase's `RejectExcessProperties` constraint on `Record<string, unknown>`)
+
+**Patterns used:**
+- `useRef` initialized flag in `PlanDrawer` to prevent notes field from resetting after a save refetch
+- `TablesUpdate<"table">` from `@/lib/supabase/types` for typed partial-update patches
+- Account manager name via FK join: `user_profiles!account_manager_id(full_name)` in select + seed migration
+- `activity` column as `jsonb` — read-only in UI (no add-activity button yet); populated at seed time

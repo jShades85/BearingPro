@@ -1,27 +1,116 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
-import { currency, ownerNames } from "@/lib/demo-data";
+import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import type { TablesUpdate } from "@/lib/supabase/types";
 import { AlertCircle, Clock, DollarSign, MapPin, Phone, RefreshCw, Shield, TrendingUp } from "lucide-react";
 import { StatBar, StatItem, PageTabs, PageTab } from "@/components/ui/page-components";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  SERVICE_PLANS,
-  STATUS_ORDER,
-  statusMeta,
-  tierMeta,
-  type PlanStatus,
-  type PlanTier,
-  type ServicePlan,
-} from "@/data/service-plans";
+import { statusMeta, tierMeta, STATUS_ORDER, type PlanStatus, type PlanTier } from "@/data/service-plans";
 
 export const Route = createFileRoute("/service/service-plans")({
-  head: () => ({ meta: [{ title: "Service Plans · Port City Sound & Security" }] }),
+  head: () => ({ meta: [{ title: "Service Plans · BearingPro" }] }),
   component: ServicePlansPage,
 });
+
+const supabase = createClient();
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ActivityEntry {
+  time: string;
+  actor: string;
+  text: string;
+}
+
+interface ServicePlan {
+  id: string;
+  code: string;
+  customerName: string;
+  companyId: string | null;
+  contactName: string;
+  contactId: string | null;
+  phone: string;
+  siteAddress: string;
+  tier: PlanTier;
+  coveredSystems: string[];
+  mrr: number;
+  billingCycle: "Monthly" | "Quarterly" | "Annual";
+  slaResponse: string;
+  visitsPerYear: number;
+  visitsUsed: number;
+  startDate: string | null;
+  renewalDate: string | null;
+  status: PlanStatus;
+  accountManagerId: string | null;
+  accountManagerName: string | null;
+  notes: string;
+  activity: ActivityEntry[];
+}
+
+type DbPlan = {
+  id: string;
+  code: string;
+  customer_name: string;
+  company_id: string | null;
+  contact_name: string;
+  contact_id: string | null;
+  phone: string;
+  site_address: string;
+  tier: string;
+  covered_systems: string[];
+  mrr: number;
+  billing_cycle: string;
+  sla_response: string;
+  visits_per_year: number;
+  visits_used: number;
+  start_date: string | null;
+  renewal_date: string | null;
+  status: string;
+  account_manager_id: string | null;
+  notes: string;
+  activity: ActivityEntry[];
+  user_profiles: { full_name: string | null } | null;
+};
+
+function toPlan(r: DbPlan): ServicePlan {
+  return {
+    id:               r.id,
+    code:             r.code,
+    customerName:     r.customer_name,
+    companyId:        r.company_id,
+    contactName:      r.contact_name,
+    contactId:        r.contact_id,
+    phone:            r.phone,
+    siteAddress:      r.site_address,
+    tier:             r.tier as PlanTier,
+    coveredSystems:   r.covered_systems ?? [],
+    mrr:              Number(r.mrr),
+    billingCycle:     r.billing_cycle as ServicePlan["billingCycle"],
+    slaResponse:      r.sla_response,
+    visitsPerYear:    r.visits_per_year,
+    visitsUsed:       r.visits_used,
+    startDate:        r.start_date,
+    renewalDate:      r.renewal_date,
+    status:           r.status as PlanStatus,
+    accountManagerId: r.account_manager_id,
+    accountManagerName: r.user_profiles?.full_name ?? null,
+    notes:            r.notes,
+    activity:         (r.activity as ActivityEntry[]) ?? [],
+  };
+}
+
+const COVERED_SYSTEM_OPTIONS = [
+  "Security", "AV / Audio", "Networking", "Access Control",
+  "Surveillance", "Smart Home",
+] as const;
+
+const SLA_OPTIONS = ["2 hours", "4 hours", "8 hours", "Next business day"];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -63,23 +152,58 @@ function VisitsBar({ used, total }: { used: number; total: number }) {
 
 function ServicePlansPage() {
   const { setMeta } = useMeta();
-  const [plans, setPlans] = useState<ServicePlan[]>(SERVICE_PLANS);
+  const qc = useQueryClient();
   const [selected, setSelected] = useState<ServicePlan | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<PlanStatus | "all">("all");
 
+  const { data: plans = [], isLoading } = useQuery({
+    queryKey: ["service-plans"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("service_plans")
+        .select("*, user_profiles!account_manager_id(full_name)")
+        .order("code", { ascending: false });
+      if (error) throw error;
+      return (data as unknown as DbPlan[]).map(toPlan);
+    },
+  });
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ["team-members-basic"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("id, full_name")
+        .eq("is_active", true)
+        .order("full_name");
+      if (error) throw error;
+      return data as { id: string; full_name: string | null }[];
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: TablesUpdate<"service_plans"> }) => {
+      const { data, error } = await supabase
+        .from("service_plans")
+        .update(patch)
+        .eq("id", id)
+        .select("*, user_profiles!account_manager_id(full_name)")
+        .single();
+      if (error) throw error;
+      return toPlan(data as unknown as DbPlan);
+    },
+    onSuccess: (updated) => {
+      qc.setQueryData<ServicePlan[]>(["service-plans"], (prev = []) =>
+        prev.map((p) => (p.id === updated.id ? updated : p)),
+      );
+      setSelected((prev) => (prev?.id === updated.id ? updated : prev));
+    },
+  });
+
   const activePlans = useMemo(() => plans.filter((p) => p.status === "active" || p.status === "expiring"), [plans]);
   const mrr = useMemo(() => activePlans.reduce((sum, p) => sum + p.mrr, 0), [activePlans]);
   const expiringCount = useMemo(() => plans.filter((p) => p.status === "expiring").length, [plans]);
-
-  useEffect(() => {
-    setMeta({
-      title: "Service Plans",
-      subtitle: `${activePlans.length} active`,
-      newLabel: "New Plan",
-      onNew: () => setNewOpen(true),
-    });
-  }, [setMeta, activePlans.length]);
 
   const statusCounts = useMemo(() => {
     const c: Record<string, number> = { all: plans.length };
@@ -93,22 +217,30 @@ function ServicePlansPage() {
     [plans, statusFilter],
   );
 
-  const updatePlan = useCallback((id: string, patch: Partial<ServicePlan>) => {
-    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-    setSelected((prev) => (prev !== null && prev.id === id ? { ...prev, ...patch } : prev));
-  }, []);
+  const openNew = useCallback(() => setNewOpen(true), []);
+
+  useEffect(() => {
+    setMeta({
+      title: "Service Plans",
+      subtitle: `${activePlans.length} active`,
+      newLabel: "New Plan",
+      onNew: openNew,
+    });
+  }, [setMeta, activePlans.length, openNew]);
+
+  function handleUpdate(id: string, patch: TablesUpdate<"service_plans">) {
+    updateMutation.mutate({ id, patch });
+  }
 
   return (
-    <div className="flex flex-col">
-      {/* Stat bar */}
+    <div className={cn("flex flex-col", isLoading && "opacity-50")}>
       <StatBar>
-        <StatItem icon={Shield}       label="Active Plans"    value={String(activePlans.length)} />
-        <StatItem icon={DollarSign}   label="Monthly Revenue" value={currency(mrr)} />
-        <StatItem icon={TrendingUp}   label="Annual Revenue"  value={currency(mrr * 12)} />
-        <StatItem icon={AlertCircle}  label="Expiring Soon"   value={String(expiringCount)} accent={expiringCount > 0} accentColor="amber" />
+        <StatItem icon={Shield}      label="Active Plans"    value={String(activePlans.length)} />
+        <StatItem icon={DollarSign}  label="Monthly Revenue" value={currency(mrr)} />
+        <StatItem icon={TrendingUp}  label="Annual Revenue"  value={currency(mrr * 12)} />
+        <StatItem icon={AlertCircle} label="Expiring Soon"   value={String(expiringCount)} accent={expiringCount > 0} accentColor="amber" />
       </StatBar>
 
-      {/* Status tabs */}
       <PageTabs>
         {(["all", ...STATUS_ORDER] as (PlanStatus | "all")[]).map((s) => (
           <PageTab key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} count={statusCounts[s]}>
@@ -117,7 +249,6 @@ function ServicePlansPage() {
         ))}
       </PageTabs>
 
-      {/* Card grid */}
       <div className="p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((plan) => (
           <div
@@ -125,17 +256,15 @@ function ServicePlansPage() {
             onClick={() => setSelected(plan)}
             className="group rounded-lg border border-border bg-card p-4 hover:border-primary/40 transition-colors cursor-pointer flex flex-col gap-3"
           >
-            {/* Header */}
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
                 <TierBadge tier={plan.tier} />
                 <StatusBadge status={plan.status} />
               </div>
-              <div className="text-[13.5px] font-semibold leading-snug">{plan.customer}</div>
-              <div className="text-[11.5px] text-muted-foreground mt-0.5">{plan.contact}</div>
+              <div className="text-[13.5px] font-semibold leading-snug">{plan.customerName}</div>
+              <div className="text-[11.5px] text-muted-foreground mt-0.5">{plan.contactName}</div>
             </div>
 
-            {/* Covered systems */}
             <div className="flex flex-wrap gap-1">
               {plan.coveredSystems.map((s) => (
                 <span key={s} className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground">
@@ -144,7 +273,6 @@ function ServicePlansPage() {
               ))}
             </div>
 
-            {/* Stats row */}
             <div className="grid grid-cols-3 gap-2 border-t border-border pt-3">
               <div>
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">MRR</div>
@@ -156,42 +284,55 @@ function ServicePlansPage() {
               </div>
               <div>
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Renewal</div>
-                <div className="text-[11.5px] font-mono text-muted-foreground">{plan.renewalDate}</div>
+                <div className="text-[11.5px] font-mono text-muted-foreground">{plan.renewalDate ?? "—"}</div>
               </div>
             </div>
 
-            {/* Footer: visits + manager */}
             <div className="flex items-center justify-between border-t border-border pt-3">
               <div className="flex flex-col gap-0.5">
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Visits</div>
                 <VisitsBar used={plan.visitsUsed} total={plan.visitsPerYear} />
               </div>
-              <div className="flex items-center gap-1.5">
-                <Avatar initials={plan.accountManager} />
-                <span className="text-[11.5px] text-muted-foreground">
-                  {ownerNames[plan.accountManager]?.split(" ")[0]}
-                </span>
-              </div>
+              {plan.accountManagerName && (
+                <div className="flex items-center gap-1.5">
+                  <Avatar initials={plan.accountManagerName.split(" ").map((w) => w[0]).join("").slice(0, 2)} />
+                  <span className="text-[11.5px] text-muted-foreground">
+                    {plan.accountManagerName.split(" ")[0]}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         ))}
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !isLoading && (
           <div className="col-span-3 py-12 text-center text-[12.5px] text-muted-foreground">
             No plans match the current filter.
           </div>
         )}
       </div>
 
-      {/* Detail drawer */}
       <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         {selected !== null && (
-          <PlanDrawer key={selected.id} plan={selected} onUpdate={updatePlan} />
+          <PlanDrawer
+            key={selected.id}
+            plan={selected}
+            teamMembers={teamMembers}
+            onUpdate={handleUpdate}
+            isPending={updateMutation.isPending}
+          />
         )}
       </Sheet>
 
-      {/* New plan modal */}
       <Dialog open={newOpen} onOpenChange={setNewOpen}>
-        <NewPlanModal onClose={() => setNewOpen(false)} />
+        <NewPlanModal
+          teamMembers={teamMembers}
+          planCount={plans.length}
+          onClose={() => setNewOpen(false)}
+          onCreated={(plan) => {
+            qc.setQueryData<ServicePlan[]>(["service-plans"], (prev = []) => [plan, ...prev]);
+            setNewOpen(false);
+          }}
+        />
       </Dialog>
     </div>
   );
@@ -201,18 +342,31 @@ function ServicePlansPage() {
 
 function PlanDrawer({
   plan,
+  teamMembers,
   onUpdate,
+  isPending,
 }: {
   plan: ServicePlan;
-  onUpdate: (id: string, patch: Partial<ServicePlan>) => void;
+  teamMembers: { id: string; full_name: string | null }[];
+  onUpdate: (id: string, patch: TablesUpdate<"service_plans">) => void;
+  isPending: boolean;
 }) {
   const [notes, setNotes] = useState(plan.notes);
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      return;
+    }
+    setNotes(plan.notes);
+  }, [plan.notes]);
 
   return (
     <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4 pr-12">
-        <p className="font-mono text-[11px] text-muted-foreground mb-1">{plan.id}</p>
-        <SheetTitle className="text-[15px] font-semibold">{plan.customer}</SheetTitle>
+        <p className="font-mono text-[11px] text-muted-foreground mb-1">{plan.code}</p>
+        <SheetTitle className="text-[15px] font-semibold">{plan.customerName}</SheetTitle>
         <div className="flex items-center gap-2 mt-1">
           <TierBadge tier={plan.tier} />
           <StatusBadge status={plan.status} />
@@ -226,7 +380,8 @@ function PlanDrawer({
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Plan Tier</p>
             <select
               value={plan.tier}
-              onChange={(e) => onUpdate(plan.id, { tier: e.target.value as PlanTier })}
+              disabled={isPending}
+              onChange={(e) => onUpdate(plan.id, { tier: e.target.value })}
               className="h-7 w-full rounded-md border border-border bg-surface px-2 text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {(["Essential", "Standard", "Professional", "Elite"] as PlanTier[]).map((t) => (
@@ -238,7 +393,8 @@ function PlanDrawer({
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Status</p>
             <select
               value={plan.status}
-              onChange={(e) => onUpdate(plan.id, { status: e.target.value as PlanStatus })}
+              disabled={isPending}
+              onChange={(e) => onUpdate(plan.id, { status: e.target.value })}
               className="h-7 w-full rounded-md border border-border bg-surface px-2 text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {STATUS_ORDER.map((s) => (
@@ -260,18 +416,26 @@ function PlanDrawer({
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Account Mgr</p>
-            <div className="flex items-center gap-1.5">
-              <Avatar initials={plan.accountManager} />
-              <span className="text-[12px]">{ownerNames[plan.accountManager]?.split(" ")[0]}</span>
-            </div>
+            {plan.accountManagerName ? (
+              <div className="flex items-center gap-1.5">
+                <Avatar initials={plan.accountManagerName.split(" ").map((w) => w[0]).join("").slice(0, 2)} />
+                <span className="text-[12px]">{plan.accountManagerName.split(" ")[0]}</span>
+              </div>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            )}
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Start Date</p>
-            <span className="font-mono text-[12px]">{plan.startDate}</span>
+            <span className="font-mono text-[12px]">{plan.startDate ?? "—"}</span>
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Renewal Date</p>
-            <span className="font-mono text-[12px]">{plan.renewalDate}</span>
+            <span className="font-mono text-[12px]">{plan.renewalDate ?? "—"}</span>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Annual</p>
+            <span className="font-semibold tabular-nums">{currency(plan.mrr * 12)}</span>
           </div>
         </div>
 
@@ -310,7 +474,7 @@ function PlanDrawer({
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Contact</p>
             <div className="flex flex-col gap-1 text-muted-foreground">
-              <span className="text-foreground font-medium">{plan.contact}</span>
+              <span className="text-foreground font-medium">{plan.contactName}</span>
               <span className="flex items-center gap-1.5">
                 <Phone className="h-3.5 w-3.5 shrink-0" />
                 {plan.phone}
@@ -329,7 +493,7 @@ function PlanDrawer({
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            onBlur={() => onUpdate(plan.id, { notes })}
+            onBlur={() => { if (notes !== plan.notes) onUpdate(plan.id, { notes }); }}
             placeholder="Add notes…"
             rows={3}
             className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
@@ -337,31 +501,32 @@ function PlanDrawer({
         </div>
 
         {/* Activity */}
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Activity</p>
-          <ul className="space-y-3">
-            {plan.activity.map((a, i) => (
-              <li key={i} className="flex gap-2.5 text-[12px]">
-                <Clock className="h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground/50" />
-                <div>
+        {plan.activity.length > 0 && (
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Activity</p>
+            <ul className="space-y-3">
+              {plan.activity.map((a, i) => (
+                <li key={i} className="flex gap-2.5 text-[12px]">
+                  <Clock className="h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground/50" />
                   <div>
-                    <span className="font-medium">{ownerNames[a.actor]?.split(" ")[0] ?? a.actor}</span>
-                    {" — "}
-                    {a.text}
+                    <div>
+                      <span className="font-medium">{a.actor.split(" ")[0]}</span>
+                      {" — "}
+                      {a.text}
+                    </div>
+                    <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.time}</div>
                   </div>
-                  <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.time}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
-      {/* Footer actions */}
       <div className="border-t border-border px-5 py-4 flex flex-col gap-2">
         <button
           onClick={() => onUpdate(plan.id, { status: "active" })}
-          disabled={plan.status === "active"}
+          disabled={plan.status === "active" || isPending}
           className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity flex items-center justify-center gap-1.5"
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -369,7 +534,7 @@ function PlanDrawer({
         </button>
         <button
           onClick={() => onUpdate(plan.id, { status: "cancelled" })}
-          disabled={plan.status === "cancelled"}
+          disabled={plan.status === "cancelled" || isPending}
           className="w-full h-8 rounded-md border border-border text-muted-foreground text-[12.5px] font-medium hover:text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-default transition-colors"
         >
           Cancel Plan
@@ -381,64 +546,169 @@ function PlanDrawer({
 
 // ─── New plan modal ───────────────────────────────────────────────────────────
 
-function NewPlanModal({ onClose }: { onClose: () => void }) {
+const TIERS: PlanTier[] = ["Essential", "Standard", "Professional", "Elite"];
+const BILLING_CYCLES = ["Monthly", "Quarterly", "Annual"] as const;
+
+function NewPlanModal({
+  teamMembers,
+  planCount,
+  onClose,
+  onCreated,
+}: {
+  teamMembers: { id: string; full_name: string | null }[];
+  planCount: number;
+  onClose: () => void;
+  onCreated: (plan: ServicePlan) => void;
+}) {
+  const qc = useQueryClient();
+  const [customerName, setCustomerName] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [tier, setTier] = useState<PlanTier>("Standard");
+  const [billingCycle, setBillingCycle] = useState<"Monthly" | "Quarterly" | "Annual">("Monthly");
+  const [slaResponse, setSlaResponse] = useState("8 hours");
+  const [mrr, setMrr] = useState("");
+  const [visitsPerYear, setVisitsPerYear] = useState("2");
+  const [startDate, setStartDate] = useState("");
+  const [accountManagerId, setAccountManagerId] = useState(teamMembers[0]?.id ?? "");
+  const [siteAddress, setSiteAddress] = useState("");
+  const [coveredSystems, setCoveredSystems] = useState<string[]>([]);
+  const [notes, setNotes] = useState("");
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const tenantId = qc.getQueryData<{ id: string }>(["tenant"])?.id;
+      const year = new Date().getFullYear();
+      const num = String(planCount + 1).padStart(3, "0");
+      const code = `SP-${year}-${num}`;
+
+      const { data, error } = await supabase
+        .from("service_plans")
+        .insert({
+          tenant_id:          tenantId!,
+          code,
+          customer_name:      customerName.trim(),
+          contact_name:       contactName.trim(),
+          phone:              phone.trim(),
+          tier,
+          billing_cycle:      billingCycle,
+          sla_response:       slaResponse,
+          mrr:                parseFloat(mrr) || 0,
+          visits_per_year:    parseInt(visitsPerYear) || 1,
+          visits_used:        0,
+          start_date:         startDate || null,
+          site_address:       siteAddress.trim(),
+          covered_systems:    coveredSystems,
+          account_manager_id: accountManagerId || null,
+          status:             "pending",
+          notes:              notes.trim(),
+        })
+        .select("*, user_profiles!account_manager_id(full_name)")
+        .single();
+      if (error) throw error;
+      return toPlan(data as unknown as DbPlan);
+    },
+    onSuccess: onCreated,
+  });
+
   const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
   const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
   const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
+  function toggleSystem(s: string) {
+    setCoveredSystems((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s],
+    );
+  }
+
+  const canSubmit = customerName.trim().length > 0;
+
   return (
-    <DialogContent className="max-w-md">
+    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>New Service Plan</DialogTitle>
       </DialogHeader>
       <div className="mt-1 grid grid-cols-2 gap-3">
         <div className="col-span-2">
-          <label className={labelCls}>Customer</label>
-          <input className={inputCls} placeholder="Company name" />
+          <label className={labelCls}>Customer *</label>
+          <input value={customerName} onChange={(e) => setCustomerName(e.target.value)} className={inputCls} placeholder="Company name" />
         </div>
         <div>
           <label className={labelCls}>Contact</label>
-          <input className={inputCls} placeholder="Contact name" />
+          <input value={contactName} onChange={(e) => setContactName(e.target.value)} className={inputCls} placeholder="Contact name" />
         </div>
         <div>
           <label className={labelCls}>Phone</label>
-          <input className={inputCls} placeholder="(555) 000-0000" type="tel" />
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} placeholder="(555) 000-0000" type="tel" />
         </div>
         <div>
           <label className={labelCls}>Plan Tier</label>
-          <select className={selectCls}>
-            {(["Essential", "Standard", "Professional", "Elite"] as PlanTier[]).map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
+          <select value={tier} onChange={(e) => setTier(e.target.value as PlanTier)} className={selectCls}>
+            {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div>
           <label className={labelCls}>Billing Cycle</label>
-          <select className={selectCls}>
-            <option>Monthly</option>
-            <option>Quarterly</option>
-            <option>Annual</option>
+          <select value={billingCycle} onChange={(e) => setBillingCycle(e.target.value as typeof billingCycle)} className={selectCls}>
+            {BILLING_CYCLES.map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
         </div>
         <div>
+          <label className={labelCls}>MRR ($)</label>
+          <input value={mrr} onChange={(e) => setMrr(e.target.value)} className={inputCls} placeholder="0.00" type="number" min="0" step="0.01" />
+        </div>
+        <div>
+          <label className={labelCls}>SLA Response</label>
+          <select value={slaResponse} onChange={(e) => setSlaResponse(e.target.value)} className={selectCls}>
+            {SLA_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Visits / Year</label>
+          <input value={visitsPerYear} onChange={(e) => setVisitsPerYear(e.target.value)} className={inputCls} type="number" min="1" />
+        </div>
+        <div>
           <label className={labelCls}>Start Date</label>
-          <input className={inputCls} type="date" />
+          <input value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputCls} type="date" />
         </div>
         <div>
           <label className={labelCls}>Account Manager</label>
-          <select className={selectCls}>
-            {Object.entries(ownerNames).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
+          <select value={accountManagerId} onChange={(e) => setAccountManagerId(e.target.value)} className={selectCls}>
+            <option value="">Unassigned</option>
+            {teamMembers.map((m) => (
+              <option key={m.id} value={m.id}>{m.full_name ?? m.id}</option>
             ))}
           </select>
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Site Address</label>
-          <input className={inputCls} placeholder="Street, City, State" />
+          <input value={siteAddress} onChange={(e) => setSiteAddress(e.target.value)} className={inputCls} placeholder="Street, City, State" />
+        </div>
+        <div className="col-span-2">
+          <label className={labelCls}>Covered Systems</label>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {COVERED_SYSTEM_OPTIONS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => toggleSystem(s)}
+                className={cn(
+                  "rounded px-2 py-1 text-[11px] font-medium border transition-colors",
+                  coveredSystems.includes(s)
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-surface text-muted-foreground border-border hover:text-foreground",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Notes</label>
           <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any special instructions or notes…"
             className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
@@ -453,10 +723,11 @@ function NewPlanModal({ onClose }: { onClose: () => void }) {
           Cancel
         </button>
         <button
-          onClick={onClose}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+          onClick={() => createMutation.mutate()}
+          disabled={!canSubmit || createMutation.isPending}
+          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
-          Create Plan
+          {createMutation.isPending ? "Creating…" : "Create Plan"}
         </button>
       </div>
     </DialogContent>
