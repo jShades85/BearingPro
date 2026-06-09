@@ -323,10 +323,6 @@ export default function WorkOrderDetailPage() {
               <Pencil className="h-3.5 w-3.5" />
               Edit
             </button>
-            <button type="button" className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
-              <Clock className="h-3.5 w-3.5" />
-              Log Hours
-            </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button type="button" className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors" aria-label="More options">
