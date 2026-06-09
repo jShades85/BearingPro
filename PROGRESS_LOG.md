@@ -6,8 +6,8 @@
 
 ## Current Status
 
-**Phase:** Backend — Inventory Catalog live, Stock next
-**Last Updated:** Session 029
+**Phase:** Backend — Inventory Stock live, Service Plans next
+**Last Updated:** Session 030
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -17,8 +17,8 @@
 
 **Start here next session:**
 
-1. **Inventory → Stock** — `stock_locations` + `stock` tables + wire Stock page (quantities per location)
-2. **Service Plans** — `service_plans` table + wire Service Plans page
+1. **Service Plans** — `service_plans` table + wire Service Plans page
+2. **Inventory → POs / Vendors** — next inventory module
 
 ---
 
@@ -46,7 +46,8 @@
 | Operations (Projects, Work Orders, Team, Scheduling) | ✅ Projects + WOs live | Schema + RLS live; list + detail pages read/write DB; status persists; Edit drawer live (name, dates, PM, value); Convert from Opportunity wired; Team + Scheduling still demo |
 | Service (Tickets, Plans) | ✅ Tickets live | Schema + RLS live; list reads/writes DB; status updates + notes persist; New Ticket modal wired; Service Plans still demo |
 | Inventory → Catalog | ✅ Live | Schema + RLS live; category landing + item grid wired; tenant-defined categories with trade templates + icon picker; CategorySetupModal on first visit; New Category / New Item context-aware button |
-| Inventory → Stock, POs, Vendors | 🟡 Demo data | Full UI built |
+| Inventory → Stock | ✅ Live | Schema + RLS live; 12 seed items + 35 movements; all CRUD wired; Adjust popover writes to DB; movements lazy-loaded per item in drawer; manufacturers derived from live data |
+| Inventory → POs, Vendors | 🟡 Demo data | Full UI built |
 | Finance (Invoices, Payments) | 🟡 Demo data | Full UI built |
 | Reports | 🟡 Placeholder | 27-report catalog defined, all coming soon |
 | Settings (Company, Tiers, Integrations) | ✅ Company live | Company Profile reads/writes `tenants` table; Tiers + Integrations still demo |
@@ -86,6 +87,8 @@
 | `20260610000012_categories_catalog` | `categories` + `catalog_items` tables, full RLS, `set_updated_at()` trigger, AV/Security seed data (6 categories, 12 items) | ✅ Live |
 | `20260610000013_catalog_image_urls` | Seed `image_url` for Axis P3245-V item | ✅ Live |
 | `20260610000014_categories_icon` | `icon` column on `categories` (default `Package2`), backfill for seeded categories | ✅ Live |
+| `20260610000015_stock` | `stock_items` + `stock_movements` tables, full RLS, `set_updated_at` trigger on stock_items | ✅ Live |
+| `20260610000016_stock_seed` | 12 seed stock items + 35 movements; links to catalog items by name ilike match | ✅ Live |
 
 **Trigger logic:** New signup → creates `tenants` row + `user_profiles` row (Owner role). Invited user (has `tenant_id` in metadata) → joins existing tenant with assigned role. Upserts on conflict so re-inviting a removed user reactivates their profile.
 
@@ -283,6 +286,26 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 **Patterns to remember (also in Claude memory):**
 - Query key collision: if a page crashes only when coming from a specific other page, check for two queries using the same key but different select shapes
 - React error #185: look for derived objects (created inline during render) inside `useEffect` dependency arrays — wrap them in `useMemo`
+
+---
+
+## Session 030 — Inventory Stock Live
+
+**Date:** June 9, 2026
+
+**Completed:**
+
+- **Migration 20260610000015**: `stock_items` + `stock_movements` tables with full RLS; `updated_at` trigger on `stock_items`; `stock_movements` is insert-only (no update/delete policies — movements are immutable)
+- **Migration 20260610000016**: 12 seed stock items + 35 movements for test tenant; links `catalog_item_id` to real catalog rows via `ilike` name match; `created_by` attributed to first 3 user profiles; "System" movements use `null`
+- **Stock page fully wired** (`/inventory/stock`): all demo data removed
+  - Main query: `stock_items` fetched on mount, manufacturers derived from live item data
+  - Movements query: lazy per-item — only fires when a drawer opens in view mode (`enabled: !!drawerItem && drawerOpen && drawerMode === "view"`)
+  - Catalog link dropdown: populated from real `catalog_items` (active only); auto-fills name, SKU, manufacturer, cost, UoM on link
+  - Save mutation: insert vs update determined by whether item.id exists in current query cache; uses `setQueryData` for optimistic update
+  - Adjust mutation: inserts `stock_movements` row (with `created_by` from `supabase.auth.getUser()`) + updates `qty_on_hand`; invalidates movements cache for the adjusted item
+  - Loading state: body dims while initial fetch runs
+
+**Architecture note:** `stock_movements` has no DELETE RLS policy — movements are a permanent audit trail. Corrections are made by adding an opposite movement (same as accounting).
 
 ---
 
