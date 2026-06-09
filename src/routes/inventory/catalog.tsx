@@ -949,6 +949,166 @@ function ItemDrawer({
   );
 }
 
+// ─── NewCategoryDialog ────────────────────────────────────────────────────────
+
+interface NewCategoryDialogProps {
+  open: boolean;
+  onClose: () => void;
+  currentCount: number;
+}
+
+function NewCategoryDialog({ open, onClose, currentCount }: NewCategoryDialogProps) {
+  const qc = useQueryClient();
+  const supabase = createClient();
+
+  const [name, setName]           = useState("");
+  const [icon, setIcon]           = useState("Package2");
+  const [color, setColor]         = useState(COLOR_PALETTE[0]);
+  const [iconSearch, setIconSearch] = useState("");
+
+  const filteredGroups = useMemo(() => {
+    const q = iconSearch.toLowerCase().trim();
+    if (!q) return ICON_GROUPS;
+    return ICON_GROUPS.map((g) => ({
+      ...g,
+      icons: g.icons.filter((i) => i.toLowerCase().includes(q)),
+    })).filter((g) => g.icons.length > 0);
+  }, [iconSearch]);
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const tenantId = qc.getQueryData<{ id: string }>(["tenant"])?.id;
+      const { error } = await supabase.from("categories").insert({
+        tenant_id:  tenantId!,
+        name:       name.trim(),
+        icon,
+        color,
+        sort_order: currentCount,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["categories"] });
+      setName("");
+      setIcon("Package2");
+      setColor(COLOR_PALETTE[0]);
+      setIconSearch("");
+      onClose();
+    },
+  });
+
+  const SelectedIcon = ICON_MAP[icon] ?? Package2;
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-sm p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border">
+          <DialogTitle className="text-[15px]">New Category</DialogTitle>
+        </DialogHeader>
+
+        <div className="px-5 py-4 space-y-4">
+          {/* Name */}
+          <div className="space-y-1.5">
+            <label className="text-[11.5px] font-medium">Name</label>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && name.trim() && mutation.mutate()}
+              placeholder="e.g. Fire Suppression"
+              className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+
+          {/* Color swatches */}
+          <div className="space-y-1.5">
+            <label className="text-[11.5px] font-medium">Color</label>
+            <div className="flex flex-wrap gap-2">
+              {COLOR_PALETTE.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={cn(
+                    "h-6 w-6 rounded-full transition-transform",
+                    color === c && "ring-2 ring-offset-2 ring-offset-background scale-110",
+                  )}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Icon picker */}
+          <div className="space-y-1.5">
+            <label className="text-[11.5px] font-medium">Icon</label>
+            <div className="rounded-lg border border-border bg-surface/40 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+                  style={{ backgroundColor: `${color}20` }}
+                >
+                  <SelectedIcon className="h-4 w-4" style={{ color }} />
+                </div>
+                <input
+                  value={iconSearch}
+                  onChange={(e) => setIconSearch(e.target.value)}
+                  placeholder="Search icons…"
+                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-[12px] focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+              <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
+                {filteredGroups.map((group) => (
+                  <div key={group.label}>
+                    <p className="text-[9.5px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">{group.label}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {group.icons.map((iconName) => {
+                        const Icon = ICON_MAP[iconName] ?? Package2;
+                        return (
+                          <button
+                            key={iconName}
+                            type="button"
+                            title={iconName}
+                            onClick={() => setIcon(iconName)}
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded transition-colors",
+                              icon === iconName
+                                ? "text-primary-foreground"
+                                : "bg-background border border-border text-muted-foreground hover:text-foreground hover:border-primary/40",
+                            )}
+                            style={icon === iconName ? { backgroundColor: color } : undefined}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border">
+          <button type="button" onClick={onClose}
+            className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => mutation.mutate()}
+            disabled={!name.trim() || mutation.isPending}
+            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {mutation.isPending ? "Adding…" : "Add Category"}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── CatalogPage ──────────────────────────────────────────────────────────────
 
 function CatalogPage() {
@@ -968,6 +1128,9 @@ function CatalogPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerItem, setDrawerItem] = useState<DbCatalogItem | null>(null);
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">("view");
+
+  // New category dialog
+  const [newCatOpen, setNewCatOpen] = useState(false);
 
   // ── Queries ──────────────────────────────────────────────────────────────────
 
@@ -1031,20 +1194,26 @@ function CatalogPage() {
 
   // ── Page meta ────────────────────────────────────────────────────────────────
 
-  const openNew = useCallback(() => {
+  const openNewItem = useCallback(() => {
     setDrawerItem(null);
     setDrawerMode("edit");
     setDrawerOpen(true);
   }, []);
 
+  const openNewCategory = useCallback(() => setNewCatOpen(true), []);
+
+  // Derived before the meta effect so we can depend on it
+  const isSearching   = search.trim().length > 0;
+  const showLanding   = !isSearching && activeCategoryId === null;
+
   useEffect(() => {
     setMeta({
-      title: "Catalog",
+      title:    "Catalog",
       subtitle: "Products & Services",
-      newLabel: "New Item",
-      onNew: openNew,
+      newLabel: showLanding ? "New Category" : "New Item",
+      onNew:    showLanding ? openNewCategory : openNewItem,
     });
-  }, [setMeta, openNew]);
+  }, [setMeta, showLanding, openNewCategory, openNewItem]);
 
   // ── Derived data ─────────────────────────────────────────────────────────────
 
@@ -1061,8 +1230,7 @@ function CatalogPage() {
     return map;
   }, [allItems]);
 
-  // Derive current view: landing | category | search
-  const isSearching = search.trim().length > 0;
+  // isSearching / showLanding already declared above for page meta
   const activeCategory = categories.find((c) => c.id === activeCategoryId) ?? null;
 
   const visibleItems = useMemo(() => {
@@ -1095,7 +1263,6 @@ function CatalogPage() {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   const showSetupModal = !catsLoading && categories.length === 0;
-  const showLanding    = !isSearching && activeCategoryId === null;
   const isLoading      = catsLoading || itemsLoading;
 
   return (
@@ -1105,6 +1272,13 @@ function CatalogPage() {
       <CategorySetupModal
         open={showSetupModal}
         onDone={() => qc.invalidateQueries({ queryKey: ["categories"] })}
+      />
+
+      {/* ── New category dialog ───────────────────────────────────── */}
+      <NewCategoryDialog
+        open={newCatOpen}
+        onClose={() => setNewCatOpen(false)}
+        currentCount={categories.length}
       />
 
       {/* ── Filter bar ───────────────────────────────────────────── */}
