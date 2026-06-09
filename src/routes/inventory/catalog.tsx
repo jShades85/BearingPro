@@ -350,13 +350,224 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
 
 // ─── CategoryCard ─────────────────────────────────────────────────────────────
 
+// ─── EditCategoryDialog ───────────────────────────────────────────────────────
+
+interface EditCategoryDialogProps {
+  open: boolean;
+  category: DbCategory | null;
+  itemCount: number;
+  onClose: () => void;
+}
+
+function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategoryDialogProps) {
+  const qc = useQueryClient();
+  const supabase = createClient();
+
+  const [name, setName]             = useState("");
+  const [icon, setIcon]             = useState("Package2");
+  const [color, setColor]           = useState(COLOR_PALETTE[0]);
+  const [iconSearch, setIconSearch] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  useEffect(() => {
+    if (open && category) {
+      setName(category.name);
+      setIcon(category.icon);
+      setColor(category.color);
+      setIconSearch("");
+      setConfirmDelete(false);
+    }
+  }, [open, category]);
+
+  const filteredGroups = useMemo(() => {
+    const q = iconSearch.toLowerCase().trim();
+    if (!q) return ICON_GROUPS;
+    return ICON_GROUPS.map((g) => ({
+      ...g,
+      icons: g.icons.filter((i) => i.toLowerCase().includes(q)),
+    })).filter((g) => g.icons.length > 0);
+  }, [iconSearch]);
+
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("categories")
+        .update({ name: name.trim(), icon, color })
+        .eq("id", category!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["categories"] });
+      onClose();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("categories").delete().eq("id", category!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["categories"] });
+      onClose();
+    },
+  });
+
+  const SelectedIcon = ICON_MAP[icon] ?? Package2;
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-sm p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border">
+          <DialogTitle className="text-[15px]">Edit Category</DialogTitle>
+        </DialogHeader>
+
+        <div className="px-5 py-4 space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[11.5px] font-medium">Name</label>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && name.trim() && updateMutation.mutate()}
+              className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11.5px] font-medium">Color</label>
+            <div className="flex flex-wrap gap-2">
+              {COLOR_PALETTE.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={cn(
+                    "h-6 w-6 rounded-full transition-transform",
+                    color === c && "ring-2 ring-offset-2 ring-offset-background scale-110",
+                  )}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11.5px] font-medium">Icon</label>
+            <div className="rounded-lg border border-border bg-surface/40 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+                  style={{ backgroundColor: `${color}20` }}
+                >
+                  <SelectedIcon className="h-4 w-4" style={{ color }} />
+                </div>
+                <input
+                  value={iconSearch}
+                  onChange={(e) => setIconSearch(e.target.value)}
+                  placeholder="Search icons…"
+                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-[12px] focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+              <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
+                {filteredGroups.map((group) => (
+                  <div key={group.label}>
+                    <p className="text-[9.5px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">{group.label}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {group.icons.map((iconName) => {
+                        const Icon = ICON_MAP[iconName] ?? Package2;
+                        return (
+                          <button
+                            key={iconName}
+                            type="button"
+                            title={iconName}
+                            onClick={() => setIcon(iconName)}
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded transition-colors",
+                              icon === iconName
+                                ? "text-primary-foreground"
+                                : "bg-background border border-border text-muted-foreground hover:text-foreground hover:border-primary/40",
+                            )}
+                            style={icon === iconName ? { backgroundColor: color } : undefined}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between px-5 py-4 border-t border-border">
+          {/* Delete */}
+          {confirmDelete ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[11.5px] text-destructive">
+                {itemCount > 0 ? `Move ${itemCount} item${itemCount !== 1 ? "s" : ""} first` : "Delete this category?"}
+              </span>
+              {itemCount === 0 && (
+                <button
+                  type="button"
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
+                  className="h-7 rounded px-2.5 text-[12px] font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  {deleteMutation.isPending ? "Deleting…" : "Confirm"}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="h-7 rounded px-2.5 text-[12px] border border-border hover:bg-accent transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="h-7 rounded px-2.5 text-[12px] text-destructive border border-destructive/30 hover:bg-destructive/10 transition-colors"
+            >
+              Delete
+            </button>
+          )}
+
+          {/* Save */}
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={onClose}
+              className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => updateMutation.mutate()}
+              disabled={!name.trim() || updateMutation.isPending}
+              className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              {updateMutation.isPending ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── CategoryCard ─────────────────────────────────────────────────────────────
+
 interface CategoryCardProps {
   category: DbCategory;
   itemCount: number;
   onClick: () => void;
+  onEdit: (e: React.MouseEvent) => void;
 }
 
-function CategoryCard({ category, itemCount, onClick }: CategoryCardProps) {
+function CategoryCard({ category, itemCount, onClick, onEdit }: CategoryCardProps) {
   const Icon = ICON_MAP[category.icon] ?? Package2;
 
   return (
@@ -375,6 +586,14 @@ function CategoryCard({ category, itemCount, onClick }: CategoryCardProps) {
           style={{ color: `${category.color}90` }}
         />
         <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors" />
+        <button
+          type="button"
+          onClick={onEdit}
+          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 flex items-center gap-1 h-6 rounded-md bg-background/90 border border-border px-2 text-[11px] text-foreground shadow-sm transition-opacity"
+        >
+          <Pencil className="h-3 w-3" />
+          Edit
+        </button>
       </div>
 
       {/* Info */}
@@ -595,13 +814,20 @@ interface ItemDrawerProps {
   onClose: () => void;
   onSwitchToEdit: () => void;
   onSave: (values: ItemFormValues, itemId: string | null) => void;
+  onDelete: (itemId: string) => void;
   isSaving: boolean;
+  isDeleting: boolean;
 }
 
 function ItemDrawer({
   open, item, mode, categories, manufacturerSuggestions,
-  onClose, onSwitchToEdit, onSave, isSaving,
+  onClose, onSwitchToEdit, onSave, onDelete, isSaving, isDeleting,
 }: ItemDrawerProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  useEffect(() => {
+    if (open) setConfirmDelete(false);
+  }, [open]);
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(ItemFormSchema),
     defaultValues: DEFAULT_FORM,
@@ -920,15 +1146,49 @@ function ItemDrawer({
             </fieldset>
           </div>
 
-          <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
-            <button type="button" onClick={onClose}
-              className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
-              Cancel
-            </button>
-            <button type="submit" disabled={isSaving}
-              className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
-              {isSaving ? "Saving…" : item ? "Save Changes" : "Add Item"}
-            </button>
+          <div className="shrink-0 flex items-center justify-between border-t border-border px-5 py-3">
+            {/* Delete — only for existing items */}
+            {item ? (
+              confirmDelete ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-[11.5px] text-destructive">Delete this item?</span>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(item.id)}
+                    disabled={isDeleting}
+                    className="h-7 rounded px-2.5 text-[12px] font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  >
+                    {isDeleting ? "Deleting…" : "Confirm"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="h-7 rounded px-2.5 text-[12px] border border-border hover:bg-accent transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="h-7 rounded px-2.5 text-[12px] text-destructive border border-destructive/30 hover:bg-destructive/10 transition-colors"
+                >
+                  Delete
+                </button>
+              )
+            ) : <span />}
+
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={onClose}
+                className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+                Cancel
+              </button>
+              <button type="submit" disabled={isSaving}
+                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                {isSaving ? "Saving…" : item ? "Save Changes" : "Add Item"}
+              </button>
+            </div>
           </div>
         </form>
       </Form>
@@ -1124,13 +1384,14 @@ function CatalogPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [view, setView]                 = useState<"grid" | "list">("grid");
 
-  // Drawer
+  // Item drawer
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerItem, setDrawerItem] = useState<DbCatalogItem | null>(null);
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">("view");
 
-  // New category dialog
-  const [newCatOpen, setNewCatOpen] = useState(false);
+  // Category dialogs
+  const [newCatOpen, setNewCatOpen]   = useState(false);
+  const [editCat, setEditCat]         = useState<DbCategory | null>(null);
 
   // ── Queries ──────────────────────────────────────────────────────────────────
 
@@ -1185,6 +1446,17 @@ function CatalogPage() {
         const { error } = await supabase.from("catalog_items").insert({ ...payload, tenant_id: tenantId! });
         if (error) throw error;
       }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["catalog-items"] });
+      setDrawerOpen(false);
+    },
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase.from("catalog_items").delete().eq("id", itemId);
+      if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["catalog-items"] });
@@ -1281,6 +1553,14 @@ function CatalogPage() {
         currentCount={categories.length}
       />
 
+      {/* ── Edit category dialog ──────────────────────────────────── */}
+      <EditCategoryDialog
+        open={editCat !== null}
+        category={editCat}
+        itemCount={editCat ? (itemCountByCategory[editCat.id] ?? 0) : 0}
+        onClose={() => setEditCat(null)}
+      />
+
       {/* ── Filter bar ───────────────────────────────────────────── */}
       <FilterBar>
         {/* Breadcrumb when drilled into a category */}
@@ -1352,6 +1632,7 @@ function CatalogPage() {
                   category={cat}
                   itemCount={itemCountByCategory[cat.id] ?? 0}
                   onClick={() => setActiveCategoryId(cat.id)}
+                  onEdit={(e) => { e.stopPropagation(); setEditCat(cat); }}
                 />
               ))}
             </div>
@@ -1403,7 +1684,9 @@ function CatalogPage() {
         onClose={() => setDrawerOpen(false)}
         onSwitchToEdit={() => setDrawerMode("edit")}
         onSave={(values, itemId) => saveMutation.mutate({ values, itemId })}
+        onDelete={(itemId) => deleteItemMutation.mutate(itemId)}
         isSaving={saveMutation.isPending}
+        isDeleting={deleteItemMutation.isPending}
       />
     </div>
   );
