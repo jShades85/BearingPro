@@ -7,7 +7,7 @@
 ## Current Status
 
 **Phase:** Backend — Service Tickets live, Inventory next
-**Last Updated:** Session 025
+**Last Updated:** Session 026
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -250,3 +250,19 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - Opportunity fields auto-populated from lead: name, assigned rep, linked contact, notes
 - Opportunity fields filled in later by rep: deal value, close date, probability
 - Build order: `opportunities` table first → `leads` table second → wire Convert button third
+
+---
+
+## Session 026 — Production Bug Fixes (Roles + Project Detail)
+
+**Date:** June 9, 2026
+
+**Completed:**
+
+- **Roles page crash** (`/settings/roles`): crashed only when navigating from Team Members. Root cause: both pages used `queryKey: ["roles"]`, but team-members fetched a partial shape (`id, name, color` — no `role_permissions`). That stale partial data was served immediately to the Roles page, which accessed `role.role_permissions.some(...)` during render → TypeError. Fixed by renaming team-members' query key to `["roles-basic"]`.
+- **Project detail crash** (`/operations/projects/$projectId`): `toProjectRecord(dbProject)` created a new object on every render. It was a dep in `useEffect([project])`, so the effect fired every render → called `setMeta` → updated `PageMetaContext` → re-rendered `AppShellContent` → re-rendered outlet → re-rendered component → new object → loop → React error #185. Fixed with `useMemo`.
+- **PageMetaContext stabilized**: `value={{ meta, setMeta }}` was creating a new object every render, causing all consumers to re-render unnecessarily. Wrapped in `useMemo(() => ({ meta, setMeta }), [meta])`.
+
+**Patterns to remember (also in Claude memory):**
+- Query key collision: if a page crashes only when coming from a specific other page, check for two queries using the same key but different select shapes
+- React error #185: look for derived objects (created inline during render) inside `useEffect` dependency arrays — wrap them in `useMemo`
