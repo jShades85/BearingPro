@@ -7,7 +7,8 @@ import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import {
-  Camera, ChevronRight, ImagePlus, LayoutGrid, List, Pencil, X,
+  Camera, ImagePlus, KeyRound, LayoutGrid, List, Monitor,
+  Network, Package2, Pencil, Plug, Wrench,
 } from "lucide-react";
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import {
@@ -24,7 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 // ─── Route ───────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/inventory/catalog")({
-  head: () => ({ meta: [{ title: "Catalog · Crosscurrent" }] }),
+  head: () => ({ meta: [{ title: "Catalog · BearingPro" }] }),
   component: CatalogPage,
 });
 
@@ -124,6 +125,36 @@ const categoryMeta: Record<Category, { label: string; cls: string }> = {
   audio_video:   { label: "Audio/Video",    cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
   labor:         { label: "Labor",          cls: "bg-slate-500/15 text-slate-500" },
   misc:          { label: "Misc",           cls: "bg-pink-500/15 text-pink-600 dark:text-pink-400" },
+};
+
+const categoryIcons: Record<Category, React.ComponentType<{ className?: string }>> = {
+  camera:        Camera,
+  access_control:KeyRound,
+  networking:    Network,
+  cable_hardware:Plug,
+  audio_video:   Monitor,
+  labor:         Wrench,
+  misc:          Package2,
+};
+
+const categoryCardBg: Record<Category, string> = {
+  camera:        "bg-blue-500/8 dark:bg-blue-500/10",
+  access_control:"bg-green-500/8 dark:bg-green-500/10",
+  networking:    "bg-cyan-500/8 dark:bg-cyan-500/10",
+  cable_hardware:"bg-amber-500/8 dark:bg-amber-500/10",
+  audio_video:   "bg-violet-500/8 dark:bg-violet-500/10",
+  labor:         "bg-slate-500/8 dark:bg-slate-500/10",
+  misc:          "bg-pink-500/8 dark:bg-pink-500/10",
+};
+
+const categoryIconCls: Record<Category, string> = {
+  camera:        "text-blue-400/40",
+  access_control:"text-green-400/40",
+  networking:    "text-cyan-400/40",
+  cable_hardware:"text-amber-400/40",
+  audio_video:   "text-violet-400/40",
+  labor:         "text-slate-400/40",
+  misc:          "text-pink-400/40",
 };
 
 const MFR_PALETTE = [
@@ -287,14 +318,13 @@ interface ItemDrawerProps {
   open: boolean;
   item: CatalogItem | null;
   mode: "view" | "edit";
-  mfrPreset: string | null;
   manufacturers: Manufacturer[];
   onClose: () => void;
   onSwitchToEdit: () => void;
   onSave: (item: CatalogItem, newMfr: Manufacturer | null) => void;
 }
 
-function ItemDrawer({ open, item, mode, mfrPreset, manufacturers, onClose, onSwitchToEdit, onSave }: ItemDrawerProps) {
+function ItemDrawer({ open, item, mode, manufacturers, onClose, onSwitchToEdit, onSave }: ItemDrawerProps) {
   const idRef = useRef(0);
 
   const defaultValues: ItemFormValues = item
@@ -313,7 +343,7 @@ function ItemDrawer({ open, item, mode, mfrPreset, manufacturers, onClose, onSwi
         laborHours:          item.laborHours?.toString() ?? "",
         laborRateOverride:   item.laborRateOverride?.toString() ?? "",
       }
-    : { ...DEFAULT_FORM, manufacturerId: mfrPreset ?? "" };
+    : DEFAULT_FORM;
 
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(ItemFormSchema),
@@ -339,17 +369,17 @@ function ItemDrawer({ open, item, mode, mfrPreset, manufacturers, onClose, onSwi
               laborHours:          item.laborHours?.toString() ?? "",
               laborRateOverride:   item.laborRateOverride?.toString() ?? "",
             }
-          : { ...DEFAULT_FORM, manufacturerId: mfrPreset ?? "" },
+          : DEFAULT_FORM,
       );
     }
-  }, [open, item, mfrPreset, form]);
+  }, [open, item, form]);
 
   const mfrId = form.watch("manufacturerId");
   const hasLabor = form.watch("hasLabor");
 
   function onSubmit(values: ItemFormValues) {
-    let mfrId = values.manufacturerId;
-    let mfrName = manufacturers.find((m) => m.id === mfrId)?.name ?? "";
+    let resolvedMfrId = values.manufacturerId;
+    let mfrName = manufacturers.find((m) => m.id === resolvedMfrId)?.name ?? "";
     let newMfr: Manufacturer | null = null;
 
     if (values.manufacturerId === "__new__") {
@@ -361,7 +391,7 @@ function ItemDrawer({ open, item, mode, mfrPreset, manufacturers, onClose, onSwi
         logoInitials: trimmed.slice(0, 2).toUpperCase(),
         categories: [],
       };
-      mfrId = newId;
+      resolvedMfrId = newId;
       mfrName = trimmed;
     }
 
@@ -369,7 +399,7 @@ function ItemDrawer({ open, item, mode, mfrPreset, manufacturers, onClose, onSwi
     onSave(
       {
         id: item?.id ?? `ci-${Date.now()}-${idRef.current}`,
-        manufacturerId:   mfrId,
+        manufacturerId:   resolvedMfrId,
         manufacturerName: mfrName,
         name:             values.name,
         sku:              values.sku,
@@ -381,7 +411,7 @@ function ItemDrawer({ open, item, mode, mfrPreset, manufacturers, onClose, onSwi
         isActive:         values.isActive,
         hasLabor:         values.hasLabor,
         laborHours:       values.laborHours       ? parseFloat(values.laborHours)       : null,
-        laborRateOverride: values.laborRateOverride ? parseFloat(values.laborRateOverride) : null,
+        laborRateOverride:values.laborRateOverride ? parseFloat(values.laborRateOverride) : null,
         imageUrl:         item?.imageUrl ?? null,
       },
       newMfr,
@@ -718,57 +748,87 @@ function ItemDrawer({ open, item, mode, mfrPreset, manufacturers, onClose, onSwi
   );
 }
 
-// ─── ManufacturerCard ─────────────────────────────────────────────────────────
+// ─── ItemCard ─────────────────────────────────────────────────────────────────
 
-interface ManufacturerCardProps {
-  mfr: Manufacturer;
-  itemCount: number;
-  onClick: () => void;
+interface ItemCardProps {
+  item: CatalogItem;
+  onView: () => void;
+  onEdit: (e: React.MouseEvent) => void;
 }
 
-function ManufacturerCard({ mfr, itemCount, onClick }: ManufacturerCardProps) {
-  const colorCls = mfrColor(mfr.id);
+function ItemCard({ item, onView, onEdit }: ItemCardProps) {
+  const CatIcon = categoryIcons[item.category];
+  const colorCls = mfrColor(item.manufacturerId);
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex flex-col rounded-lg border border-border bg-card p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
+    <div
+      onClick={onView}
+      className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden cursor-pointer hover:border-primary/40 hover:shadow-md transition-all duration-150"
     >
-      <div className="flex items-start gap-3">
-        <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[15px] font-bold tracking-tight", colorCls)}>
-          {mfr.logoInitials}
+      {/* Image area */}
+      <div className={cn("relative flex items-center justify-center h-36 shrink-0", categoryCardBg[item.category])}>
+        <CatIcon className={cn("h-14 w-14", categoryIconCls[item.category])} />
+
+        {/* Manufacturer badge */}
+        <div className={cn(
+          "absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-md text-[10px] font-bold tracking-tight",
+          colorCls,
+        )}>
+          {item.manufacturerName.slice(0, 2).toUpperCase()}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold leading-snug truncate">{mfr.name}</p>
-          <p className="mt-0.5 text-[11.5px] text-muted-foreground">
-            {itemCount} {itemCount === 1 ? "item" : "items"}
-          </p>
-        </div>
-        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors shrink-0 mt-0.5" />
-      </div>
-      {mfr.categories.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1">
-          {mfr.categories.map((c) => (
-            <span key={c} className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground">
-              {c}
+
+        {/* Inactive overlay */}
+        {!item.isActive && (
+          <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+            <span className="text-[10px] font-semibold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full">
+              Inactive
             </span>
-          ))}
+          </div>
+        )}
+
+        {/* Edit button — appears on hover */}
+        <button
+          type="button"
+          onClick={onEdit}
+          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 flex items-center gap-1 h-6 rounded-md bg-background/90 border border-border px-2 text-[11px] text-foreground shadow-sm transition-opacity"
+        >
+          <Pencil className="h-3 w-3" />
+          Edit
+        </button>
+      </div>
+
+      {/* Card body */}
+      <div className="flex flex-col p-3 gap-1.5 flex-1">
+        <div className="flex items-center justify-between gap-1">
+          {categoryChip(item.category)}
+          {item.hasLabor && (
+            <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-slate-500/10 text-slate-500 dark:text-slate-400">
+              + Labor
+            </span>
+          )}
         </div>
-      )}
-    </button>
+
+        <p className="text-[13px] font-semibold leading-snug line-clamp-2 mt-0.5">{item.name}</p>
+        <p className="text-[11px] font-mono text-muted-foreground/70">{item.sku || "—"}</p>
+
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
+          <span className="text-[11px] text-muted-foreground truncate max-w-[55%]">{item.manufacturerName}</span>
+          <span className="text-[13px] font-semibold tabular-nums">{currency(item.msrp)}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
-// ─── ItemsTable ───────────────────────────────────────────────────────────────
+// ─── ItemsTable (list view) ───────────────────────────────────────────────────
 
 interface ItemsTableProps {
   items: CatalogItem[];
-  showManufacturer: boolean;
   onView: (item: CatalogItem) => void;
   onEdit: (item: CatalogItem) => void;
 }
 
-function ItemsTable({ items, showManufacturer, onView, onEdit }: ItemsTableProps) {
+function ItemsTable({ items, onView, onEdit }: ItemsTableProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center py-16 text-center">
@@ -785,9 +845,7 @@ function ItemsTable({ items, showManufacturer, onView, onEdit }: ItemsTableProps
         <thead className="border-b border-border bg-surface/50">
           <tr>
             <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2 px-3">Name</th>
-            {showManufacturer && (
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Manufacturer</th>
-            )}
+            <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Manufacturer</th>
             <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">SKU</th>
             <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Category</th>
             <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Cost</th>
@@ -811,9 +869,7 @@ function ItemsTable({ items, showManufacturer, onView, onEdit }: ItemsTableProps
                   <p className="text-[10.5px] text-muted-foreground truncate max-w-55">{item.description}</p>
                 )}
               </td>
-              {showManufacturer && (
-                <td className="py-2.5 text-muted-foreground whitespace-nowrap">{item.manufacturerName}</td>
-              )}
+              <td className="py-2.5 text-muted-foreground whitespace-nowrap">{item.manufacturerName}</td>
               <td className="py-2.5 font-mono text-[11px] text-muted-foreground">{item.sku || "—"}</td>
               <td className="py-2.5">{categoryChip(item.category)}</td>
               <td className="py-2.5 text-right font-mono tabular-nums text-muted-foreground">{currency(item.cost)}</td>
@@ -857,21 +913,15 @@ function CatalogPage() {
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>(INITIAL_MANUFACTURERS);
   const [items, setItems] = useState<CatalogItem[]>(INITIAL_ITEMS);
 
-  // Navigation state
-  const [view, setView] = useState<"grid" | "list">("grid");
-  const [drillMfr, setDrillMfr] = useState<string | null>(null);
-
-  // Filters
-  const [gridSearch,   setGridSearch]   = useState("");
-  const [listSearch,   setListSearch]   = useState("");
-  const [mfrFilter,    setMfrFilter]    = useState("all");
-  const [catFilter,    setCatFilter]    = useState<Category | "all">("all");
+  const [view, setView]               = useState<"grid" | "list">("grid");
+  const [search, setSearch]           = useState("");
+  const [activeCat, setActiveCat]     = useState<Category | "all">("all");
+  const [mfrFilter, setMfrFilter]     = useState("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
-  // Drawer
-  const [drawerOpen,  setDrawerOpen]  = useState(false);
-  const [drawerItem,  setDrawerItem]  = useState<CatalogItem | null>(null);
-  const [drawerMode,  setDrawerMode]  = useState<"view" | "edit">("view");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerItem, setDrawerItem] = useState<CatalogItem | null>(null);
+  const [drawerMode, setDrawerMode] = useState<"view" | "edit">("view");
 
   const openNew = useCallback(() => {
     setDrawerItem(null);
@@ -889,9 +939,7 @@ function CatalogPage() {
   }, [setMeta, openNew]);
 
   function handleSave(saved: CatalogItem, newMfr: Manufacturer | null) {
-    if (newMfr) {
-      setManufacturers((prev) => [...prev, newMfr]);
-    }
+    if (newMfr) setManufacturers((prev) => [...prev, newMfr]);
     setItems((prev) =>
       prev.some((i) => i.id === saved.id)
         ? prev.map((i) => (i.id === saved.id ? saved : i))
@@ -900,162 +948,176 @@ function CatalogPage() {
     setDrawerOpen(false);
   }
 
-  // Derived counts
-  const itemCountByMfr = useMemo(() => {
-    const map: Record<string, number> = {};
+  // Counts per category (for pills)
+  const countByCat = useMemo(() => {
+    const map: Record<string, number> = { all: 0 };
     for (const item of items) {
-      map[item.manufacturerId] = (map[item.manufacturerId] ?? 0) + 1;
+      if (item.isActive || statusFilter !== "active") {
+        map[item.category] = (map[item.category] ?? 0) + 1;
+        map.all = (map.all ?? 0) + 1;
+      }
     }
     return map;
-  }, [items]);
+  }, [items, statusFilter]);
 
-  // Filtered items for the current view
   const filteredItems = useMemo(() => {
     let result = items;
-    if (drillMfr) result = result.filter((i) => i.manufacturerId === drillMfr);
-    if (view === "list" && mfrFilter !== "all") result = result.filter((i) => i.manufacturerId === mfrFilter);
-    if (catFilter !== "all") result = result.filter((i) => i.category === catFilter);
-    if (statusFilter === "active")   result = result.filter((i) => i.isActive);
-    if (statusFilter === "inactive") result = result.filter((i) => !i.isActive);
-    const q = listSearch.toLowerCase().trim();
+    if (activeCat !== "all")           result = result.filter((i) => i.category === activeCat);
+    if (mfrFilter !== "all")           result = result.filter((i) => i.manufacturerId === mfrFilter);
+    if (statusFilter === "active")     result = result.filter((i) => i.isActive);
+    if (statusFilter === "inactive")   result = result.filter((i) => !i.isActive);
+    const q = search.toLowerCase().trim();
     if (q) result = result.filter((i) =>
-      i.name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q),
+      i.name.toLowerCase().includes(q) ||
+      i.sku.toLowerCase().includes(q) ||
+      i.description.toLowerCase().includes(q),
     );
     return result;
-  }, [items, drillMfr, view, mfrFilter, catFilter, statusFilter, listSearch]);
+  }, [items, activeCat, mfrFilter, statusFilter, search]);
 
-  const filteredMfrs = useMemo(() => {
-    const q = gridSearch.toLowerCase().trim();
-    return manufacturers.filter((m) =>
-      !q || m.name.toLowerCase().includes(q),
-    );
-  }, [manufacturers, gridSearch]);
+  function openView(item: CatalogItem) {
+    setDrawerItem(item);
+    setDrawerMode("view");
+    setDrawerOpen(true);
+  }
 
-  const activeMfr = manufacturers.find((m) => m.id === drillMfr);
+  function openEdit(item: CatalogItem) {
+    setDrawerItem(item);
+    setDrawerMode("edit");
+    setDrawerOpen(true);
+  }
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
+  // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col h-full">
 
       {/* ── Filter bar ───────────────────────────────────────────── */}
       <FilterBar>
-        {/* Breadcrumb / drill-in label */}
-        {drillMfr && activeMfr && (
-          <div className="flex items-center gap-1 text-[12.5px] mr-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => { setDrillMfr(null); setListSearch(""); setCatFilter("all"); setStatusFilter("all"); }}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Catalog
-            </button>
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
-            <span className="font-medium text-foreground">{activeMfr.name}</span>
-            <button
-              type="button"
-              onClick={() => { setDrillMfr(null); setListSearch(""); setCatFilter("all"); setStatusFilter("all"); }}
-              className="ml-1 flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-              aria-label="Clear manufacturer filter"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-        )}
+        <SearchInput value={search} onChange={setSearch} placeholder="Search items, SKUs…" />
 
-        {/* Search */}
-        {(view === "grid" && !drillMfr) ? (
-          <SearchInput value={gridSearch} onChange={setGridSearch} placeholder="Search manufacturers…" />
-        ) : (
-          <SearchInput value={listSearch} onChange={setListSearch} placeholder="Search items…" />
-        )}
+        <FilterSelect value={mfrFilter} onChange={setMfrFilter}>
+          <option value="all">All Manufacturers</option>
+          {manufacturers.map((m) => (
+            <option key={m.id} value={m.id}>{m.name}</option>
+          ))}
+        </FilterSelect>
 
-        {/* List-view filters */}
-        {(view === "list" || drillMfr) && (
-          <>
-            {view === "list" && !drillMfr && (
-              <FilterSelect value={mfrFilter} onChange={setMfrFilter}>
-                <option value="all">All Manufacturers</option>
-                {manufacturers.map((m) => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
-                ))}
-              </FilterSelect>
-            )}
-            <FilterSelect value={catFilter} onChange={(v) => setCatFilter(v as Category | "all")}>
-              <option value="all">All Categories</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{categoryMeta[c].label}</option>
-              ))}
-            </FilterSelect>
-            <FilterSelect value={statusFilter} onChange={(v) => setStatusFilter(v as "all" | "active" | "inactive")}>
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </FilterSelect>
-          </>
-        )}
+        <FilterSelect value={statusFilter} onChange={(v) => setStatusFilter(v as "all" | "active" | "inactive")}>
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </FilterSelect>
 
         <span className="ml-auto text-[11.5px] text-muted-foreground">
-          {view === "grid" && !drillMfr
-            ? `${filteredMfrs.length} manufacturer${filteredMfrs.length !== 1 ? "s" : ""}`
-            : `${filteredItems.length} item${filteredItems.length !== 1 ? "s" : ""}`}
+          {filteredItems.length} item{filteredItems.length !== 1 ? "s" : ""}
         </span>
 
-        {/* View toggle */}
-        {!drillMfr && (
-          <div className="flex items-center rounded-md border border-border overflow-hidden ml-1">
-            {(["grid", "list"] as const).map((v, i) => {
-              const Icon = v === "grid" ? LayoutGrid : List;
-              return (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => { setView(v); setListSearch(""); setCatFilter("all"); setStatusFilter("all"); setMfrFilter("all"); }}
-                  className={cn(
-                    "flex h-7 w-8 items-center justify-center transition-colors",
-                    i > 0 && "border-l border-border",
-                    view === v ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground",
-                  )}
-                  aria-label={v === "grid" ? "Grid view" : "List view"}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                </button>
-              );
-            })}
-          </div>
-        )}
-
+        <div className="flex items-center rounded-md border border-border overflow-hidden">
+          {(["grid", "list"] as const).map((v, i) => {
+            const Icon = v === "grid" ? LayoutGrid : List;
+            return (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                className={cn(
+                  "flex h-7 w-8 items-center justify-center transition-colors",
+                  i > 0 && "border-l border-border",
+                  view === v ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground",
+                )}
+                aria-label={v === "grid" ? "Grid view" : "List view"}
+              >
+                <Icon className="h-3.5 w-3.5" />
+              </button>
+            );
+          })}
+        </div>
       </FilterBar>
+
+      {/* ── Category pills ───────────────────────────────────────── */}
+      {view === "grid" && (
+        <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border overflow-x-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveCat("all")}
+            className={cn(
+              "flex items-center gap-1.5 h-7 rounded-full px-3 text-[12px] font-medium whitespace-nowrap transition-colors",
+              activeCat === "all"
+                ? "bg-primary text-primary-foreground"
+                : "bg-surface border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20",
+            )}
+          >
+            All
+            <span className={cn(
+              "text-[10px] tabular-nums",
+              activeCat === "all" ? "text-primary-foreground/70" : "text-muted-foreground/70",
+            )}>
+              {items.length}
+            </span>
+          </button>
+
+          {CATEGORIES.map((cat) => {
+            const Icon = categoryIcons[cat];
+            const count = items.filter((i) => i.category === cat).length;
+            if (count === 0) return null;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setActiveCat(cat)}
+                className={cn(
+                  "flex items-center gap-1.5 h-7 rounded-full px-3 text-[12px] font-medium whitespace-nowrap transition-colors",
+                  activeCat === cat
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-surface border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20",
+                )}
+              >
+                <Icon className="h-3 w-3" />
+                {categoryMeta[cat].label}
+                <span className={cn(
+                  "text-[10px] tabular-nums",
+                  activeCat === cat ? "text-primary-foreground/70" : "text-muted-foreground/70",
+                )}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto p-4">
 
-        {/* Manufacturer grid */}
-        {view === "grid" && !drillMfr && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredMfrs.map((mfr) => (
-              <ManufacturerCard
-                key={mfr.id}
-                mfr={mfr}
-                itemCount={itemCountByMfr[mfr.id] ?? 0}
-                onClick={() => { setDrillMfr(mfr.id); setListSearch(""); setCatFilter("all"); setStatusFilter("all"); }}
-              />
-            ))}
-            {filteredMfrs.length === 0 && (
-              <div className="col-span-3 flex flex-col items-center py-16 text-center">
-                <p className="text-[13px] font-medium">No manufacturers match "{gridSearch}"</p>
-              </div>
-            )}
-          </div>
+        {/* Card grid */}
+        {view === "grid" && (
+          filteredItems.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {filteredItems.map((item) => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  onView={() => openView(item)}
+                  onEdit={(e) => { e.stopPropagation(); openEdit(item); }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center py-20 text-center">
+              <ImagePlus className="h-8 w-8 text-muted-foreground/25 mb-3" />
+              <p className="text-[13px] font-medium">No items found</p>
+              <p className="mt-1 text-[12px] text-muted-foreground">Try adjusting your filters or add a new item.</p>
+            </div>
+          )
         )}
 
-        {/* Items table — list view or drill-in */}
-        {(view === "list" || drillMfr) && (
+        {/* List view */}
+        {view === "list" && (
           <ItemsTable
             items={filteredItems}
-            showManufacturer={view === "list" && !drillMfr}
-            onView={(item) => { setDrawerItem(item); setDrawerMode("view"); setDrawerOpen(true); }}
-            onEdit={(item) => { setDrawerItem(item); setDrawerMode("edit"); setDrawerOpen(true); }}
+            onView={openView}
+            onEdit={openEdit}
           />
         )}
       </div>
@@ -1064,7 +1126,6 @@ function CatalogPage() {
         open={drawerOpen}
         item={drawerItem}
         mode={drawerMode}
-        mfrPreset={drillMfr}
         manufacturers={manufacturers}
         onClose={() => setDrawerOpen(false)}
         onSwitchToEdit={() => setDrawerMode("edit")}
