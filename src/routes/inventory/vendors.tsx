@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
@@ -7,20 +8,94 @@ import {
   Building2, ExternalLink, LayoutGrid, List, Mail, MapPin,
   Pencil, Phone, ShoppingCart, Star, Truck, User, X,
 } from "lucide-react";
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { StatBar, StatItem, FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
-import { VENDORS, type VendorRecord, type VendorStatus, type VendorCategory } from "@/data/vendors";
-
-// ─── Route ────────────────────────────────────────────────────────────────────
+import { createClient } from "@/lib/supabase/client";
+import type { TablesUpdate } from "@/lib/supabase/types";
+import type { VendorStatus, VendorCategory } from "@/data/vendors";
 
 export const Route = createFileRoute("/inventory/vendors")({
-  head: () => ({ meta: [{ title: "Vendors · Port City Sound & Security" }] }),
+  head: () => ({ meta: [{ title: "Vendors · BearingPro" }] }),
   component: VendorsPage,
 });
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+const supabase = createClient();
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Vendor {
+  id: string;
+  name: string;
+  category: VendorCategory;
+  status: VendorStatus;
+  accountNumber: string | null;
+  paymentTerms: string;
+  website: string;
+  phone: string;
+  email: string;
+  city: string;
+  state: string;
+  repName: string | null;
+  repPhone: string | null;
+  repEmail: string | null;
+  notes: string;
+  // derived from POs
+  totalPOs: number;
+  ytdSpend: number;
+  activePOs: number;
+  lastOrderDate: string | null;
+}
+
+type DbVendor = {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  account_number: string | null;
+  payment_terms: string;
+  website: string;
+  phone: string;
+  email: string;
+  city: string;
+  state: string;
+  rep_name: string | null;
+  rep_phone: string | null;
+  rep_email: string | null;
+  notes: string;
+};
+
+type PurchaseOrderBasic = {
+  id: string;
+  vendor_id: string;
+  status: string;
+  order_date: string;
+  po_line_items: { qty_ordered: number; unit_cost: number }[];
+};
+
+function toVendor(r: DbVendor): Omit<Vendor, "totalPOs" | "ytdSpend" | "activePOs" | "lastOrderDate"> {
+  return {
+    id:            r.id,
+    name:          r.name,
+    category:      r.category as VendorCategory,
+    status:        r.status as VendorStatus,
+    accountNumber: r.account_number,
+    paymentTerms:  r.payment_terms,
+    website:       r.website,
+    phone:         r.phone,
+    email:         r.email,
+    city:          r.city,
+    state:         r.state,
+    repName:       r.rep_name,
+    repPhone:      r.rep_phone,
+    repEmail:      r.rep_email,
+    notes:         r.notes,
+  };
+}
+
+const CATEGORIES: VendorCategory[] = ["Security", "AV", "Networking", "Cabling", "Hardware", "Specialty"];
+const PAYMENT_TERMS = ["Net 15", "Net 30", "Net 45", "Net 60", "COD", "Prepay"];
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 const STATUS_META: Record<VendorStatus, { label: string; cls: string }> = {
   preferred: { label: "Preferred", cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
@@ -28,16 +103,10 @@ const STATUS_META: Record<VendorStatus, { label: string; cls: string }> = {
   inactive:  { label: "Inactive",  cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
 };
 
-const CATEGORIES: VendorCategory[] = ["Security", "AV", "Networking", "Cabling", "Hardware", "Specialty"];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function getInitials(name: string): string {
   const words = name.replace(/[/&]/g, " ").split(/\s+/).filter(Boolean);
   return words.slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: VendorStatus }) {
   const { label, cls } = STATUS_META[status];
@@ -73,34 +142,51 @@ function VendorAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" 
 
 type DrawerMode = "view" | "edit";
 
-interface VendorDrawerProps {
+function VendorDrawer({
+  open,
+  vendor,
+  mode,
+  onClose,
+  onSwitchToEdit,
+  onSave,
+  isPending,
+}: {
   open: boolean;
-  vendor: VendorRecord | null;
+  vendor: Vendor | null;
   mode: DrawerMode;
   onClose: () => void;
   onSwitchToEdit: () => void;
-  onSave: (v: VendorRecord) => void;
-}
-
-function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: VendorDrawerProps) {
-  const [form, setForm] = useState<Partial<VendorRecord>>({});
+  onSave: (patch: TablesUpdate<"vendors">) => void;
+  isPending: boolean;
+}) {
+  const [form, setForm] = useState<Partial<DbVendor>>({});
 
   useEffect(() => {
     if (!open || !vendor) return;
-    setForm({ ...vendor });
+    setForm({
+      name:           vendor.name,
+      category:       vendor.category,
+      status:         vendor.status,
+      account_number: vendor.accountNumber,
+      payment_terms:  vendor.paymentTerms,
+      website:        vendor.website,
+      phone:          vendor.phone,
+      email:          vendor.email,
+      city:           vendor.city,
+      state:          vendor.state,
+      rep_name:       vendor.repName,
+      rep_phone:      vendor.repPhone,
+      rep_email:      vendor.repEmail,
+      notes:          vendor.notes,
+    });
   }, [open, vendor]);
 
-  function field<K extends keyof VendorRecord>(key: K) {
+  function field(key: keyof DbVendor) {
     return {
       value: (form[key] ?? "") as string,
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
         setForm((f) => ({ ...f, [key]: e.target.value })),
     };
-  }
-
-  function handleSave() {
-    if (!vendor) return;
-    onSave({ ...vendor, ...form } as VendorRecord);
   }
 
   const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
@@ -127,13 +213,11 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
         {vendor && mode === "view" && (
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-
-              {/* Stats bar */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: "YTD Spend",    value: currency(vendor.ytdSpend),    sub: `${vendor.totalPOs} total POs` },
-                  { label: "Active POs",   value: String(vendor.activePOs),     sub: vendor.activePOs > 0 ? "In progress" : "None open" },
-                  { label: "Last Order",   value: vendor.lastOrderDate ?? "—",  sub: "" },
+                  { label: "YTD Spend",  value: currency(vendor.ytdSpend),       sub: `${vendor.totalPOs} total POs` },
+                  { label: "Active POs", value: String(vendor.activePOs),         sub: vendor.activePOs > 0 ? "In progress" : "None open" },
+                  { label: "Last Order", value: vendor.lastOrderDate ? fmtDate(vendor.lastOrderDate) : "—", sub: "" },
                 ].map(({ label, value, sub }) => (
                   <div key={label} className="rounded-lg border border-border bg-surface/30 px-3 py-2.5 text-center">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
@@ -143,7 +227,6 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
                 ))}
               </div>
 
-              {/* Contact info */}
               <fieldset className="space-y-0 rounded-lg border border-border overflow-hidden divide-y divide-border/50">
                 {vendor.accountNumber && (
                   <div className="flex items-center justify-between px-3.5 py-2">
@@ -182,10 +265,7 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
                     <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
                       <Mail className="h-3 w-3" /> Email
                     </span>
-                    <a
-                      href={`mailto:${vendor.email}`}
-                      className="text-[12.5px] text-blue-600 dark:text-blue-400 hover:underline"
-                    >
+                    <a href={`mailto:${vendor.email}`} className="text-[12.5px] text-blue-600 dark:text-blue-400 hover:underline">
                       {vendor.email}
                     </a>
                   </div>
@@ -200,43 +280,30 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
                 )}
               </fieldset>
 
-              {/* Rep */}
               {vendor.repName && (
                 <fieldset>
                   <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Account Rep</legend>
                   <div className="rounded-lg border border-border overflow-hidden divide-y divide-border/50">
                     <div className="flex items-center justify-between px-3.5 py-2">
-                      <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
-                        <User className="h-3 w-3" /> Name
-                      </span>
+                      <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5"><User className="h-3 w-3" /> Name</span>
                       <span className="text-[12.5px] font-medium">{vendor.repName}</span>
                     </div>
                     {vendor.repPhone && (
                       <div className="flex items-center justify-between px-3.5 py-2">
-                        <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
-                          <Phone className="h-3 w-3" /> Phone
-                        </span>
+                        <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5"><Phone className="h-3 w-3" /> Phone</span>
                         <span className="text-[12.5px]">{vendor.repPhone}</span>
                       </div>
                     )}
                     {vendor.repEmail && (
                       <div className="flex items-center justify-between px-3.5 py-2">
-                        <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
-                          <Mail className="h-3 w-3" /> Email
-                        </span>
-                        <a
-                          href={`mailto:${vendor.repEmail}`}
-                          className="text-[12.5px] text-blue-600 dark:text-blue-400 hover:underline"
-                        >
-                          {vendor.repEmail}
-                        </a>
+                        <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> Email</span>
+                        <a href={`mailto:${vendor.repEmail}`} className="text-[12.5px] text-blue-600 dark:text-blue-400 hover:underline">{vendor.repEmail}</a>
                       </div>
                     )}
                   </div>
                 </fieldset>
               )}
 
-              {/* Notes */}
               {vendor.notes && (
                 <fieldset>
                   <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Notes</legend>
@@ -254,8 +321,7 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
               </button>
               <button type="button" onClick={onSwitchToEdit}
                 className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
-                <Pencil className="h-3 w-3" />
-                Edit
+                <Pencil className="h-3 w-3" /> Edit
               </button>
             </div>
           </div>
@@ -264,16 +330,12 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
         {vendor && mode === "edit" && (
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-
-              {/* Core details */}
               <fieldset className="space-y-3">
                 <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Vendor Details</legend>
-
                 <div>
                   <label className={labelCls}>Vendor Name *</label>
                   <input {...field("name")} className={inputCls} placeholder="e.g. ADI Global Distribution" />
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Category</label>
@@ -290,27 +352,22 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
                     </select>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Account #</label>
-                    <input {...field("accountNumber")} className={inputCls} placeholder="e.g. PCSS-ADI-4412" />
+                    <input {...field("account_number")} className={inputCls} placeholder="e.g. PCSS-ADI-4412" />
                   </div>
                   <div>
                     <label className={labelCls}>Payment Terms</label>
-                    <select {...field("paymentTerms")} className={inputCls}>
-                      {["Net 15", "Net 30", "Net 45", "Net 60", "COD", "Prepay"].map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
+                    <select {...field("payment_terms")} className={inputCls}>
+                      {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                 </div>
               </fieldset>
 
-              {/* Contact info */}
               <fieldset className="space-y-3">
                 <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Contact</legend>
-
                 <div>
                   <label className={labelCls}>Website</label>
                   <input {...field("website")} className={inputCls} placeholder="e.g. adisecurity.com" />
@@ -318,11 +375,11 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Phone</label>
-                    <input {...field("phone")} className={inputCls} placeholder="(800) 000-0000" type="tel" />
+                    <input {...field("phone")} className={inputCls} type="tel" placeholder="(800) 000-0000" />
                   </div>
                   <div>
                     <label className={labelCls}>Email</label>
-                    <input {...field("email")} className={inputCls} placeholder="orders@vendor.com" type="email" />
+                    <input {...field("email")} className={inputCls} type="email" placeholder="orders@vendor.com" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -337,27 +394,24 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
                 </div>
               </fieldset>
 
-              {/* Account rep */}
               <fieldset className="space-y-3">
                 <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Account Rep</legend>
-
                 <div>
                   <label className={labelCls}>Rep Name</label>
-                  <input {...field("repName")} className={inputCls} placeholder="Full name" />
+                  <input {...field("rep_name")} className={inputCls} placeholder="Full name" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Rep Phone</label>
-                    <input {...field("repPhone")} className={inputCls} placeholder="(555) 000-0000" type="tel" />
+                    <input {...field("rep_phone")} className={inputCls} type="tel" placeholder="(555) 000-0000" />
                   </div>
                   <div>
                     <label className={labelCls}>Rep Email</label>
-                    <input {...field("repEmail")} className={inputCls} placeholder="rep@vendor.com" type="email" />
+                    <input {...field("rep_email")} className={inputCls} type="email" placeholder="rep@vendor.com" />
                   </div>
                 </div>
               </fieldset>
 
-              {/* Notes */}
               <fieldset>
                 <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Notes</legend>
                 <textarea
@@ -374,9 +428,13 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
                 className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
                 Cancel
               </button>
-              <button type="button" onClick={handleSave}
-                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                Save Changes
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => onSave(form as TablesUpdate<"vendors">)}
+                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+              >
+                {isPending ? "Saving…" : "Save Changes"}
               </button>
             </div>
           </div>
@@ -386,27 +444,126 @@ function VendorDrawer({ open, vendor, mode, onClose, onSwitchToEdit, onSave }: V
   );
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function fmtDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[m - 1]} ${d}, ${y}`;
+}
+
 // ─── VendorsPage ──────────────────────────────────────────────────────────────
 
 function VendorsPage() {
   const { setMeta } = useMeta();
-  const [vendors, setVendors] = useState<VendorRecord[]>(VENDORS);
+  const qc = useQueryClient();
   const [newOpen, setNewOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<VendorCategory | "all">("all");
   const [statusFilter, setStatusFilter] = useState<VendorStatus | "all">("all");
   const [view, setView] = useState<"cards" | "list">("list");
-  const [selected, setSelected] = useState<VendorRecord | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawerMode, setDrawerMode] = useState<DrawerMode>("view");
 
-  useEffect(() => {
-    setMeta({
-      title: "Vendors",
-      subtitle: `${vendors.length} vendors`,
-      onNew: () => setNewOpen(true),
-      newLabel: "+ New Vendor",
-    });
-  }, [setMeta, vendors.length]);
+  const { data: rawVendors = [], isLoading: vendorsLoading } = useQuery({
+    queryKey: ["vendors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("vendors")
+        .select("*")
+        .order("name");
+      if (error) throw error;
+      return data as DbVendor[];
+    },
+  });
+
+  const { data: rawPos = [] } = useQuery({
+    queryKey: ["purchase-orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("purchase_orders")
+        .select("id, vendor_id, status, order_date, po_line_items(qty_ordered, unit_cost)");
+      if (error) throw error;
+      return data as unknown as PurchaseOrderBasic[];
+    },
+  });
+
+  const vendorStats = useMemo(() => {
+    const ytdYear = new Date().getFullYear();
+    const map = new Map<string, { ytdSpend: number; totalPOs: number; activePOs: number; lastOrderDate: string | null }>();
+    for (const po of rawPos) {
+      const existing = map.get(po.vendor_id) ?? { ytdSpend: 0, totalPOs: 0, activePOs: 0, lastOrderDate: null };
+      const lineTotal = (po.po_line_items ?? []).reduce((s, li) => s + li.qty_ordered * li.unit_cost, 0);
+      const poYear = po.order_date ? Number(po.order_date.split("-")[0]) : 0;
+      const isActive = po.status === "draft" || po.status === "sent" || po.status === "partial";
+      map.set(po.vendor_id, {
+        ytdSpend:    existing.ytdSpend + (po.status !== "cancelled" && poYear === ytdYear ? lineTotal : 0),
+        totalPOs:    existing.totalPOs + 1,
+        activePOs:   existing.activePOs + (isActive ? 1 : 0),
+        lastOrderDate: !existing.lastOrderDate || po.order_date > existing.lastOrderDate
+          ? po.order_date
+          : existing.lastOrderDate,
+      });
+    }
+    return map;
+  }, [rawPos]);
+
+  const vendors: Vendor[] = useMemo(() => rawVendors.map((r) => {
+    const stats = vendorStats.get(r.id) ?? { ytdSpend: 0, totalPOs: 0, activePOs: 0, lastOrderDate: null };
+    return { ...toVendor(r), ...stats };
+  }), [rawVendors, vendorStats]);
+
+  const saveMutation = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: TablesUpdate<"vendors"> }) => {
+      const { data, error } = await supabase
+        .from("vendors")
+        .update(patch)
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      return data as DbVendor;
+    },
+    onSuccess: (updated) => {
+      qc.setQueryData<DbVendor[]>(["vendors"], (prev = []) =>
+        prev.map((v) => (v.id === updated.id ? updated : v)),
+      );
+      setDrawerMode("view");
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (payload: typeof createFormDefaults) => {
+      const tenantId = qc.getQueryData<{ id: string }>(["tenant"])?.id;
+      const { data, error } = await supabase
+        .from("vendors")
+        .insert({
+          tenant_id:      tenantId!,
+          name:           payload.name,
+          category:       payload.category,
+          status:         payload.status,
+          account_number: payload.accountNumber || null,
+          payment_terms:  payload.paymentTerms,
+          website:        payload.website,
+          phone:          payload.phone,
+          email:          payload.email,
+          city:           payload.city,
+          state:          payload.state,
+          rep_name:       payload.repName || null,
+          rep_phone:      payload.repPhone || null,
+          rep_email:      payload.repEmail || null,
+          notes:          payload.notes,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      return data as DbVendor;
+    },
+    onSuccess: (created) => {
+      qc.setQueryData<DbVendor[]>(["vendors"], (prev = []) => [...prev, created]);
+      setNewOpen(false);
+    },
+  });
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -418,27 +575,25 @@ function VendorsPage() {
     });
   }, [vendors, search, categoryFilter, statusFilter]);
 
-  const totalYtdSpend = useMemo(() => vendors.reduce((s, v) => s + v.ytdSpend, 0), [vendors]);
-  const activePOCount = useMemo(() => vendors.reduce((s, v) => s + v.activePOs, 0), [vendors]);
+  const totalYtdSpend  = useMemo(() => vendors.reduce((s, v) => s + v.ytdSpend, 0), [vendors]);
+  const activePOCount  = useMemo(() => vendors.reduce((s, v) => s + v.activePOs, 0), [vendors]);
   const preferredCount = useMemo(() => vendors.filter((v) => v.status === "preferred").length, [vendors]);
+  const selected       = useMemo(() => vendors.find((v) => v.id === selectedId) ?? null, [vendors, selectedId]);
 
-  function openView(v: VendorRecord) {
-    setSelected(v);
-    setDrawerMode("view");
-  }
-  function openEdit(v: VendorRecord) {
-    setSelected(v);
-    setDrawerMode("edit");
-  }
-  function handleSave(updated: VendorRecord) {
-    setVendors((prev) => prev.map((v) => v.id === updated.id ? updated : v));
-    setSelected(updated);
-    setDrawerMode("view");
-  }
+  useEffect(() => {
+    setMeta({
+      title:    "Vendors",
+      subtitle: `${vendors.length} vendors`,
+      onNew:    () => setNewOpen(true),
+      newLabel: "+ New Vendor",
+    });
+  }, [setMeta, vendors.length]);
+
+  function openView(v: Vendor)  { setSelectedId(v.id); setDrawerMode("view"); }
+  function openEdit(v: Vendor)  { setSelectedId(v.id); setDrawerMode("edit"); }
 
   return (
-    <div className="flex flex-col">
-      {/* Stat bar */}
+    <div className={cn("flex flex-col", vendorsLoading && "opacity-50")}>
       <StatBar>
         <StatItem icon={Truck}        label="Total Vendors" value={String(vendors.length)} />
         <StatItem icon={Star}         label="Preferred"     value={String(preferredCount)} />
@@ -446,7 +601,6 @@ function VendorsPage() {
         <StatItem icon={Building2}    label="YTD Spend"     value={currency(totalYtdSpend)} />
       </StatBar>
 
-      {/* Filter bar */}
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search vendors…" />
         <FilterSelect value={categoryFilter} onChange={(v) => setCategoryFilter(v as VendorCategory | "all")}>
@@ -484,7 +638,6 @@ function VendorsPage() {
         </div>
       </FilterBar>
 
-      {/* Card view */}
       {view === "cards" && (
         <div className="p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((v) => (
@@ -503,12 +656,10 @@ function VendorsPage() {
                 </div>
                 <StatusBadge status={v.status} />
               </div>
-
               <div className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <MapPin className="h-3 w-3 shrink-0" />
                 <span>{v.city}, {v.state}</span>
               </div>
-
               <div className="mt-3 grid grid-cols-3 gap-2 border-t border-border pt-3">
                 <div>
                   <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">YTD Spend</div>
@@ -525,7 +676,6 @@ function VendorsPage() {
                   </div>
                 </div>
               </div>
-
               {v.repName && (
                 <div className="mt-2.5 pt-2.5 border-t border-border flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <User className="h-3 w-3 shrink-0" />
@@ -542,7 +692,6 @@ function VendorsPage() {
         </div>
       )}
 
-      {/* List view */}
       {view === "list" && (
         <div className="p-4 overflow-x-auto">
           <div className="rounded-lg border border-border bg-card overflow-hidden min-w-215">
@@ -576,20 +725,14 @@ function VendorsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="py-2.5 px-3">
-                      <StatusBadge status={v.status} />
-                    </td>
-                    <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground">
-                      {v.accountNumber ?? "—"}
-                    </td>
+                    <td className="py-2.5 px-3"><StatusBadge status={v.status} /></td>
+                    <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground">{v.accountNumber ?? "—"}</td>
                     <td className="py-2.5 px-3 text-muted-foreground">{v.paymentTerms}</td>
                     <td className="py-2.5 px-3">
                       {v.repName ? (
                         <div>
                           <div className="leading-snug">{v.repName}</div>
-                          {v.repEmail && (
-                            <div className="text-[11px] text-muted-foreground truncate max-w-36">{v.repEmail}</div>
-                          )}
+                          {v.repEmail && <div className="text-[11px] text-muted-foreground truncate max-w-36">{v.repEmail}</div>}
                         </div>
                       ) : (
                         <span className="text-muted-foreground">—</span>
@@ -597,15 +740,12 @@ function VendorsPage() {
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-[11.5px]">{currency(v.ytdSpend)}</td>
                     <td className="py-2.5 px-3 text-right">
-                      <span className={cn(
-                        "font-semibold",
-                        v.activePOs > 0 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground",
-                      )}>
+                      <span className={cn("font-semibold", v.activePOs > 0 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
                         {v.activePOs}
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-right text-muted-foreground text-[12px]">
-                      {v.lastOrderDate ?? "—"}
+                      {v.lastOrderDate ? fmtDate(v.lastOrderDate) : "—"}
                     </td>
                     <td className="py-2.5 px-3 pr-3 text-right">
                       <button
@@ -631,19 +771,24 @@ function VendorsPage() {
         </div>
       )}
 
-      {/* Drawer */}
       <VendorDrawer
-        open={selected !== null}
+        open={selectedId !== null}
         vendor={selected}
         mode={drawerMode}
-        onClose={() => setSelected(null)}
+        onClose={() => setSelectedId(null)}
         onSwitchToEdit={() => setDrawerMode(drawerMode === "edit" ? "view" : "edit")}
-        onSave={handleSave}
+        onSave={(patch) => {
+          if (selectedId) saveMutation.mutate({ id: selectedId, patch });
+        }}
+        isPending={saveMutation.isPending}
       />
 
-      {/* New vendor modal placeholder */}
       {newOpen && (
-        <NewVendorModal onClose={() => setNewOpen(false)} onAdd={(v) => { setVendors((prev) => [...prev, v]); setNewOpen(false); }} />
+        <NewVendorModal
+          onClose={() => setNewOpen(false)}
+          onAdd={(form) => createMutation.mutate(form)}
+          isPending={createMutation.isPending}
+        />
       )}
     </div>
   );
@@ -651,19 +796,25 @@ function VendorsPage() {
 
 // ─── NewVendorModal ───────────────────────────────────────────────────────────
 
-interface NewVendorModalProps {
-  onClose: () => void;
-  onAdd: (v: VendorRecord) => void;
-}
+const createFormDefaults = {
+  name: "", category: "Hardware" as VendorCategory, status: "active" as VendorStatus,
+  accountNumber: "", paymentTerms: "Net 30",
+  website: "", phone: "", email: "", city: "", state: "",
+  repName: "", repPhone: "", repEmail: "", notes: "",
+};
 
-function NewVendorModal({ onClose, onAdd }: NewVendorModalProps) {
+function NewVendorModal({
+  onClose,
+  onAdd,
+  isPending,
+}: {
+  onClose: () => void;
+  onAdd: (form: typeof createFormDefaults) => void;
+  isPending: boolean;
+}) {
   const idRef = useRef(Date.now());
-  const [form, setForm] = useState({
-    name: "", category: "Hardware" as VendorCategory, status: "active" as VendorStatus,
-    accountNumber: "", paymentTerms: "Net 30",
-    website: "", phone: "", email: "", city: "", state: "",
-    repName: "", repPhone: "", repEmail: "", notes: "",
-  });
+  void idRef; // suppress unused warning
+  const [form, setForm] = useState({ ...createFormDefaults });
 
   function f(key: keyof typeof form) {
     return {
@@ -671,31 +822,6 @@ function NewVendorModal({ onClose, onAdd }: NewVendorModalProps) {
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
         setForm((p) => ({ ...p, [key]: e.target.value })),
     };
-  }
-
-  function handleAdd() {
-    if (!form.name.trim()) return;
-    onAdd({
-      id: `v-new-${idRef.current}`,
-      name: form.name,
-      category: form.category,
-      status: form.status,
-      accountNumber: form.accountNumber || null,
-      paymentTerms: form.paymentTerms,
-      website: form.website,
-      phone: form.phone,
-      email: form.email,
-      city: form.city,
-      state: form.state,
-      repName: form.repName || null,
-      repPhone: form.repPhone || null,
-      repEmail: form.repEmail || null,
-      totalPOs: 0,
-      ytdSpend: 0,
-      activePOs: 0,
-      lastOrderDate: null,
-      notes: form.notes,
-    });
   }
 
   const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
@@ -739,9 +865,7 @@ function NewVendorModal({ onClose, onAdd }: NewVendorModalProps) {
           <div>
             <label className={labelCls}>Payment Terms</label>
             <select {...f("paymentTerms")} className={inputCls}>
-              {["Net 15", "Net 30", "Net 45", "Net 60", "COD", "Prepay"].map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
+              {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div className="col-span-2">
@@ -750,11 +874,11 @@ function NewVendorModal({ onClose, onAdd }: NewVendorModalProps) {
           </div>
           <div>
             <label className={labelCls}>Phone</label>
-            <input {...f("phone")} className={inputCls} placeholder="(800) 000-0000" type="tel" />
+            <input {...f("phone")} className={inputCls} type="tel" placeholder="(800) 000-0000" />
           </div>
           <div>
             <label className={labelCls}>Email</label>
-            <input {...f("email")} className={inputCls} placeholder="orders@vendor.com" type="email" />
+            <input {...f("email")} className={inputCls} type="email" placeholder="orders@vendor.com" />
           </div>
           <div>
             <label className={labelCls}>City</label>
@@ -773,11 +897,11 @@ function NewVendorModal({ onClose, onAdd }: NewVendorModalProps) {
           </div>
           <div>
             <label className={labelCls}>Rep Phone</label>
-            <input {...f("repPhone")} className={inputCls} placeholder="(555) 000-0000" type="tel" />
+            <input {...f("repPhone")} className={inputCls} type="tel" placeholder="(555) 000-0000" />
           </div>
           <div>
             <label className={labelCls}>Rep Email</label>
-            <input {...f("repEmail")} className={inputCls} placeholder="rep@vendor.com" type="email" />
+            <input {...f("repEmail")} className={inputCls} type="email" placeholder="rep@vendor.com" />
           </div>
           <div className="col-span-2">
             <label className={labelCls}>Notes</label>
@@ -790,9 +914,12 @@ function NewVendorModal({ onClose, onAdd }: NewVendorModalProps) {
             className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             Cancel
           </button>
-          <button onClick={handleAdd}
-            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-            Add Vendor
+          <button
+            onClick={() => { if (form.name.trim()) onAdd(form); }}
+            disabled={!form.name.trim() || isPending}
+            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {isPending ? "Adding…" : "Add Vendor"}
           </button>
         </div>
       </div>

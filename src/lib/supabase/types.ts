@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       catalog_items: {
@@ -473,6 +498,70 @@ export type Database = {
           },
         ]
       }
+      po_line_items: {
+        Row: {
+          catalog_item_id: string | null
+          created_at: string
+          description: string
+          id: string
+          po_id: string
+          qty_ordered: number
+          qty_received: number
+          sku: string
+          sort_order: number
+          tenant_id: string
+          unit_cost: number
+        }
+        Insert: {
+          catalog_item_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          po_id: string
+          qty_ordered?: number
+          qty_received?: number
+          sku?: string
+          sort_order?: number
+          tenant_id: string
+          unit_cost?: number
+        }
+        Update: {
+          catalog_item_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          po_id?: string
+          qty_ordered?: number
+          qty_received?: number
+          sku?: string
+          sort_order?: number
+          tenant_id?: string
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "po_line_items_catalog_item_id_fkey"
+            columns: ["catalog_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "po_line_items_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "po_line_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           budgeted_cost: number | null
@@ -569,6 +658,89 @@ export type Database = {
           },
         ]
       }
+      purchase_orders: {
+        Row: {
+          created_at: string
+          expected_date: string | null
+          id: string
+          linked_project_id: string | null
+          linked_work_order_id: string | null
+          notes: string
+          order_date: string
+          po_number: string
+          received_date: string | null
+          status: string
+          tenant_id: string
+          tracking_number: string | null
+          updated_at: string
+          vendor_id: string
+          vendor_order_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          expected_date?: string | null
+          id?: string
+          linked_project_id?: string | null
+          linked_work_order_id?: string | null
+          notes?: string
+          order_date: string
+          po_number: string
+          received_date?: string | null
+          status?: string
+          tenant_id: string
+          tracking_number?: string | null
+          updated_at?: string
+          vendor_id: string
+          vendor_order_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          expected_date?: string | null
+          id?: string
+          linked_project_id?: string | null
+          linked_work_order_id?: string | null
+          notes?: string
+          order_date?: string
+          po_number?: string
+          received_date?: string | null
+          status?: string
+          tenant_id?: string
+          tracking_number?: string | null
+          updated_at?: string
+          vendor_id?: string
+          vendor_order_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_linked_project_id_fkey"
+            columns: ["linked_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_linked_work_order_id_fkey"
+            columns: ["linked_work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           can_write: boolean
@@ -626,6 +798,116 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_plans: {
+        Row: {
+          account_manager_id: string | null
+          activity: Json
+          billing_cycle: string
+          code: string
+          company_id: string | null
+          contact_id: string | null
+          contact_name: string
+          covered_systems: string[]
+          created_at: string
+          customer_name: string
+          id: string
+          mrr: number
+          notes: string
+          phone: string
+          renewal_date: string | null
+          site_address: string
+          sla_response: string
+          start_date: string | null
+          status: string
+          tenant_id: string
+          tier: string
+          updated_at: string
+          visits_per_year: number
+          visits_used: number
+        }
+        Insert: {
+          account_manager_id?: string | null
+          activity?: Json
+          billing_cycle?: string
+          code: string
+          company_id?: string | null
+          contact_id?: string | null
+          contact_name?: string
+          covered_systems?: string[]
+          created_at?: string
+          customer_name: string
+          id?: string
+          mrr?: number
+          notes?: string
+          phone?: string
+          renewal_date?: string | null
+          site_address?: string
+          sla_response?: string
+          start_date?: string | null
+          status?: string
+          tenant_id: string
+          tier?: string
+          updated_at?: string
+          visits_per_year?: number
+          visits_used?: number
+        }
+        Update: {
+          account_manager_id?: string | null
+          activity?: Json
+          billing_cycle?: string
+          code?: string
+          company_id?: string | null
+          contact_id?: string | null
+          contact_name?: string
+          covered_systems?: string[]
+          created_at?: string
+          customer_name?: string
+          id?: string
+          mrr?: number
+          notes?: string
+          phone?: string
+          renewal_date?: string | null
+          site_address?: string
+          sla_response?: string
+          start_date?: string | null
+          status?: string
+          tenant_id?: string
+          tier?: string
+          updated_at?: string
+          visits_per_year?: number
+          visits_used?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_plans_account_manager_id_fkey"
+            columns: ["account_manager_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_plans_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_plans_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1041,6 +1323,77 @@ export type Database = {
           },
         ]
       }
+      vendors: {
+        Row: {
+          account_number: string | null
+          category: string
+          city: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          notes: string
+          payment_terms: string
+          phone: string
+          rep_email: string | null
+          rep_name: string | null
+          rep_phone: string | null
+          state: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          website: string
+        }
+        Insert: {
+          account_number?: string | null
+          category?: string
+          city?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name: string
+          notes?: string
+          payment_terms?: string
+          phone?: string
+          rep_email?: string | null
+          rep_name?: string | null
+          rep_phone?: string | null
+          state?: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          website?: string
+        }
+        Update: {
+          account_number?: string | null
+          category?: string
+          city?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          notes?: string
+          payment_terms?: string
+          phone?: string
+          rep_email?: string | null
+          rep_name?: string | null
+          rep_phone?: string | null
+          state?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          website?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_orders: {
         Row: {
           assigned_to: string | null
@@ -1311,6 +1664,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_module: [
