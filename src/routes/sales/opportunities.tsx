@@ -444,10 +444,11 @@ function KanbanCard({
       <div className="relative inline-block">
         <button
           onClick={onOpenSelector}
-          className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium flex items-center gap-1", stageMeta[opp.stage].badge)}
+          className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium flex items-center gap-1 hover:opacity-80 transition-opacity", stageMeta[opp.stage].badge)}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-current" />
           {stageMeta[opp.stage].label}
+          <ChevronsUpDown className="h-2.5 w-2.5 opacity-60" />
         </button>
         {selectorOpen && (
           <div className="absolute left-0 top-full z-20 mt-1 w-44 rounded-md border border-border bg-popover py-1 shadow-lg">
