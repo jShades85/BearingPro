@@ -14,6 +14,116 @@ export type Database = {
   }
   public: {
     Tables: {
+      catalog_items: {
+        Row: {
+          category_id: string
+          cost: number
+          created_at: string
+          description: string | null
+          has_labor: boolean
+          id: string
+          image_url: string | null
+          is_active: boolean
+          labor_hours: number | null
+          labor_rate_override: number | null
+          manufacturer: string | null
+          msrp: number
+          name: string
+          sku: string | null
+          tenant_id: string
+          unit_of_measure: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          cost?: number
+          created_at?: string
+          description?: string | null
+          has_labor?: boolean
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          labor_hours?: number | null
+          labor_rate_override?: number | null
+          manufacturer?: string | null
+          msrp?: number
+          name: string
+          sku?: string | null
+          tenant_id: string
+          unit_of_measure?: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          cost?: number
+          created_at?: string
+          description?: string | null
+          has_labor?: boolean
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          labor_hours?: number | null
+          labor_rate_override?: number | null
+          manufacturer?: string | null
+          msrp?: number
+          name?: string
+          sku?: string | null
+          tenant_id?: string
+          unit_of_measure?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          tenant_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          tenant_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           billing_address: string | null
