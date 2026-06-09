@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useMeta } from "@/contexts/PageMetaContext";
@@ -229,7 +229,10 @@ export function ProjectDetailView({
     queryFn: () => fetchProjectById(projectId),
   });
 
-  const project = dbProject ? toProjectRecord(dbProject) : null;
+  const project = useMemo(
+    () => (dbProject ? toProjectRecord(dbProject) : null),
+    [dbProject],
+  );
 
   const [status, setStatus] = useState<ProjectStatus>("in-progress");
 

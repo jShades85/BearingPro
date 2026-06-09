@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 type PageMeta = {
   title: string;
@@ -21,8 +21,9 @@ const PageMetaContext = createContext<PageMetaContextValue>({
 
 export function PageMetaProvider({ children }: { children: React.ReactNode }) {
   const [meta, setMeta] = useState<PageMeta>(defaultMeta);
+  const value = useMemo(() => ({ meta, setMeta }), [meta]);
   return (
-    <PageMetaContext.Provider value={{ meta, setMeta }}>
+    <PageMetaContext.Provider value={value}>
       {children}
     </PageMetaContext.Provider>
   );

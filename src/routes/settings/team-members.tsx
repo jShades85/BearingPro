@@ -386,7 +386,7 @@ function TeamMembersPage() {
 
   const { data: members         = [], isLoading } = useQuery({ queryKey: ["members"],          queryFn: fetchMembers         });
   const { data: inactiveMembers = [] }            = useQuery({ queryKey: ["inactive-members"], queryFn: fetchInactiveMembers });
-  const { data: roles           = [] }            = useQuery({ queryKey: ["roles"],            queryFn: fetchRoles           });
+  const { data: roles           = [] }            = useQuery({ queryKey: ["roles-basic"],       queryFn: fetchRoles           });
   const { data: vehicles        = [] }            = useQuery({ queryKey: ["vehicles"],          queryFn: fetchVehicles        });
 
   const updateMutation = useMutation({
