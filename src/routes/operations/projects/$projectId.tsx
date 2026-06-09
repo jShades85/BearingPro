@@ -418,16 +418,16 @@ export function ProjectDetailView({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem onClick={() => console.log("duplicate")} className="gap-2">
+                <DropdownMenuItem disabled className="gap-2">
                   <Copy className="h-3.5 w-3.5" />
                   Duplicate
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => console.log("archive")} className="gap-2">
+                <DropdownMenuItem disabled className="gap-2">
                   <Archive className="h-3.5 w-3.5" />
                   Archive
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => console.log("delete")} className="gap-2 text-destructive focus:text-destructive">
+                <DropdownMenuItem disabled className="gap-2 text-destructive focus:text-destructive">
                   <Trash2 className="h-3.5 w-3.5" />
                   Delete
                 </DropdownMenuItem>
