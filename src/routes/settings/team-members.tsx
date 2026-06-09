@@ -75,6 +75,31 @@ async function removeMember(id: string) {
   if (error) throw error;
 }
 
+type InactiveMember = {
+  id: string;
+  tenant_id: string;
+  full_name: string | null;
+  email: string | null;
+  role_id: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
+async function fetchInactiveMembers(): Promise<InactiveMember[]> {
+  const supabase = createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc("get_inactive_members");
+  if (error) throw error;
+  return ((data ?? []) as unknown as InactiveMember[]);
+}
+
+async function reactivateMember(id: string) {
+  const supabase = createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).rpc("reactivate_member", { p_id: id });
+  if (error) throw error;
+}
+
 // ─── Initials avatar ──────────────────────────────────────────────────────────
 
 
@@ -202,10 +227,12 @@ function EditPanel({
 
 function InvitePanel({
   tenantId,
+  tenantSlug,
   roles,
   onClose,
 }: {
   tenantId: string;
+  tenantSlug: string;
   roles: Pick<Role, "id" | "name" | "color">[];
   onClose: () => void;
 }) {
@@ -218,12 +245,21 @@ function InvitePanel({
   const selectedRole = roles.find((r) => r.id === roleId);
 
   function generateLink() {
-    const payload: Record<string, string> = { tenant_id: tenantId };
-    if (selectedRole)  payload.role_name = selectedRole.name;
-    if (name.trim())   payload.full_name = name.trim();
-    if (email.trim())  payload.email     = email.trim();
-    const token = btoa(JSON.stringify(payload));
-    setLink(`${window.location.origin}/auth/signup?t=${token}`);
+    if (tenantSlug) {
+      const params = new URLSearchParams();
+      if (selectedRole) params.set("role", selectedRole.name);
+      if (name.trim())  params.set("n",    name.trim());
+      if (email.trim()) params.set("e",    email.trim());
+      setLink(`${window.location.origin}/join/${tenantSlug}?${params.toString()}`);
+    } else {
+      // Fallback for tenants without a slug yet (pre-migration)
+      const payload: Record<string, string> = { tenant_id: tenantId };
+      if (selectedRole)  payload.role_name = selectedRole.name;
+      if (name.trim())   payload.full_name = name.trim();
+      if (email.trim())  payload.email     = email.trim();
+      const token = btoa(JSON.stringify(payload));
+      setLink(`${window.location.origin}/auth/signup?t=${token}`);
+    }
   }
 
   function handleCopy() {
@@ -348,9 +384,10 @@ function TeamMembersPage() {
   const [inviteOpen,  setInviteOpen]  = useState(false);
   const [confirmId,   setConfirmId]   = useState<string | null>(null);
 
-  const { data: members  = [], isLoading } = useQuery({ queryKey: ["members"],  queryFn: fetchMembers  });
-  const { data: roles    = [] }            = useQuery({ queryKey: ["roles"],    queryFn: fetchRoles    });
-  const { data: vehicles = [] }            = useQuery({ queryKey: ["vehicles"], queryFn: fetchVehicles });
+  const { data: members         = [], isLoading } = useQuery({ queryKey: ["members"],          queryFn: fetchMembers         });
+  const { data: inactiveMembers = [] }            = useQuery({ queryKey: ["inactive-members"], queryFn: fetchInactiveMembers });
+  const { data: roles           = [] }            = useQuery({ queryKey: ["roles"],            queryFn: fetchRoles           });
+  const { data: vehicles        = [] }            = useQuery({ queryKey: ["vehicles"],          queryFn: fetchVehicles        });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: { role_id: string | null; vehicle_id: string | null } }) =>
@@ -370,12 +407,40 @@ function TeamMembersPage() {
   const removeMutation = useMutation({
     mutationFn: removeMember,
     onSuccess: (_, id) => {
+      const removed = members.find((m) => m.id === id);
       qc.setQueryData<Member[]>(["members"], (prev) => prev?.filter((m) => m.id !== id) ?? []);
+      if (removed) {
+        qc.setQueryData<InactiveMember[]>(["inactive-members"], (prev) => [
+          ...(prev ?? []),
+          {
+            id: removed.id,
+            tenant_id: removed.tenant_id,
+            full_name: removed.full_name,
+            email: removed.email,
+            role_id: removed.role_id,
+            is_active: false,
+            created_at: removed.created_at,
+          },
+        ]);
+      }
       if (editId === id) setEditId(null);
     },
   });
 
-  const tenantId = members[0]?.tenant_id ?? "";
+  const reactivateMutation = useMutation({
+    mutationFn: reactivateMember,
+    onSuccess: (_, id) => {
+      const reactivated = inactiveMembers.find((m) => m.id === id);
+      qc.setQueryData<InactiveMember[]>(["inactive-members"], (prev) => prev?.filter((m) => m.id !== id) ?? []);
+      if (reactivated) {
+        qc.invalidateQueries({ queryKey: ["members"] });
+      }
+    },
+  });
+
+  const tenantId   = members[0]?.tenant_id ?? "";
+  const tenantData = qc.getQueryData<{ slug?: string }>(["tenant"]);
+  const tenantSlug = tenantData?.slug ?? "";
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -510,6 +575,38 @@ function TeamMembersPage() {
         </table>
       </div>
 
+      {/* Deactivated members */}
+      {inactiveMembers.length > 0 && (
+        <div className="border-t border-border px-4 py-4">
+          <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-3">
+            Deactivated Members
+            <span className="ml-1.5 text-foreground font-mono">{inactiveMembers.length}</span>
+          </p>
+          <div className="space-y-1">
+            {inactiveMembers.map((m) => (
+              <div key={m.id} className="flex items-center gap-3 rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-[12.5px]">
+                <div
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white/70 bg-muted-foreground/30"
+                >
+                  {(m.full_name ?? "?").split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-muted-foreground truncate">{m.full_name ?? "—"}</p>
+                  <p className="text-[11px] text-muted-foreground/60">{m.email ?? ""}</p>
+                </div>
+                <button
+                  onClick={() => reactivateMutation.mutate(m.id)}
+                  disabled={reactivateMutation.isPending}
+                  className="shrink-0 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+                >
+                  Reactivate
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Side panels */}
       {editMember && (
         <>
@@ -528,6 +625,7 @@ function TeamMembersPage() {
           <div className="absolute inset-0 z-10" onClick={() => setInviteOpen(false)} />
           <InvitePanel
             tenantId={tenantId}
+            tenantSlug={tenantSlug}
             roles={roles}
             onClose={() => setInviteOpen(false)}
           />

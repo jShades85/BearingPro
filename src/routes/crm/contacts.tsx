@@ -129,6 +129,7 @@ function StageBadge({ stage }: { stage: LifecycleStage }) {
 function ContactsPage() {
   const { setMeta } = useMeta();
   const [selected, setSelected] = useState<DbContact | null>(null);
+  const [drawerMode, setDrawerMode] = useState<"view" | "edit">("view");
   const [newOpen, setNewOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -169,7 +170,10 @@ function ContactsPage() {
     });
   }, [contacts, search, typeFilter, customerTypeFilter, sourceFilter, assignedFilter]);
 
-  const openDrawer = useCallback((c: DbContact) => setSelected(c), []);
+  const openDrawer = useCallback((c: DbContact, mode: "view" | "edit" = "view") => {
+    setSelected(c);
+    setDrawerMode(mode);
+  }, []);
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-16 text-[12.5px] text-muted-foreground">Loading…</div>;
@@ -275,14 +279,14 @@ function ContactsPage() {
                   <td className="py-2.5 px-3 pr-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button
-                        onClick={(e) => { e.stopPropagation(); openDrawer(c); }}
+                        onClick={(e) => { e.stopPropagation(); openDrawer(c, "edit"); }}
                         className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                         aria-label="Edit contact"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); openDrawer(c); }}
+                        onClick={(e) => { e.stopPropagation(); openDrawer(c, "view"); }}
                         className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                         aria-label="View contact"
                       >
@@ -307,8 +311,17 @@ function ContactsPage() {
       </div>
 
       {/* Detail drawer */}
-      <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-        {selected !== null && <ContactDrawer key={selected.id} contact={selected} />}
+      <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) { setSelected(null); setDrawerMode("view"); } }}>
+        {selected !== null && (
+          <ContactDrawer
+            key={selected.id}
+            contact={selected}
+            mode={drawerMode}
+            onSwitchToEdit={() => setDrawerMode("edit")}
+            onSaved={() => { setSelected(null); setDrawerMode("view"); }}
+            teamMembers={teamMembers}
+          />
+        )}
       </Sheet>
 
       {/* New contact modal */}
@@ -321,7 +334,19 @@ function ContactsPage() {
 
 // ─── Contact detail drawer ────────────────────────────────────────────────────
 
-function ContactDrawer({ contact: c }: { contact: DbContact }) {
+function ContactDrawer({
+  contact: c,
+  mode,
+  onSwitchToEdit,
+  onSaved,
+  teamMembers,
+}: {
+  contact: DbContact;
+  mode: "view" | "edit";
+  onSwitchToEdit: () => void;
+  onSaved: () => void;
+  teamMembers: TeamMember[];
+}) {
   const isResidential = c.customer_type === "residential";
 
   return (
@@ -329,12 +354,20 @@ function ContactDrawer({ contact: c }: { contact: DbContact }) {
       <SheetHeader className="border-b border-border px-5 py-4">
         <div className="flex items-center gap-3">
           <Avatar initials={getInitials(c.full_name)} className="!h-11 !w-11 !text-[15px] !rounded-xl" />
-          <div>
+          <div className="flex-1 min-w-0">
             <SheetTitle className="text-[15px] font-semibold leading-tight">{c.full_name}</SheetTitle>
             <p className="text-[12px] text-muted-foreground">
               {c.title}{!isResidential && c.company ? ` · ${c.company.name}` : ""}
             </p>
           </div>
+          {mode === "view" && (
+            <button
+              onClick={onSwitchToEdit}
+              className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+            >
+              <Pencil className="h-3 w-3" /> Edit
+            </button>
+          )}
         </div>
         {c.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
@@ -347,98 +380,276 @@ function ContactDrawer({ contact: c }: { contact: DbContact }) {
         )}
       </SheetHeader>
 
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
-        {/* Contact info */}
-        <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Contact Info</p>
-          <div className="space-y-2 text-[12.5px]">
-            {c.phone && (
-              <div className="flex items-center gap-2.5 text-muted-foreground">
-                <Phone className="h-3.5 w-3.5 shrink-0" />
-                <span className="font-mono text-[12px]">{c.phone}</span>
-              </div>
-            )}
-            {c.email && (
-              <div className="flex items-center gap-2.5 text-muted-foreground">
-                <Mail className="h-3.5 w-3.5 shrink-0" />
-                <span>{c.email}</span>
-              </div>
-            )}
-            {!isResidential && c.address && (
-              <div className="flex items-start gap-2.5 text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                <span>{c.address}</span>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Property address — residential only */}
-        {isResidential && c.address && (
-          <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Property Address</p>
-            <div className="flex items-start gap-2.5 rounded-md border border-border bg-surface/50 px-3 py-2.5 text-[12.5px]">
-              <Home className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
-              <span className="text-foreground">{c.address}</span>
-            </div>
-          </section>
-        )}
-
-        {/* Details */}
-        <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Details</p>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[12.5px]">
-            <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Assigned To</p>
-              {c.assignee?.full_name
-                ? (
-                  <div className="flex items-center gap-1.5">
-                    <Avatar initials={getInitials(c.assignee.full_name)} />
-                    <span>{c.assignee.full_name}</span>
-                  </div>
-                )
-                : <span className="text-muted-foreground">—</span>
-              }
-            </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Lead Source</p>
-              <span>{c.source ?? "—"}</span>
-            </div>
-            {!isResidential && c.contact_type && (
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-0.5">Type</p>
-                <TypeBadge type={c.contact_type} />
-              </div>
-            )}
-            <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Stage</p>
-              <StageBadge stage={c.stage} />
-            </div>
-          </div>
-        </section>
-
-        {/* Related company — commercial only */}
-        {!isResidential && c.company && (
-          <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Company</p>
-            <div className="flex items-center gap-2 text-[12.5px]">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface">
-                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
-              <span className="text-primary hover:underline cursor-pointer">{c.company.name}</span>
-            </div>
-          </section>
-        )}
-
-        {/* Notes */}
-        {c.notes && (
-          <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
-            <p className="text-[12.5px] text-muted-foreground leading-relaxed">{c.notes}</p>
-          </section>
-        )}
-      </div>
+      {mode === "view" ? (
+        <ContactViewBody contact={c} isResidential={isResidential} />
+      ) : (
+        <ContactEditBody contact={c} onSaved={onSaved} onCancel={() => onSaved()} teamMembers={teamMembers} />
+      )}
     </SheetContent>
+  );
+}
+
+function ContactViewBody({ contact: c, isResidential }: { contact: DbContact; isResidential: boolean }) {
+  return (
+    <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+      {/* Contact info */}
+      <section>
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Contact Info</p>
+        <div className="space-y-2 text-[12.5px]">
+          {c.phone && (
+            <div className="flex items-center gap-2.5 text-muted-foreground">
+              <Phone className="h-3.5 w-3.5 shrink-0" />
+              <span className="font-mono text-[12px]">{c.phone}</span>
+            </div>
+          )}
+          {c.email && (
+            <div className="flex items-center gap-2.5 text-muted-foreground">
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span>{c.email}</span>
+            </div>
+          )}
+          {!isResidential && c.address && (
+            <div className="flex items-start gap-2.5 text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+              <span>{c.address}</span>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Property address — residential only */}
+      {isResidential && c.address && (
+        <section>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Property Address</p>
+          <div className="flex items-start gap-2.5 rounded-md border border-border bg-surface/50 px-3 py-2.5 text-[12.5px]">
+            <Home className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+            <span className="text-foreground">{c.address}</span>
+          </div>
+        </section>
+      )}
+
+      {/* Details */}
+      <section>
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Details</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[12.5px]">
+          <div>
+            <p className="text-[10px] text-muted-foreground mb-0.5">Assigned To</p>
+            {c.assignee?.full_name
+              ? (
+                <div className="flex items-center gap-1.5">
+                  <Avatar initials={getInitials(c.assignee.full_name)} />
+                  <span>{c.assignee.full_name}</span>
+                </div>
+              )
+              : <span className="text-muted-foreground">—</span>
+            }
+          </div>
+          <div>
+            <p className="text-[10px] text-muted-foreground mb-0.5">Lead Source</p>
+            <span>{c.source ?? "—"}</span>
+          </div>
+          {!isResidential && c.contact_type && (
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-0.5">Type</p>
+              <TypeBadge type={c.contact_type} />
+            </div>
+          )}
+          <div>
+            <p className="text-[10px] text-muted-foreground mb-0.5">Stage</p>
+            <StageBadge stage={c.stage} />
+          </div>
+        </div>
+      </section>
+
+      {/* Related company — commercial only */}
+      {!isResidential && c.company && (
+        <section>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Company</p>
+          <div className="flex items-center gap-2 text-[12.5px]">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface">
+              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+            <span className="text-primary hover:underline cursor-pointer">{c.company.name}</span>
+          </div>
+        </section>
+      )}
+
+      {/* Notes */}
+      {c.notes && (
+        <section>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
+          <p className="text-[12.5px] text-muted-foreground leading-relaxed">{c.notes}</p>
+        </section>
+      )}
+    </div>
+  );
+}
+
+// ─── Contact edit form (inside drawer) ───────────────────────────────────────
+
+function ContactEditBody({
+  contact: c,
+  onSaved,
+  onCancel,
+  teamMembers,
+}: {
+  contact: DbContact;
+  onSaved: () => void;
+  onCancel: () => void;
+  teamMembers: TeamMember[];
+}) {
+  const qc = useQueryClient();
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
+  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+
+  const [form, setForm] = useState({
+    full_name:    c.full_name,
+    title:        c.title        ?? "",
+    phone:        c.phone        ?? "",
+    email:        c.email        ?? "",
+    address:      c.address      ?? "",
+    contact_type: c.contact_type ?? "" as ContactType | "",
+    source:       c.source       ?? "Phone" as ContactSource,
+    assigned_to:  c.assigned_to  ?? "",
+    stage:        c.stage,
+    notes:        c.notes        ?? "",
+    company_id:   c.company_id   ?? "",
+  });
+
+  const set = (k: keyof typeof form) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const { data: companyOptions = [] } = useQuery({
+    queryKey: ["company-options"],
+    queryFn: fetchCompanyOptions,
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("contacts")
+        .update({
+          full_name:    form.full_name.trim(),
+          title:        form.title.trim()   || null,
+          phone:        form.phone.trim()   || null,
+          email:        form.email.trim()   || null,
+          address:      form.address.trim() || null,
+          contact_type: (form.contact_type  || null) as ContactType | null,
+          source:       form.source         || null,
+          assigned_to:  form.assigned_to    || null,
+          stage:        form.stage,
+          notes:        form.notes.trim()   || null,
+          company_id:   form.company_id     || null,
+        })
+        .eq("id", c.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["contacts"] });
+      onSaved();
+    },
+  });
+
+  const isCommercial = c.customer_type === "commercial";
+
+  return (
+    <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
+        <div>
+          <label className={labelCls}>Full Name <span className="text-rose-500">*</span></label>
+          <input className={inputCls} value={form.full_name} onChange={set("full_name")} />
+        </div>
+        <div>
+          <label className={labelCls}>Job Title</label>
+          <input className={inputCls} value={form.title} onChange={set("title")} placeholder="e.g. Facilities Manager" />
+        </div>
+        {isCommercial && (
+          <div>
+            <label className={labelCls}>Company</label>
+            <select className={selectCls} value={form.company_id} onChange={set("company_id")}>
+              <option value="">— None —</option>
+              {companyOptions.map((co) => <option key={co.id} value={co.id}>{co.name}</option>)}
+            </select>
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Phone</label>
+            <input className={inputCls} value={form.phone} onChange={set("phone")} placeholder="(555) 000-0000" type="tel" />
+          </div>
+          <div>
+            <label className={labelCls}>Email</label>
+            <input className={inputCls} value={form.email} onChange={set("email")} placeholder="email@example.com" type="email" />
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>{isCommercial ? "Address" : "Property Address"}</label>
+          <input className={inputCls} value={form.address} onChange={set("address")} placeholder="Street, City, State ZIP" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {isCommercial && (
+            <div>
+              <label className={labelCls}>Contact Type</label>
+              <select className={selectCls} value={form.contact_type} onChange={set("contact_type")}>
+                <option value="">— None —</option>
+                {typeOptions.map((t) => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+          )}
+          <div className={isCommercial ? "" : "col-span-2"}>
+            <label className={labelCls}>Stage</label>
+            <select className={selectCls} value={form.stage} onChange={set("stage")}>
+              <option value="Lead">Lead</option>
+              <option value="Customer">Customer</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>Lead Source</label>
+          <select className={selectCls} value={form.source} onChange={set("source")}>
+            {sourceOptions.map((s) => <option key={s}>{s}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Assign To</label>
+          <select className={selectCls} value={form.assigned_to} onChange={set("assigned_to")}>
+            <option value="">— Unassigned —</option>
+            {teamMembers.map((m) => (
+              <option key={m.id} value={m.id}>{m.full_name ?? "—"}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Notes</label>
+          <textarea
+            rows={3}
+            value={form.notes}
+            onChange={set("notes")}
+            placeholder="Add any notes…"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        </div>
+      </div>
+      <div className="border-t border-border px-5 py-4 flex gap-2">
+        <button
+          onClick={() => mutate()}
+          disabled={!form.full_name.trim() || isPending}
+          className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          {isPending ? "Saving…" : "Save Changes"}
+        </button>
+        <button
+          onClick={onCancel}
+          className="h-8 rounded-md border border-border px-4 text-[12.5px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
   );
 }
 

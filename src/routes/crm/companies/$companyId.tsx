@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft, Building2, Globe, Mail, MapPin, Phone, Plus,
+  ArrowLeft, Building2, Globe, Mail, MapPin, Pencil, Phone, Plus, X,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 
 export const Route = createFileRoute("/crm/companies/$companyId")({
@@ -96,6 +96,7 @@ function StageBadge({ stage }: { stage: CompanyStage }) {
 function CompanyDetailPage() {
   const { companyId } = Route.useParams();
   const { setMeta } = useMeta();
+  const qc = useQueryClient();
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["company", companyId],
@@ -106,6 +107,34 @@ function CompanyDetailPage() {
     queryKey: ["company-contacts", companyId],
     queryFn: () => fetchCompanyContacts(companyId),
     enabled: !!company,
+  });
+
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesText, setNotesText] = useState("");
+  const notesInitialized = useRef(false);
+
+  useEffect(() => {
+    if (company && !notesInitialized.current) {
+      setNotesText(company.notes ?? "");
+      notesInitialized.current = true;
+    }
+  }, [company]);
+
+  const saveNotes = useMutation({
+    mutationFn: async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("companies")
+        .update({ notes: notesText.trim() || null })
+        .eq("id", companyId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.setQueryData<DbCompany>(["company", companyId], (prev) =>
+        prev ? { ...prev, notes: notesText.trim() || null } : prev,
+      );
+      setEditingNotes(false);
+    },
   });
 
   useEffect(() => {
@@ -273,10 +302,51 @@ function CompanyDetailPage() {
         <aside className="w-[260px] shrink-0 border-l border-border overflow-y-auto px-4 py-5 space-y-5">
           {/* Notes */}
           <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Notes</p>
-            <p className="text-[12px] text-muted-foreground leading-relaxed whitespace-pre-wrap">
-              {company.notes ?? "No notes."}
-            </p>
+            <div className="flex items-center justify-between mb-2.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Notes</p>
+              {!editingNotes && (
+                <button
+                  onClick={() => setEditingNotes(true)}
+                  className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            {editingNotes ? (
+              <>
+                <textarea
+                  autoFocus
+                  rows={6}
+                  value={notesText}
+                  onChange={(e) => setNotesText(e.target.value)}
+                  className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12px] leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="Add notes…"
+                />
+                <div className="mt-2 flex gap-1.5">
+                  <button
+                    onClick={() => saveNotes.mutate()}
+                    disabled={saveNotes.isPending}
+                    className="flex-1 h-7 rounded-md bg-primary text-[11.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    {saveNotes.isPending ? "Saving…" : "Save"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNotesText(company.notes ?? "");
+                      setEditingNotes(false);
+                    }}
+                    className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="text-[12px] text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {company.notes?.trim() || "No notes."}
+              </p>
+            )}
           </div>
         </aside>
       </div>

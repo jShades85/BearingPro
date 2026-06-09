@@ -14,6 +14,7 @@ import { Route as ServiceRouteImport } from './routes/service'
 import { Route as SalesRouteImport } from './routes/sales'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as OperationsRouteImport } from './routes/operations'
+import { Route as JoinRouteImport } from './routes/join'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as FinanceRouteImport } from './routes/finance'
@@ -56,6 +57,7 @@ import { Route as OperationsTeamRouteImport } from './routes/operations/team'
 import { Route as OperationsSchedulingRouteImport } from './routes/operations/scheduling'
 import { Route as OperationsProjectsRouteImport } from './routes/operations/projects'
 import { Route as OperationsPlannerRouteImport } from './routes/operations/planner'
+import { Route as JoinSlugRouteImport } from './routes/join/$slug'
 import { Route as InventoryVendorsRouteImport } from './routes/inventory/vendors'
 import { Route as InventoryStockRouteImport } from './routes/inventory/stock'
 import { Route as InventoryPurchaseOrdersRouteImport } from './routes/inventory/purchase-orders'
@@ -100,6 +102,11 @@ const ReportsRoute = ReportsRouteImport.update({
 const OperationsRoute = OperationsRouteImport.update({
   id: '/operations',
   path: '/operations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InventoryRoute = InventoryRouteImport.update({
@@ -312,6 +319,11 @@ const OperationsPlannerRoute = OperationsPlannerRouteImport.update({
   path: '/planner',
   getParentRoute: () => OperationsRoute,
 } as any)
+const JoinSlugRoute = JoinSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => JoinRoute,
+} as any)
 const InventoryVendorsRoute = InventoryVendorsRouteImport.update({
   id: '/vendors',
   path: '/vendors',
@@ -423,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/finance': typeof FinanceRouteWithChildren
   '/inbox': typeof InboxRoute
   '/inventory': typeof InventoryRouteWithChildren
+  '/join': typeof JoinRouteWithChildren
   '/operations': typeof OperationsRouteWithChildren
   '/reports': typeof ReportsRoute
   '/sales': typeof SalesRouteWithChildren
@@ -438,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/inventory/purchase-orders': typeof InventoryPurchaseOrdersRoute
   '/inventory/stock': typeof InventoryStockRoute
   '/inventory/vendors': typeof InventoryVendorsRoute
+  '/join/$slug': typeof JoinSlugRoute
   '/operations/planner': typeof OperationsPlannerRouteWithChildren
   '/operations/projects': typeof OperationsProjectsRouteWithChildren
   '/operations/scheduling': typeof OperationsSchedulingRoute
@@ -489,6 +503,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/inbox': typeof InboxRoute
+  '/join': typeof JoinRouteWithChildren
   '/reports': typeof ReportsRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -499,6 +514,7 @@ export interface FileRoutesByTo {
   '/inventory/purchase-orders': typeof InventoryPurchaseOrdersRoute
   '/inventory/stock': typeof InventoryStockRoute
   '/inventory/vendors': typeof InventoryVendorsRoute
+  '/join/$slug': typeof JoinSlugRoute
   '/operations/scheduling': typeof OperationsSchedulingRoute
   '/operations/team': typeof OperationsTeamRoute
   '/sales/lead-inbox': typeof SalesLeadInboxRoute
@@ -550,6 +566,7 @@ export interface FileRoutesById {
   '/finance': typeof FinanceRouteWithChildren
   '/inbox': typeof InboxRoute
   '/inventory': typeof InventoryRouteWithChildren
+  '/join': typeof JoinRouteWithChildren
   '/operations': typeof OperationsRouteWithChildren
   '/reports': typeof ReportsRoute
   '/sales': typeof SalesRouteWithChildren
@@ -565,6 +582,7 @@ export interface FileRoutesById {
   '/inventory/purchase-orders': typeof InventoryPurchaseOrdersRoute
   '/inventory/stock': typeof InventoryStockRoute
   '/inventory/vendors': typeof InventoryVendorsRoute
+  '/join/$slug': typeof JoinSlugRoute
   '/operations/planner': typeof OperationsPlannerRouteWithChildren
   '/operations/projects': typeof OperationsProjectsRouteWithChildren
   '/operations/scheduling': typeof OperationsSchedulingRoute
@@ -621,6 +639,7 @@ export interface FileRouteTypes {
     | '/finance'
     | '/inbox'
     | '/inventory'
+    | '/join'
     | '/operations'
     | '/reports'
     | '/sales'
@@ -636,6 +655,7 @@ export interface FileRouteTypes {
     | '/inventory/purchase-orders'
     | '/inventory/stock'
     | '/inventory/vendors'
+    | '/join/$slug'
     | '/operations/planner'
     | '/operations/projects'
     | '/operations/scheduling'
@@ -687,6 +707,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/inbox'
+    | '/join'
     | '/reports'
     | '/auth/login'
     | '/auth/signup'
@@ -697,6 +718,7 @@ export interface FileRouteTypes {
     | '/inventory/purchase-orders'
     | '/inventory/stock'
     | '/inventory/vendors'
+    | '/join/$slug'
     | '/operations/scheduling'
     | '/operations/team'
     | '/sales/lead-inbox'
@@ -747,6 +769,7 @@ export interface FileRouteTypes {
     | '/finance'
     | '/inbox'
     | '/inventory'
+    | '/join'
     | '/operations'
     | '/reports'
     | '/sales'
@@ -762,6 +785,7 @@ export interface FileRouteTypes {
     | '/inventory/purchase-orders'
     | '/inventory/stock'
     | '/inventory/vendors'
+    | '/join/$slug'
     | '/operations/planner'
     | '/operations/projects'
     | '/operations/scheduling'
@@ -817,6 +841,7 @@ export interface RootRouteChildren {
   FinanceRoute: typeof FinanceRouteWithChildren
   InboxRoute: typeof InboxRoute
   InventoryRoute: typeof InventoryRouteWithChildren
+  JoinRoute: typeof JoinRouteWithChildren
   OperationsRoute: typeof OperationsRouteWithChildren
   ReportsRoute: typeof ReportsRoute
   SalesRoute: typeof SalesRouteWithChildren
@@ -859,6 +884,13 @@ declare module '@tanstack/react-router' {
       path: '/operations'
       fullPath: '/operations'
       preLoaderRoute: typeof OperationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inventory': {
@@ -1155,6 +1187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OperationsPlannerRouteImport
       parentRoute: typeof OperationsRoute
     }
+    '/join/$slug': {
+      id: '/join/$slug'
+      path: '/$slug'
+      fullPath: '/join/$slug'
+      preLoaderRoute: typeof JoinSlugRouteImport
+      parentRoute: typeof JoinRoute
+    }
     '/inventory/vendors': {
       id: '/inventory/vendors'
       path: '/vendors'
@@ -1373,6 +1412,16 @@ const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
   InventoryRouteChildren,
 )
 
+interface JoinRouteChildren {
+  JoinSlugRoute: typeof JoinSlugRoute
+}
+
+const JoinRouteChildren: JoinRouteChildren = {
+  JoinSlugRoute: JoinSlugRoute,
+}
+
+const JoinRouteWithChildren = JoinRoute._addFileChildren(JoinRouteChildren)
+
 interface OperationsPlannerRouteChildren {
   OperationsPlannerIndexRoute: typeof OperationsPlannerIndexRoute
 }
@@ -1536,6 +1585,7 @@ const rootRouteChildren: RootRouteChildren = {
   FinanceRoute: FinanceRouteWithChildren,
   InboxRoute: InboxRoute,
   InventoryRoute: InventoryRouteWithChildren,
+  JoinRoute: JoinRouteWithChildren,
   OperationsRoute: OperationsRouteWithChildren,
   ReportsRoute: ReportsRoute,
   SalesRoute: SalesRouteWithChildren,

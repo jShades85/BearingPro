@@ -151,7 +151,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        {pathname.startsWith("/auth") ? <Outlet /> : <ProtectedApp />}
+        {(pathname.startsWith("/auth") || pathname.startsWith("/join")) ? <Outlet /> : <ProtectedApp />}
       </AuthProvider>
     </QueryClientProvider>
   );
