@@ -6,8 +6,8 @@
 
 ## Current Status
 
-**Phase:** Backend — POs/Vendors live, Finance next
-**Last Updated:** Session 032
+**Phase:** Backend — Finance live, Reports/Settings remaining
+**Last Updated:** Session 033
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -17,7 +17,7 @@
 
 **Start here next session:**
 
-1. **Finance → Invoices / Payments** — next module to wire to backend
+1. **All backend modules now live** — decide what comes next: Reports (real data), Settings cleanup, or start Quote Builder backend
 
 ---
 
@@ -47,7 +47,7 @@
 | Inventory → Catalog | ✅ Live | Schema + RLS live; category landing + item grid wired; tenant-defined categories with trade templates + icon picker; CategorySetupModal on first visit; New Category / New Item context-aware button |
 | Inventory → Stock | ✅ Live | Schema + RLS live; 12 seed items + 35 movements; all CRUD wired; Adjust popover writes to DB; movements lazy-loaded per item in drawer; manufacturers derived from live data |
 | Inventory → POs, Vendors | ✅ Live | Schema + RLS live; 7 vendors + 11 POs seeded; all CRUD wired; vendor stats derived from shared PO cache; Send PO + Mark All Received quick actions; linkedJobId encoded as p:/w: |
-| Finance (Invoices, Payments) | 🟡 Demo data | Full UI built |
+| Finance (Invoices, Payments) | ✅ Live | Schema + RLS live; 10 seed invoices, 55 line items, 6 payments; full CRUD wired; Collect Payment writes to DB + updates invoice status |
 | Reports | 🟡 Placeholder | 27-report catalog defined, all coming soon |
 | Settings (Company, Tiers, Integrations) | ✅ Company live | Company Profile reads/writes `tenants` table; Tiers + Integrations still demo |
 | Settings → Roles | ✅ Live | Full CRUD, module-level read/write permissions, color picker, expandable permission grid |
@@ -93,6 +93,8 @@
 | `20260610000019_vendors` | `vendors` table with full RLS; `set_vendors_updated_at` trigger | ✅ Live |
 | `20260610000020_purchase_orders` | `purchase_orders` + `po_line_items` tables with full RLS; `set_purchase_orders_updated_at` trigger | ✅ Live |
 | `20260610000021_vendors_pos_seed` | 7 vendors + 11 POs + 18 line items for test tenant; POs linked to seeded projects by code; line items linked to catalog items by SKU | ✅ Live |
+| `20260610000022_invoices` | `invoices`, `invoice_line_items`, `invoice_payments` tables with full RLS; `set_invoices_updated_at` trigger | ✅ Live |
+| `20260610000023_invoices_seed` | 10 seed invoices + 55 line items + 6 payments; `linked_project_id` wired to "Surgical Center A/V Overhaul" via ilike | ✅ Live |
 
 **Trigger logic:** New signup → creates `tenants` row + `user_profiles` row (Owner role). Invited user (has `tenant_id` in metadata) → joins existing tenant with assigned role. Upserts on conflict so re-inviting a removed user reactivates their profile.
 
@@ -363,6 +365,37 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - `TablesUpdate<"table">` from `@/lib/supabase/types` for typed partial-update patches
 - Account manager name via FK join: `user_profiles!account_manager_id(full_name)` in select + seed migration
 - `activity` column as `jsonb` — read-only in UI (no add-activity button yet); populated at seed time
+
+---
+
+## Session 033 — Finance Invoices / Payments Live
+
+**Date:** June 10, 2026
+
+**Completed:**
+
+- **Migration 20260610000022**: `invoices`, `invoice_line_items`, `invoice_payments` tables with full RLS; `set_invoices_updated_at` trigger; `invoice_line_items` and `invoice_payments` access via parent invoice tenant check or direct `tenant_id`
+- **Migration 20260610000023**: 10 seed invoices + 55 line items + 6 payments for test tenant; `linked_project_id` matched to "Surgical Center A/V Overhaul" via ilike (only seed project name overlap); other project links left null since invoice demo companies don't match seeded CRM companies
+- **Invoices page fully rewritten** (`/finance/invoices`): wired to Supabase — no more demo data
+  - `useQuery(["invoices"])` fetches invoices with nested `invoice_line_items` + `invoice_payments`
+  - `saveMutation` updates invoice header fields (status, dates, customer, linked job, notes)
+  - `createMutation` inserts draft invoice; auto-generates invoice number from max(existing) + 1; auto-calculates due date from payment terms
+  - `JobCombobox` uses separate `["projects-basic"]` + `["work-orders-basic"]` queries (distinct keys to avoid collision)
+  - `useRef` initialized flag in `InvoiceDrawer` prevents form reset on refetch
+  - Date inputs use `type="date"` (ISO format) for edit mode; `fmtDate()` for display
+- **Payments page fully rewritten** (`/finance/payments`): wired to Supabase — no more demo data
+  - Shares `["invoices"]` cache with invoices.tsx (same select shape — safe)
+  - `outstanding` and `allPayments` derived via useMemo from shared cache
+  - `collectMutation` in `CollectTab`: inserts to `invoice_payments`, then updates `invoices.amount_paid` / `balance_due` / `status`; status logic: balance ≤ 0 → "paid", partial payment → "partial"
+  - Stat bars compute from live data; month filters use ISO date prefix matching
+  - Stripe tab remains UI-only (payment link flow — actual Stripe webhook integration deferred)
+- **Bug fixed (Session 033 start)**: vendors page crashing on Vercel — `["purchase-orders"]` query key shared with purchase-orders.tsx but different select shapes → stale full-shape data caused TypeError in vendorStats useMemo. Fixed by renaming vendors key to `["purchase-orders-basic"]`. Same pattern as Session 026 roles collision.
+
+**Patterns established:**
+- `["invoices"]` is the canonical full-shape key for all invoice reads — both invoices.tsx and payments.tsx use identical select, safe to share
+- `collectMutation` two-step: INSERT payment → UPDATE invoice totals + status in one mutation function; no separate RPC needed
+- `invoice_payments` has no UPDATE/DELETE policy — payments are immutable (same principle as stock_movements)
+- `invoice_line_items` RLS via parent invoice FK check (no direct `tenant_id` column on line items)
 
 ---
 
