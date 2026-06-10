@@ -16,6 +16,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "../components/app-shell";
 import { useTheme } from "../hooks/useTheme";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
+import { PermissionsProvider } from "../contexts/PermissionsContext";
 
 function NotFoundComponent() {
   return (
@@ -151,7 +152,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        {(pathname.startsWith("/auth") || pathname.startsWith("/join")) ? <Outlet /> : <ProtectedApp />}
+        {(pathname.startsWith("/auth") || pathname.startsWith("/join"))
+          ? <Outlet />
+          : <PermissionsProvider><ProtectedApp /></PermissionsProvider>}
       </AuthProvider>
     </QueryClientProvider>
   );

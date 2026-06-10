@@ -15,14 +15,16 @@ import ThemeToggle from "./ui/ThemeToggle";
 import { PageMetaProvider, useMeta } from "@/contexts/PageMetaContext";
 import { requestItems } from "@/data/inbox-data";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { usePermissions, type AppModule } from "@/contexts/PermissionsContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type NavItem = { to: string; label: string; icon: typeof Inbox; badge?: string };
+type NavSection = { title?: string; module?: AppModule; items: NavItem[] };
 
 // ─── Nav data ─────────────────────────────────────────────────────────────────
 
-const sections: { title?: string; items: NavItem[] }[] = [
+const sections: NavSection[] = [
   {
     items: [
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -31,6 +33,7 @@ const sections: { title?: string; items: NavItem[] }[] = [
   },
   {
     title: "CRM",
+    module: "crm",
     items: [
       { to: "/crm/lead-inbox", label: "Lead Inbox", icon: Inbox },
       { to: "/crm/contacts", label: "Contacts", icon: Users },
@@ -39,6 +42,7 @@ const sections: { title?: string; items: NavItem[] }[] = [
   },
   {
     title: "Sales",
+    module: "sales",
     items: [
       { to: "/sales/opportunities", label: "Opportunities", icon: Target },
       { to: "/sales/quotes", label: "Quotes & Estimates", icon: FileText },
@@ -46,6 +50,7 @@ const sections: { title?: string; items: NavItem[] }[] = [
   },
   {
     title: "Operations",
+    module: "operations",
     items: [
       { to: "/operations/projects", label: "Projects", icon: Briefcase },
       { to: "/operations/work-orders", label: "Work Orders", icon: ClipboardList },
@@ -56,6 +61,7 @@ const sections: { title?: string; items: NavItem[] }[] = [
   },
   {
     title: "Service",
+    module: "service",
     items: [
       { to: "/service/service-tickets", label: "Service Tickets", icon: Headphones },
       { to: "/service/service-plans", label: "Service Plans", icon: ShieldCheck },
@@ -63,6 +69,7 @@ const sections: { title?: string; items: NavItem[] }[] = [
   },
   {
     title: "Inventory",
+    module: "inventory",
     items: [
       { to: "/inventory/catalog", label: "Catalog", icon: Package },
       { to: "/inventory/stock", label: "Stock", icon: Boxes },
@@ -72,6 +79,7 @@ const sections: { title?: string; items: NavItem[] }[] = [
   },
   {
     title: "Finance",
+    module: "finance",
     items: [
       { to: "/finance/invoices", label: "Invoices", icon: Receipt },
       { to: "/finance/payments", label: "Payments", icon: CreditCard },
@@ -79,6 +87,7 @@ const sections: { title?: string; items: NavItem[] }[] = [
   },
   {
     title: "Reports",
+    module: "reports",
     items: [
       { to: "/reports", label: "Reports", icon: BarChart2 },
     ],
@@ -107,6 +116,7 @@ async function fetchTenant() {
 function AppShellContent() {
   const { meta } = useMeta();
   const { signOut, user } = useAuth();
+  const { can, loading: permsLoading } = usePermissions();
   const { data: tenant } = useQuery({ queryKey: ["tenant"], queryFn: fetchTenant, staleTime: Infinity });
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
@@ -155,29 +165,33 @@ function AppShellContent() {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 py-3">
-          {sections.map((section, i) => (
-            <div key={i} className="mb-4">
-              {section.title && !collapsed && (
-                <div className="px-2 pb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
-                  {section.title}
-                </div>
-              )}
-              <ul className="space-y-0.5">
-                {section.items.map((item) => {
-                  const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-                  const Icon = item.icon;
-                  return (
-                    <li key={item.to}>
-                      <Link
-                        to={item.to}
-                        className={cn(
-                          "group flex h-7 items-center gap-2.5 rounded-md px-2 text-[13px] transition-colors",
-                          active
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
-                          collapsed && "justify-center px-0",
-                        )}
-                      >
+          {sections.map((section, i) => {
+            const locked = !permsLoading && !!section.module && !can(section.module, "read");
+            return (
+              <div key={i} className="mb-4">
+                {section.title && !collapsed && (
+                  <div className={cn(
+                    "px-2 pb-1.5 text-[10px] font-medium uppercase tracking-wider",
+                    locked ? "text-muted-foreground/30" : "text-muted-foreground/70",
+                  )}>
+                    {section.title}
+                  </div>
+                )}
+                <ul className="space-y-0.5">
+                  {section.items.map((item) => {
+                    const active = !locked && (item.to === "/" ? pathname === "/" : pathname.startsWith(item.to));
+                    const Icon = item.icon;
+                    const itemCls = cn(
+                      "group flex h-7 items-center gap-2.5 rounded-md px-2 text-[13px] transition-colors",
+                      locked
+                        ? "cursor-not-allowed text-sidebar-foreground/30"
+                        : active
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                      collapsed && "justify-center px-0",
+                    );
+                    const content = (
+                      <>
                         <Icon className={cn("h-3.5 w-3.5 shrink-0", active && "text-primary")} />
                         {!collapsed && <span className="truncate">{item.label}</span>}
                         {!collapsed && item.badge && (
@@ -190,13 +204,21 @@ function AppShellContent() {
                             {pendingRequestCount}
                           </span>
                         )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+                      </>
+                    );
+                    return (
+                      <li key={item.to}>
+                        {locked
+                          ? <span className={itemCls}>{content}</span>
+                          : <Link to={item.to} className={itemCls}>{content}</Link>
+                        }
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </nav>
 
         <div className="border-t border-sidebar-border p-2">
