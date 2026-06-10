@@ -47,7 +47,10 @@ interface DbOpportunity {
   company: { id: string; name: string } | null;
   contact: { id: string; full_name: string } | null;
   assignee: { id: string; full_name: string | null } | null;
+  quotes: { id: string; number: string; status: QuoteStatus; value: number }[];
 }
+
+interface CatalogItemOption { id: string; name: string; msrp: number | null; sku: string | null }
 
 interface Opportunity {
   id: string;
@@ -132,7 +135,7 @@ function toUiOpp(d: DbOpportunity): Opportunity {
     companyId:    d.company?.id ?? null,
     contact:      d.contact?.full_name ?? "—",
     contactId:    d.contact?.id ?? null,
-    value:        d.value ?? null,
+    value:        d.quotes?.[0] ? Number(d.quotes[0].value) : (d.value ?? null),
     stage:        d.stage,
     closeDate:    d.close_date ?? "—",
     rep:          repName,
@@ -141,6 +144,9 @@ function toUiOpp(d: DbOpportunity): Opportunity {
     source:       d.source ?? "Referral",
     priority:     d.priority ?? "med",
     notes:        d.notes ?? "",
+    linkedQuote:  d.quotes?.[0]
+      ? { number: d.quotes[0].number, status: d.quotes[0].status, value: Number(d.quotes[0].value) }
+      : undefined,
     activityFeed: [],
   };
 }
@@ -189,10 +195,45 @@ async function fetchOpportunities(): Promise<DbOpportunity[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("opportunities")
-    .select("*, company:companies(id,name), contact:contacts(id,full_name), assignee:user_profiles!assigned_to(id,full_name)")
+    .select("*, company:companies(id,name), contact:contacts(id,full_name), assignee:user_profiles!assigned_to(id,full_name), quotes(id,number,status,value)")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as DbOpportunity[];
+}
+
+async function fetchCatalogItems(): Promise<CatalogItemOption[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("catalog_items").select("id,name,msrp,sku").eq("is_active", true).order("name");
+  if (error) throw error;
+  return data ?? [];
+}
+
+async function createQuote(opportunityId: string, item: CatalogItemOption, qty: number, unitPrice: number, notes: string): Promise<void> {
+  const supabase = createClient();
+  const { data: tenantRow } = await supabase.from("tenants").select("id").single();
+  if (!tenantRow) throw new Error("No tenant");
+  const tid = tenantRow.id;
+
+  const { count } = await supabase.from("quotes").select("*", { count: "exact", head: true });
+  const year = new Date().getFullYear();
+  const number = `Q-${year}-${String((count ?? 0) + 1).padStart(3, "0")}`;
+  const value = qty * unitPrice;
+
+  const { data: quote, error: qe } = await supabase
+    .from("quotes").insert({ tenant_id: tid, opportunity_id: opportunityId, number, value, notes: notes || null })
+    .select("id").single();
+  if (qe || !quote) throw qe ?? new Error("Quote insert failed");
+
+  const { error: le } = await supabase.from("quote_line_items").insert({
+    tenant_id: tid, quote_id: quote.id,
+    catalog_item_id: item.id, description: item.name,
+    quantity: qty, unit_price: unitPrice,
+  });
+  if (le) throw le;
+
+  const { error: oe } = await supabase.from("opportunities").update({ value }).eq("id", opportunityId);
+  if (oe) throw oe;
 }
 
 async function fetchTeamMembers(): Promise<TeamMember[]> {
@@ -293,6 +334,12 @@ function Opportunities() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
   });
 
+  const quoteMutation = useMutation({
+    mutationFn: ({ oppId, item, qty, unitPrice, notes }: { oppId: string; item: CatalogItemOption; qty: number; unitPrice: number; notes: string }) =>
+      createQuote(oppId, item, qty, unitPrice, notes),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
+  });
+
   useEffect(() => {
     const pipeline = opps.filter((o) => o.stage !== "closed-lost").reduce((s, o) => s + (o.value ?? 0), 0);
     setMeta({
@@ -368,6 +415,9 @@ function Opportunities() {
             }}
             onSave={async (values) => {
               await saveMutation.mutateAsync({ id: selected.id, values });
+            }}
+            onCreateQuote={async (item, qty, unitPrice, notes) => {
+              await quoteMutation.mutateAsync({ oppId: selected.id, item, qty, unitPrice, notes });
             }}
             onConvert={async (type) => {
               if (type === "project") await convertToProject(selected);
@@ -609,10 +659,100 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
 
 // ─── Opportunity detail drawer ────────────────────────────────────────────────
 
+function CreateQuoteModal({
+  onClose,
+  onSave,
+}: {
+  onClose: () => void;
+  onSave: (item: CatalogItemOption, qty: number, unitPrice: number, notes: string) => Promise<void>;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<CatalogItemOption | null>(null);
+  const [unitPrice, setUnitPrice] = useState("");
+  const [qty, setQty] = useState("1");
+  const { data: catalogItems = [] } = useQuery({ queryKey: ["catalog-items-quote"], queryFn: fetchCatalogItems });
+
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
+  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
+  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+
+  const total = (parseFloat(qty) || 0) * (parseFloat(unitPrice) || 0);
+
+  const handleItemChange = (id: string) => {
+    const item = catalogItems.find((i) => i.id === id) ?? null;
+    setSelectedItem(item);
+    if (item?.msrp) setUnitPrice(String(item.msrp));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedItem) return;
+    setSaving(true);
+    const fd = new FormData(e.currentTarget);
+    try {
+      await onSave(selectedItem, parseFloat(qty) || 1, parseFloat(unitPrice) || 0, fd.get("notes") as string);
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <DialogContent className="max-w-md">
+      <DialogHeader>
+        <DialogTitle>Create Quote</DialogTitle>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="mt-1 space-y-3">
+        <div>
+          <label className={labelCls}>Catalog Item *</label>
+          <select required className={selectCls} defaultValue="" onChange={(e) => handleItemChange(e.target.value)}>
+            <option value="" disabled>— Select an item —</option>
+            {catalogItems.map((i) => <option key={i.id} value={i.id}>{i.name}{i.sku ? ` (${i.sku})` : ""}</option>)}
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Quantity</label>
+            <input type="number" min="0.01" step="0.01" required className={inputCls}
+              value={qty} onChange={(e) => setQty(e.target.value)} />
+          </div>
+          <div>
+            <label className={labelCls}>Unit Price ($)</label>
+            <input type="number" min="0" step="0.01" required className={inputCls}
+              value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
+          </div>
+        </div>
+        {total > 0 && (
+          <div className="rounded-md bg-surface border border-border px-3 py-2 flex items-center justify-between text-[12.5px]">
+            <span className="text-muted-foreground">Quote Total</span>
+            <span className="font-mono font-semibold">{currency(total)}</span>
+          </div>
+        )}
+        <div>
+          <label className={labelCls}>Notes</label>
+          <textarea name="notes" rows={2} placeholder="Optional notes…"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" />
+        </div>
+        <div className="flex gap-2 pt-1">
+          <button type="submit" disabled={saving || !selectedItem}
+            className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+            {saving ? "Creating…" : "Create Quote"}
+          </button>
+          <button type="button" onClick={onClose}
+            className="flex-1 h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </DialogContent>
+  );
+}
+
 function OpportunityDrawer({
   opp,
   onNotesChange,
   onSave,
+  onCreateQuote,
   onConvert,
   canWrite,
   team,
@@ -620,6 +760,7 @@ function OpportunityDrawer({
   opp: Opportunity;
   onNotesChange: (notes: string) => void;
   onSave: (values: Parameters<typeof updateOpportunity>[1]) => Promise<void>;
+  onCreateQuote: (item: CatalogItemOption, qty: number, unitPrice: number, notes: string) => Promise<void>;
   onConvert: (type: "project" | "work-order") => Promise<void>;
   canWrite: boolean;
   team: TeamMember[];
@@ -628,6 +769,7 @@ function OpportunityDrawer({
   const [converting, setConverting] = useState(false);
   const [convertPicking, setConvertPicking] = useState(false);
   const [mode, setMode] = useState<"view" | "edit">("view");
+  const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
@@ -789,7 +931,7 @@ function OpportunityDrawer({
           ) : (
             <div className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2.5 text-[12px]">
               <span className="text-muted-foreground">No quote linked yet</span>
-              <button className="text-primary text-[11.5px] font-medium hover:underline">Create Quote</button>
+              {canWrite && <button type="button" onClick={() => setQuoteModalOpen(true)} className="text-primary text-[11.5px] font-medium hover:underline">Create Quote</button>}
             </div>
           )}
         </section>
@@ -878,6 +1020,14 @@ function OpportunityDrawer({
           </button>
         )}
       </div>
+      <Dialog open={quoteModalOpen} onOpenChange={setQuoteModalOpen}>
+        {quoteModalOpen && (
+          <CreateQuoteModal
+            onClose={() => setQuoteModalOpen(false)}
+            onSave={onCreateQuote}
+          />
+        )}
+      </Dialog>
     </SheetContent>
   );
 }

@@ -913,6 +913,112 @@ export type Database = {
           },
         ]
       }
+      quote_line_items: {
+        Row: {
+          catalog_item_id: string | null
+          description: string
+          id: string
+          quantity: number
+          quote_id: string
+          tenant_id: string
+          total: number | null
+          unit_price: number
+        }
+        Insert: {
+          catalog_item_id?: string | null
+          description: string
+          id?: string
+          quantity?: number
+          quote_id: string
+          tenant_id: string
+          total?: number | null
+          unit_price?: number
+        }
+        Update: {
+          catalog_item_id?: string | null
+          description?: string
+          id?: string
+          quantity?: number
+          quote_id?: string
+          tenant_id?: string
+          total?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_line_items_catalog_item_id_fkey"
+            columns: ["catalog_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_line_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_line_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          number: string
+          opportunity_id: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          number: string
+          opportunity_id: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          number?: string
+          opportunity_id?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           can_write: boolean
