@@ -17,8 +17,14 @@
 
 **Start here next session:**
 
-1. **Test the full flow** using the Derek Paulson scenario below — create a lead and follow it all the way through to a paid invoice
-2. **Decide next build priority**: Quote Builder backend, Reports with real data, or Company detail → Projects/Opportunities panels (cross-module navigation)
+1. **Wire Team + Scheduling pages to real DB** — Scheduling calendar needs backend before the Derek Paulson flow test can be completed (work orders need to be dispatchable to dates/crew)
+2. **Planner/Gantt backend** — phases + team assignments; deferred until Scheduling is live
+3. **Resume Derek Paulson flow test** once Scheduling is live — paused at Project created (work orders → dispatch → invoice → payment remaining)
+
+**Specced items queued for build (in progress log):**
+- Project initial status fix (`planning` instead of `scheduled` on convert)
+- Referral partner tracking (lead → contact referral FK trail)
+- Job number / quote number scheme (Q-YYYY-NNN + source_quote_id on project)
 
 ---
 
