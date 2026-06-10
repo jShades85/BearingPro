@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import { createClient } from "@/lib/supabase/client";
 import {
   Check, Copy, Link2, Mail, Plus, Trash2, UserCircle2, Users, X,
@@ -373,6 +374,8 @@ function InvitePanel({
 
 function TeamMembersPage() {
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("settings", "write");
   useEffect(() => {
     setMeta({ title: "Team Members", subtitle: "Settings" });
   }, [setMeta]);
@@ -486,15 +489,17 @@ function TeamMembersPage() {
             <option key={r.id} value={r.id}>{r.name}</option>
           ))}
         </FilterSelect>
-        <div className="ml-auto">
-          <button
-            type="button"
-            onClick={() => { setInviteOpen(true); setEditId(null); }}
-            className="h-8 flex items-center gap-1.5 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            <Plus className="h-3.5 w-3.5" /> Invite Member
-          </button>
-        </div>
+        {canWrite && (
+          <div className="ml-auto">
+            <button
+              type="button"
+              onClick={() => { setInviteOpen(true); setEditId(null); }}
+              className="h-8 flex items-center gap-1.5 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              <Plus className="h-3.5 w-3.5" /> Invite Member
+            </button>
+          </div>
+        )}
       </FilterBar>
 
       {/* Member table */}
@@ -514,10 +519,11 @@ function TeamMembersPage() {
             {filtered.map((member) => (
               <tr
                 key={member.id}
-                onClick={() => { setEditId(member.id); setInviteOpen(false); }}
+                onClick={canWrite ? () => { setEditId(member.id); setInviteOpen(false); } : undefined}
                 className={cn(
-                  "group border-b border-border/60 cursor-pointer transition-colors",
-                  editId === member.id ? "bg-accent/40" : "hover:bg-muted/30",
+                  "group border-b border-border/60 transition-colors",
+                  canWrite && "cursor-pointer",
+                  editId === member.id ? "bg-accent/40" : canWrite ? "hover:bg-muted/30" : undefined,
                 )}
               >
                 <td className="px-4 py-3">
@@ -537,7 +543,7 @@ function TeamMembersPage() {
                     : "—"}
                 </td>
                 <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                  {confirmId === member.id ? (
+                  {canWrite && (confirmId === member.id ? (
                     <div className="flex items-center justify-end gap-2">
                       <span className="text-[11.5px] text-muted-foreground">Remove?</span>
                       <button
@@ -560,7 +566,7 @@ function TeamMembersPage() {
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
-                  )}
+                  ))}
                 </td>
               </tr>
             ))}
@@ -594,13 +600,15 @@ function TeamMembersPage() {
                   <p className="font-medium text-muted-foreground truncate">{m.full_name ?? "—"}</p>
                   <p className="text-[11px] text-muted-foreground/60">{m.email ?? ""}</p>
                 </div>
-                <button
-                  onClick={() => reactivateMutation.mutate(m.id)}
-                  disabled={reactivateMutation.isPending}
-                  className="shrink-0 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
-                >
-                  Reactivate
-                </button>
+                {canWrite && (
+                  <button
+                    onClick={() => reactivateMutation.mutate(m.id)}
+                    disabled={reactivateMutation.isPending}
+                    className="shrink-0 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+                  >
+                    Reactivate
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -608,7 +616,7 @@ function TeamMembersPage() {
       )}
 
       {/* Side panels */}
-      {editMember && (
+      {canWrite && editMember && (
         <>
           <div className="absolute inset-0 z-10" onClick={() => setEditId(null)} />
           <EditPanel
@@ -620,7 +628,7 @@ function TeamMembersPage() {
           />
         </>
       )}
-      {inviteOpen && (
+      {canWrite && inviteOpen && (
         <>
           <div className="absolute inset-0 z-10" onClick={() => setInviteOpen(false)} />
           <InvitePanel

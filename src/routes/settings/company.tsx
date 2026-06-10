@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import { createClient } from "@/lib/supabase/client";
 import { Building2, Clock, Globe, Mail, MapPin, Phone, Percent, FileText } from "lucide-react";
 
@@ -56,6 +57,8 @@ async function updateTenant(values: {
 
 function CompanyProfilePage() {
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("settings", "write");
   useEffect(() => { setMeta({ title: "Company Profile", subtitle: "Settings" }); }, [setMeta]);
 
   const qc = useQueryClient();
@@ -247,21 +250,23 @@ function CompanyProfilePage() {
       </div>
 
       {/* Save bar */}
-      <div className="mt-8 flex items-center justify-end gap-3 border-t border-border pt-5">
-        {mutation.isSuccess && (
-          <span className="text-[12px] text-green-600 dark:text-green-400">Changes saved</span>
-        )}
-        {mutation.isError && (
-          <span className="text-[12px] text-red-500">Failed to save — try again</span>
-        )}
-        <button
-          onClick={handleSave}
-          disabled={mutation.isPending}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-        >
-          {mutation.isPending ? "Saving…" : "Save changes"}
-        </button>
-      </div>
+      {canWrite && (
+        <div className="mt-8 flex items-center justify-end gap-3 border-t border-border pt-5">
+          {mutation.isSuccess && (
+            <span className="text-[12px] text-green-600 dark:text-green-400">Changes saved</span>
+          )}
+          {mutation.isError && (
+            <span className="text-[12px] text-red-500">Failed to save — try again</span>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={mutation.isPending}
+            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {mutation.isPending ? "Saving…" : "Save changes"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

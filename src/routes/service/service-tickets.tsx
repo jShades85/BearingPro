@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { cn } from "@/lib/utils";
@@ -158,6 +159,8 @@ function PriorityBadge({ priority }: { priority: TicketPriority }) {
 
 function ServiceTicketsPage() {
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("service", "write");
   const qc = useQueryClient();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
@@ -334,6 +337,7 @@ function ServiceTicketsPage() {
                 qc.invalidateQueries({ queryKey: ["service-tickets"] })
               );
             }}
+            canWrite={canWrite}
           />
         )}
       </Sheet>
@@ -360,10 +364,12 @@ function TicketDrawer({
   ticket,
   onStatusChange,
   onNotesSave,
+  canWrite,
 }: {
   ticket: DbTicket;
   onStatusChange: (status: TicketStatus) => void;
   onNotesSave: (notes: string) => void;
+  canWrite: boolean;
 }) {
   const [notes, setNotes] = useState(ticket.notes ?? "");
   const initialized = useRef(false);
@@ -455,11 +461,12 @@ function TicketDrawer({
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            onBlur={() => onNotesSave(notes)}
+            readOnly={!canWrite}
+            onChange={canWrite ? (e) => setNotes(e.target.value) : undefined}
+            onBlur={canWrite ? () => onNotesSave(notes) : undefined}
             placeholder="Add notes…"
             rows={3}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
           />
         </div>
 
@@ -474,22 +481,24 @@ function TicketDrawer({
       </div>
 
       {/* Footer actions */}
-      <div className="border-t border-border px-5 py-4 flex flex-col gap-2">
-        <button
-          onClick={() => onStatusChange("resolved")}
-          disabled={ticket.status === "resolved" || ticket.status === "closed"}
-          className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
-        >
-          Mark Resolved
-        </button>
-        <button
-          onClick={() => onStatusChange("closed")}
-          disabled={ticket.status === "closed"}
-          className="w-full h-8 rounded-md border border-border text-muted-foreground text-[12.5px] font-medium hover:text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-default transition-colors"
-        >
-          Close Ticket
-        </button>
-      </div>
+      {canWrite && (
+        <div className="border-t border-border px-5 py-4 flex flex-col gap-2">
+          <button
+            onClick={() => onStatusChange("resolved")}
+            disabled={ticket.status === "resolved" || ticket.status === "closed"}
+            className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
+          >
+            Mark Resolved
+          </button>
+          <button
+            onClick={() => onStatusChange("closed")}
+            disabled={ticket.status === "closed"}
+            className="w-full h-8 rounded-md border border-border text-muted-foreground text-[12.5px] font-medium hover:text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-default transition-colors"
+          >
+            Close Ticket
+          </button>
+        </div>
+      )}
     </SheetContent>
   );
 }

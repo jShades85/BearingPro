@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import { createClient } from "@/lib/supabase/client";
 import {
   BarChart2, ChevronDown, ChevronRight, DollarSign, Eye,
@@ -121,8 +122,16 @@ async function setPermission(roleId: string, module: AppModule, state: PermState
 
 // ─── ColorSwatch ──────────────────────────────────────────────────────────────
 
-function ColorSwatch({ color, onChange }: { color: string; onChange: (c: string) => void }) {
+function ColorSwatch({ color, onChange, disabled }: { color: string; onChange: (c: string) => void; disabled?: boolean }) {
   const [open, setOpen] = useState(false);
+  if (disabled) {
+    return (
+      <div
+        className="h-6 w-6 shrink-0 rounded-full border-2 border-white shadow-sm ring-1 ring-border"
+        style={{ backgroundColor: color }}
+      />
+    );
+  }
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -155,11 +164,12 @@ function ColorSwatch({ color, onChange }: { color: string; onChange: (c: string)
 // ─── ModuleButton ─────────────────────────────────────────────────────────────
 
 function ModuleButton({
-  module, state, onChange,
+  module, state, onChange, disabled,
 }: {
   module: AppModule;
   state: PermState;
   onChange: (next: PermState) => void;
+  disabled?: boolean;
 }) {
   const { label, Icon } = MODULE_META[module];
 
@@ -174,12 +184,13 @@ function ModuleButton({
   return (
     <button
       type="button"
-      onClick={() => onChange(nextState(state))}
+      onClick={disabled ? undefined : () => onChange(nextState(state))}
       className={cn(
         "relative flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition-colors",
         styles[state],
+        disabled && "pointer-events-none",
       )}
-      title={state === "none" ? "No access — click to grant Read" : state === "read" ? "Read only — click to grant Read & Write" : "Read & Write — click to remove access"}
+      title={disabled ? undefined : state === "none" ? "No access — click to grant Read" : state === "read" ? "Read only — click to grant Read & Write" : "Read & Write — click to remove access"}
     >
       <Icon className="h-4 w-4" />
       <span className="text-[11px] font-medium leading-tight">{label}</span>
@@ -197,9 +208,11 @@ function ModuleButton({
 function PermissionEditor({
   role,
   onSetPermission,
+  canWrite,
 }: {
   role: RoleWithPermissions;
   onSetPermission: (roleId: string, module: AppModule, state: PermState) => void;
+  canWrite: boolean;
 }) {
   return (
     <div className="mt-3 rounded-lg border border-border/60 bg-muted/20 p-4">
@@ -213,6 +226,7 @@ function PermissionEditor({
             module={mod}
             state={permState(role.role_permissions, mod)}
             onChange={(next) => onSetPermission(role.id, mod, next)}
+            disabled={!canWrite}
           />
         ))}
       </div>
@@ -239,12 +253,14 @@ function RoleRow({
   onUpdate,
   onDelete,
   onSetPermission,
+  canWrite,
 }: {
   role: RoleWithPermissions;
   isLastRole: boolean;
   onUpdate: (id: string, patch: { name?: string; color?: string }) => void;
   onDelete: (id: string) => void;
   onSetPermission: (roleId: string, module: AppModule, state: PermState) => void;
+  canWrite: boolean;
 }) {
   const [name, setName] = useState(role.name);
   const [expanded, setExpanded] = useState(false);
@@ -279,14 +295,16 @@ function RoleRow({
         <ColorSwatch
           color={role.color}
           onChange={(c) => onUpdate(role.id, { color: c })}
+          disabled={!canWrite}
         />
 
         <input
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={handleNameBlur}
-          onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-          className="w-36 shrink-0 bg-transparent text-[13px] font-medium text-foreground focus:outline-none border-b border-transparent hover:border-border focus:border-primary transition-colors pb-0.5"
+          readOnly={!canWrite}
+          onChange={canWrite ? (e) => setName(e.target.value) : undefined}
+          onBlur={canWrite ? handleNameBlur : undefined}
+          onKeyDown={canWrite ? (e) => { if (e.key === "Enter") e.currentTarget.blur(); } : undefined}
+          className="w-36 shrink-0 bg-transparent text-[13px] font-medium text-foreground focus:outline-none border-b border-transparent hover:border-border focus:border-primary transition-colors pb-0.5 read-only:cursor-default read-only:hover:border-transparent read-only:focus:border-transparent"
         />
 
         {/* Module access summary */}
@@ -330,7 +348,7 @@ function RoleRow({
               : <ChevronRight className="h-3.5 w-3.5" />}
           </button>
 
-          {confirming ? (
+          {canWrite && (confirming ? (
             <div className="flex items-center gap-2 ml-1">
               <span className="text-[11.5px] text-muted-foreground">Delete?</span>
               <button
@@ -361,14 +379,14 @@ function RoleRow({
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
-          )}
+          ))}
         </div>
       </div>
 
       {/* Permission editor */}
       {expanded && (
         <div className="px-4 pb-4">
-          <PermissionEditor role={role} onSetPermission={onSetPermission} />
+          <PermissionEditor role={role} onSetPermission={onSetPermission} canWrite={canWrite} />
         </div>
       )}
     </div>
@@ -469,6 +487,8 @@ function AddRoleRow({
 
 function RolesPage() {
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("settings", "write");
   useEffect(() => { setMeta({ title: "Roles", subtitle: "Settings" }); }, [setMeta]);
 
   const qc = useQueryClient();
@@ -569,12 +589,13 @@ function RolesPage() {
             onSetPermission={(roleId, module, state) =>
               permMutation.mutate({ roleId, module, state })
             }
+            canWrite={canWrite}
           />
         ))}
       </div>
 
       <div className="mt-3">
-        {tenantId && (
+        {canWrite && tenantId && (
           <AddRoleRow
             tenantId={tenantId}
             onAdd={(values) => createMutation.mutate(values)}

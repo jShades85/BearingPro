@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, PriorityDot } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import { currency } from "@/lib/demo-data";
 import type { Priority } from "@/lib/demo-data";
 import {
@@ -255,6 +256,8 @@ function StageBadge({ stage }: { stage: OpportunityStage }) {
 
 function Opportunities() {
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("sales", "write");
   const qc = useQueryClient();
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [search, setSearch] = useState("");
@@ -332,7 +335,7 @@ function Opportunities() {
       </FilterBar>
 
       {view === "kanban"
-        ? <KanbanView opps={filtered} onMove={moveStage} onSelect={setSelected} />
+        ? <KanbanView opps={filtered} onMove={moveStage} onSelect={setSelected} canWrite={canWrite} />
         : <ListView opps={filtered} onSelect={setSelected} />}
 
       <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null); }}>
@@ -340,6 +343,7 @@ function Opportunities() {
           <OpportunityDrawer
             key={selected.id}
             opp={selected}
+            canWrite={canWrite}
             onNotesChange={(notes) => {
               updateNotes(selected.id, notes);
               qc.invalidateQueries({ queryKey: ["opportunities"] });
@@ -373,11 +377,12 @@ function Opportunities() {
 // ─── Kanban view ──────────────────────────────────────────────────────────────
 
 function KanbanView({
-  opps, onMove, onSelect,
+  opps, onMove, onSelect, canWrite,
 }: {
   opps: Opportunity[];
   onMove: (id: string, stage: OpportunityStage) => void;
   onSelect: (opp: Opportunity) => void;
+  canWrite: boolean;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -413,6 +418,7 @@ function KanbanView({
                     onOpenSelector={(e) => { e.stopPropagation(); setOpenId(opp.id); }}
                     onMove={(s) => { onMove(opp.id, s); setOpenId(null); }}
                     onSelect={() => onSelect(opp)}
+                    canWrite={canWrite}
                   />
                 ))}
                 {items.length === 0 && (
@@ -428,13 +434,14 @@ function KanbanView({
 }
 
 function KanbanCard({
-  opp, selectorOpen, onOpenSelector, onMove, onSelect,
+  opp, selectorOpen, onOpenSelector, onMove, onSelect, canWrite,
 }: {
   opp: Opportunity;
   selectorOpen: boolean;
   onOpenSelector: (e: React.MouseEvent) => void;
   onMove: (stage: OpportunityStage) => void;
   onSelect: () => void;
+  canWrite: boolean;
 }) {
   return (
     <div
@@ -442,15 +449,19 @@ function KanbanCard({
       onClick={onSelect}
     >
       <div className="relative inline-block">
-        <button
-          onClick={onOpenSelector}
-          className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium flex items-center gap-1 hover:opacity-80 transition-opacity", stageMeta[opp.stage].badge)}
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-current" />
-          {stageMeta[opp.stage].label}
-          <ChevronsUpDown className="h-2.5 w-2.5 opacity-60" />
-        </button>
-        {selectorOpen && (
+        {canWrite ? (
+          <button
+            onClick={onOpenSelector}
+            className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium flex items-center gap-1 hover:opacity-80 transition-opacity", stageMeta[opp.stage].badge)}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+            {stageMeta[opp.stage].label}
+            <ChevronsUpDown className="h-2.5 w-2.5 opacity-60" />
+          </button>
+        ) : (
+          <StageBadge stage={opp.stage} />
+        )}
+        {canWrite && selectorOpen && (
           <div className="absolute left-0 top-full z-20 mt-1 w-44 rounded-md border border-border bg-popover py-1 shadow-lg">
             {stageOrder.map((s) => (
               <button
@@ -581,10 +592,12 @@ function OpportunityDrawer({
   opp,
   onNotesChange,
   onConvert,
+  canWrite,
 }: {
   opp: Opportunity;
   onNotesChange: (notes: string) => void;
   onConvert: (type: "project" | "work-order") => Promise<void>;
+  canWrite: boolean;
 }) {
   const [notes, setNotes] = useState(opp.notes);
   const [converting, setConverting] = useState(false);
@@ -654,9 +667,10 @@ function OpportunityDrawer({
           <textarea
             rows={3}
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            onBlur={() => onNotesChange(notes)}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            readOnly={!canWrite}
+            onChange={canWrite ? (e) => setNotes(e.target.value) : undefined}
+            onBlur={canWrite ? () => onNotesChange(notes) : undefined}
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
             placeholder="Add notes…"
           />
         </section>
@@ -685,7 +699,7 @@ function OpportunityDrawer({
       </div>
 
       <div className="border-t border-border px-5 py-4 space-y-2">
-        {opp.stage === "closed-won" && !convertPicking && (
+        {canWrite && opp.stage === "closed-won" && !convertPicking && (
           <button
             onClick={() => setConvertPicking(true)}
             className="w-full h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
@@ -693,7 +707,7 @@ function OpportunityDrawer({
             Convert to Project / Work Order
           </button>
         )}
-        {opp.stage === "closed-won" && convertPicking && (
+        {canWrite && opp.stage === "closed-won" && convertPicking && (
           <div className="rounded-md border border-border bg-surface/50 p-3 space-y-2">
             <p className="text-[11px] text-muted-foreground text-center">What type of record is this?</p>
             <div className="flex gap-2">
@@ -726,9 +740,11 @@ function OpportunityDrawer({
             </button>
           </div>
         )}
-        <button className="w-full h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-          Edit Opportunity
-        </button>
+        {canWrite && (
+          <button className="w-full h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            Edit Opportunity
+          </button>
+        )}
       </div>
     </SheetContent>
   );
