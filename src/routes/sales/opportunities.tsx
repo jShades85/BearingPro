@@ -229,6 +229,16 @@ async function updateNotes(id: string, notes: string) {
   if (error) throw error;
 }
 
+async function updateOpportunity(id: string, values: {
+  title: string; company_id: string | null; contact_id: string | null;
+  assigned_to: string | null; stage: OpportunityStage; close_date: string | null;
+  source: OppSource | null; priority: Priority;
+}) {
+  const supabase = createClient();
+  const { error } = await supabase.from("opportunities").update(values).eq("id", id);
+  if (error) throw error;
+}
+
 async function insertOpportunity(values: {
   title: string; company_id: string | null; contact_id: string | null;
   assigned_to: string | null; value: number | null; stage: OpportunityStage;
@@ -274,6 +284,12 @@ function Opportunities() {
 
   const stageMutation = useMutation({
     mutationFn: ({ id, stage }: { id: string; stage: OpportunityStage }) => updateStage(id, stage),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: Parameters<typeof updateOpportunity>[1] }) =>
+      updateOpportunity(id, values),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
   });
 
@@ -345,9 +361,13 @@ function Opportunities() {
             key={selected.id}
             opp={selected}
             canWrite={canWrite}
+            team={team}
             onNotesChange={(notes) => {
               updateNotes(selected.id, notes);
               qc.invalidateQueries({ queryKey: ["opportunities"] });
+            }}
+            onSave={async (values) => {
+              await saveMutation.mutateAsync({ id: selected.id, values });
             }}
             onConvert={async (type) => {
               if (type === "project") await convertToProject(selected);
@@ -592,20 +612,131 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
 function OpportunityDrawer({
   opp,
   onNotesChange,
+  onSave,
   onConvert,
   canWrite,
+  team,
 }: {
   opp: Opportunity;
   onNotesChange: (notes: string) => void;
+  onSave: (values: Parameters<typeof updateOpportunity>[1]) => Promise<void>;
   onConvert: (type: "project" | "work-order") => Promise<void>;
   canWrite: boolean;
+  team: TeamMember[];
 }) {
   const [notes, setNotes] = useState(opp.notes);
   const [converting, setConverting] = useState(false);
   const [convertPicking, setConvertPicking] = useState(false);
+  const [mode, setMode] = useState<"view" | "edit">("view");
+  const [saving, setSaving] = useState(false);
+  const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
+  const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
+
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
+  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
+  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    try {
+      await onSave({
+        title:       fd.get("title") as string,
+        company_id:  (fd.get("company_id") as string) || null,
+        contact_id:  (fd.get("contact_id") as string) || null,
+        assigned_to: (fd.get("assigned_to") as string) || null,
+        stage:       fd.get("stage") as OpportunityStage,
+        close_date:  (fd.get("close_date") as string) || null,
+        source:      (fd.get("source") as OppSource) || null,
+        priority:    fd.get("priority") as Priority,
+      });
+      setMode("view");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (mode === "edit") {
+    return (
+      <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
+        <SheetHeader className="border-b border-border px-5 py-4">
+          <SheetTitle className="text-[15px] font-semibold">Edit Opportunity</SheetTitle>
+        </SheetHeader>
+        <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
+            <div>
+              <label className={labelCls}>Title *</label>
+              <input name="title" required defaultValue={opp.title} className={inputCls} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Company</label>
+                <select name="company_id" className={selectCls} defaultValue={opp.companyId ?? ""}>
+                  <option value="">— None —</option>
+                  {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Contact</label>
+                <select name="contact_id" className={selectCls} defaultValue={opp.contactId ?? ""}>
+                  <option value="">— None —</option>
+                  {contacts.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Stage</label>
+                <select name="stage" className={selectCls} defaultValue={opp.stage}>
+                  {stageOrder.map((s) => <option key={s} value={s}>{stageMeta[s].label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Priority</label>
+                <select name="priority" className={selectCls} defaultValue={opp.priority}>
+                  <option value="urgent">Urgent</option>
+                  <option value="high">High</option>
+                  <option value="med">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Close Date</label>
+                <input name="close_date" type="date" className={inputCls}
+                  defaultValue={opp.closeDate !== "—" ? opp.closeDate : ""} />
+              </div>
+              <div>
+                <label className={labelCls}>Source</label>
+                <select name="source" className={selectCls} defaultValue={opp.source ?? ""}>
+                  <option value="">— None —</option>
+                  {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Assigned To</label>
+                <select name="assigned_to" className={selectCls} defaultValue={opp.repId ?? ""}>
+                  <option value="">— Unassigned —</option>
+                  {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-border px-5 py-4 flex gap-2">
+            <button type="submit" disabled={saving}
+              className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              {saving ? "Saving…" : "Save Changes"}
+            </button>
+            <button type="button" onClick={() => setMode("view")}
+              className="flex-1 h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </SheetContent>
+    );
+  }
 
   return (
-    <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
+    <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4">
         <SheetTitle className="text-[15px] font-semibold leading-tight">{opp.title}</SheetTitle>
         <p className="text-[12px] text-muted-foreground">{opp.company} · {opp.contact}</p>
@@ -742,7 +873,7 @@ function OpportunityDrawer({
           </div>
         )}
         {canWrite && (
-          <button className="w-full h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <button onClick={() => setMode("edit")} className="w-full h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             Edit Opportunity
           </button>
         )}

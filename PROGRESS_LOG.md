@@ -30,6 +30,118 @@
 
 ---
 
+## Planned Feature — Job Number / Quote Number Assignment
+
+**Problem:** Job numbers (project codes like `AV-2026-001`) are assigned at project creation (Closed Won → Convert to Project). Quote Builder is deferred, so there's no quote number yet. Once Quote Builder is built, the numbering scheme needs to be deliberate and consistent across the full pipeline.
+
+**Decision: Two separate number series**
+
+| Record | Number format | Assigned when |
+|---|---|---|
+| Quote | `Q-YYYY-NNN` | Quote created from Estimating stage |
+| Project | `AV-YYYY-NNN` (or trade prefix) | Converted from accepted quote → Closed Won |
+
+Quote number and project code are separate — a client references the quote number during negotiation; the project code is the internal job number used on work orders, POs, and invoices.
+
+### Current behavior (no Quote Builder)
+- Project code assigned at "Convert to Project" on Closed Won → correct, no change needed
+- No quote number exists yet — `—` shown in opportunity drawer's Linked Quote section
+
+### When Quote Builder is built
+- **Estimating stage**: "Create Quote" button → generates `Q-YYYY-NNN`, links to opportunity via `quote_id` FK
+- **Opportunity value**: syncs automatically from latest quote revision (no manual entry)
+- **Negotiation stage**: quote is versioned (`v1 → v2 → v3`); each revision keeps the same `Q-YYYY-NNN` base number
+- **Closed Won**: "Accept Quote" → triggers project conversion → project gets `AV-YYYY-NNN`; quote number is stored on the project as `source_quote_id` for the full audit trail
+
+### Schema additions (when Quote Builder is built)
+```sql
+-- quotes table (future)
+CREATE TABLE quotes (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references tenants(id),
+  opportunity_id uuid not null references opportunities(id),
+  number text not null,          -- Q-2026-001
+  revision int not null default 1,
+  status text not null,          -- draft / sent / viewed / accepted / expired
+  value numeric(12,2),
+  ...
+);
+
+-- projects: add source_quote_id
+ALTER TABLE projects ADD COLUMN source_quote_id uuid references quotes(id);
+```
+
+### What NOT to do
+- Do not assign a job number at lead or opportunity creation — numbers should only exist for things that are real (quoted or sold)
+- Do not reuse quote numbers as project codes — they serve different audiences (client-facing vs. internal)
+
+**Build order:** Quote table → quote CRUD UI → number generation → opportunity value sync → project conversion carries `source_quote_id`
+
+---
+
+## Planned Feature — Referral Partner Tracking
+
+**Problem:** Leads that come via referral have no FK link to the referring company. Source is just a string ("Referral"). You can't see which contractors/architects are driving business, and the referral context is lost after conversion.
+
+**Goal:** Track which company (and optionally which contact) referred a lead. Carry that relationship forward through conversion into the opportunity so the full trail is preserved.
+
+### Schema — Migration `20260610000025_referral_partner`
+
+```sql
+-- leads
+ALTER TABLE leads
+  ADD COLUMN referred_by_company_id uuid references companies(id),
+  ADD COLUMN referred_by_contact_id uuid references contacts(id);
+
+-- opportunities
+ALTER TABLE opportunities
+  ADD COLUMN referred_by_company_id uuid references companies(id);
+```
+
+No RLS changes needed — both FKs reference tenant-scoped tables and existing policies cover the new columns.
+
+### Lead Form Changes
+
+- Source dropdown stays as-is (enum values unchanged)
+- When `source = "Referral"`: reveal a **searchable company combobox** — ilike against `companies` table, same pattern as JobCombobox in invoices
+- When a company is selected: optionally reveal a **contact combobox** filtered to that company's contacts — lets rep record "Audrey Chen at Northbeam" not just "Northbeam"
+- When `source != "Referral"`: both fields hidden (no clutter for web/walk-in leads)
+
+### Convert Modal Changes
+
+- Carry `referred_by_company_id` from lead → opportunity insert (1 line addition to `convertLead`)
+- No UI change needed in modal — referral is set at lead creation, not conversion
+
+### Opportunity Drawer Changes
+
+- Add read-only "Referred by" field showing company name (linked chip, like assigned rep)
+- Not editable — referral source is established at lead time; changing it mid-pipeline would corrupt reporting
+
+### Company Detail Page Changes
+
+- Add **Referrals panel** to company detail sidebar (below contacts)
+- Query: `leads` + `opportunities` where `referred_by_company_id = companyId`
+- Show: count of leads referred, count converted, total pipeline value from those opps
+- Example: "Northbeam Architects — 3 leads referred · 2 converted · $68K pipeline"
+
+### What This Does NOT Include (Deferred)
+
+- Referral commission tracking or payouts
+- Partner portal / external login
+- Reports → Partner Performance report (placeholder slot already exists in the 27-report catalog)
+
+### Build Order
+
+1. Migration (`20260610000025_referral_partner`)
+2. Lead form — conditional referral fields
+3. `convertLead` — pass `referred_by_company_id` to opp insert
+4. Opportunity drawer — read-only "Referred by" chip
+5. Company detail — Referrals panel
+
+**Estimated scope:** Medium. All pieces follow existing patterns (combobox, FK join, read-only field). No new tables.
+
+---
+
 ## Module Status
 
 | Module | Status | Notes |
