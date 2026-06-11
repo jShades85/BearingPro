@@ -17,8 +17,8 @@
 
 **Start here next session:**
 
-1. **Projects page: add `'planning'` to status filter + badge config** — migration is live and `convertToProject` now defaults to `planning`, but the Projects list page badge/filter still doesn't have a `planning` entry. Small fix.
-2. **Resume Derek Paulson flow test** — all blockers cleared. Paused at: work orders created → need to dispatch to Scheduling calendar → then invoice → payment.
+1. **Resume Derek Paulson flow test** — all blockers cleared. Paused at: work orders created → need to dispatch to Scheduling calendar → then invoice → payment.
+2. **Test Add Phase modal** — error handling is now live; verify the `insertProjectPhase` insert succeeds on the deployed Vercel site (open a project → Phases & Tasks → Add Phase → check for error banner or confirm WO appears).
 3. **Planner/Gantt backend** — phases + team assignments; deferred until Scheduling is confirmed stable
 
 **Specced items queued for build (in progress log):**
@@ -84,13 +84,12 @@ ALTER TABLE projects ADD COLUMN source_quote_id uuid references quotes(id);
 
 ---
 
-## Planned Fix — Projects Page `planning` Status Badge
+## Status Progression — Projects
 
-**Status:** Partially done. Migration (`20260611000001`) and `convertToProject` default are fixed. Step 3 still pending.
+`planning` → `scheduled` → `in-progress` → `on-hold` → `completed` / `cancelled`
 
-**Remaining:** Update `src/routes/operations/projects/index.tsx` — add `'planning'` to the status filter tabs and badge color config. Small change, no migration needed.
-
-**Correct status progression:** `planning` → `scheduled` → `in-progress` → `on-hold` → `completed` / `cancelled`
+`planning` (sky-blue): default status for freshly-converted projects — no schedule/crew assigned yet.
+`quoted`: legacy status; still in DB check constraint and UI for backward compat; may be retired when Quote Builder ships.
 
 ---
 
@@ -345,6 +344,28 @@ Use this to manually walk the full app flow end-to-end. Every step is wired to t
 - `labor_hours` is denormalized at add-time — catalog edits don't retroactively change project estimates
 - `project_line_items` has full UPDATE/DELETE (unlike `stock_movements` and `invoice_payments` which are immutable audit trails) — PM can correct scope errors
 - `budgeted_hours` on the project row is not yet auto-summed from line items — stored field, manual for now; auto-calc deferred
+
+- **Write permissions enforced across CRM + Operations detail pages:**
+  - `crm/companies/$companyId.tsx`: Edit button + notes pencil gated behind `can("crm","write")`
+  - `crm/contacts.tsx`: row Edit pencil + drawer Edit button gated; `canWrite` prop on `ContactDrawer`
+  - `crm/lead-inbox.tsx`: Convert/Dismiss buttons + full action footer hidden; notes `readOnly` when `!canWrite`
+  - `operations/projects/$projectId.tsx`: StatusDropdown `disabled`; Edit button gated
+  - `operations/work-orders/$workOrderId.tsx`: StatusDropdown `disabled`; Edit button gated
+
+- **Project Phases tab wired to live work orders** (`/operations/projects/$projectId`):
+  - `ProjectPhasesTab` replaces demo `PhasesPanel`; `useQuery(["project-work-orders", projectId])` fetches WOs where `project_id = projectId`
+  - Phase table shows status badge, assigned tech avatar, scheduled date, budgeted hours; row click navigates to WO detail
+  - `AddPhaseModal`: Dialog inherits project's company/contact/site address; inserts to `work_orders` with `project_id` FK; inline error display if Supabase insert fails; `onInteractOutside` blocked while saving
+  - `insertProjectPhase` invalidates both `["project-work-orders", projectId]` and `["work-orders"]` on success
+
+- **Work Order detail: project back-nav** — back link shows parent project code + name (links to `/operations/projects/$projectId`) if WO has `project_id`; falls back to "All Work Orders" for standalone WOs
+
+- **New Work Order modal: project picker** (from user's session 035 commit):
+  - Project combobox auto-fills company, contact, site address when a project is selected
+  - "— Standalone (no project) —" option preserved
+  - Query key `["projects-wo-options"]` (avoids collision with `["projects"]`)
+
+- **`src/data/projects.ts`: `"planning"` status added** — `ProjectStatus` type, `statusMeta` (sky-blue badge), `STATUS_OPTIONS` filter; resolves the pending "step 3" from the planning status migration
 
 ---
 

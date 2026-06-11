@@ -1,4 +1,4 @@
-export type ProjectStatus = "quoted" | "scheduled" | "in-progress" | "on-hold" | "completed" | "cancelled";
+export type ProjectStatus = "planning" | "quoted" | "scheduled" | "in-progress" | "on-hold" | "completed" | "cancelled";
 export type ProjectType = "project" | "work-order";
 
 export interface ProjectRecord {
@@ -24,6 +24,7 @@ export interface ProjectRecord {
 }
 
 export const statusMeta: Record<ProjectStatus, { label: string; cls: string }> = {
+  "planning":    { label: "Planning",    cls: "bg-sky-500/15 text-sky-600 dark:text-sky-400" },
   "quoted":      { label: "Quoted",      cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
   "scheduled":   { label: "Scheduled",   cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
   "in-progress": { label: "In Progress", cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
@@ -34,6 +35,7 @@ export const statusMeta: Record<ProjectStatus, { label: string; cls: string }> =
 
 export const STATUS_OPTIONS: Array<{ value: ProjectStatus | "all"; label: string }> = [
   { value: "all",         label: "All" },
+  { value: "planning",    label: "Planning" },
   { value: "quoted",      label: "Quoted" },
   { value: "scheduled",   label: "Scheduled" },
   { value: "in-progress", label: "In Progress" },
