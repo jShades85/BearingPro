@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
-import { quotes, currency } from "@/lib/demo-data";
-import type { Quote } from "@/lib/demo-data";
+import { currency } from "@/lib/demo-data";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle2, Clock, Eye, FileText, XCircle,
@@ -14,9 +15,45 @@ export const Route = createFileRoute("/sales/quotes/")({
   component: QuotesPage,
 });
 
-// ─── Config ──────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-type QuoteStatus = Quote["status"];
+type QuoteStatus = "draft" | "sent" | "viewed" | "accepted" | "expired";
+
+interface DbQuote {
+  id: string;
+  number: string;
+  status: QuoteStatus;
+  value: number | null;
+  expiry_date: string | null;
+  revision: number;
+  created_at: string;
+  opportunity: {
+    id: string;
+    title: string;
+    company: { id: string; name: string } | null;
+    contact: { id: string; full_name: string } | null;
+  } | null;
+}
+
+const supabase = createClient();
+
+async function fetchQuotesList(): Promise<DbQuote[]> {
+  const { data, error } = await supabase
+    .from("quotes")
+    .select(`
+      id, number, status, value, expiry_date, revision, created_at,
+      opportunity:opportunities(
+        id, title,
+        company:companies(id, name),
+        contact:contacts(id, full_name)
+      )
+    `)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as DbQuote[];
+}
+
+// ─── Config ──────────────────────────────────────────────────────────────────
 
 const statusStyle: Record<QuoteStatus, { icon: React.ComponentType<{ className?: string }>; cls: string; label: string }> = {
   draft:    { icon: FileText,     cls: "text-muted-foreground",      label: "Draft" },
@@ -31,38 +68,25 @@ type DateRange = typeof DATE_RANGES[number];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function parseMonth(dateStr: string): { month: number; year: number } | null {
-  if (!dateStr || dateStr === "—") return null;
-  const months: Record<string, number> = {
-    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
-  };
-  const parts = dateStr.split(" ");
-  if (parts.length < 3) return null;
-  const m = months[parts[0]];
-  const y = parseInt(parts[2], 10);
-  if (m === undefined || isNaN(y)) return null;
-  return { month: m, year: y };
+function fmtDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function matchesDateRange(q: Quote, range: DateRange): boolean {
+function matchesDateRange(createdAt: string, range: DateRange): boolean {
   if (range === "All Time") return true;
-  const parsed = parseMonth(q.createdDate);
-  if (!parsed) return false;
-  const { month, year } = parsed;
-  // Using June 2026 as "current" to match demo data
-  const currentMonth = 5; // June
-  const currentYear = 2026;
-  if (range === "This Month") return month === currentMonth && year === currentYear;
-  if (range === "Last Month") return month === 4 && year === currentYear; // May 2026
-  if (range === "This Quarter") return year === currentYear && month >= 3 && month <= 5; // Q2
+  const d = new Date(createdAt);
+  const now = new Date();
+  if (range === "This Month") return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  if (range === "Last Month") {
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return d.getMonth() === prev.getMonth() && d.getFullYear() === prev.getFullYear();
+  }
+  if (range === "This Quarter") {
+    const q = Math.floor(now.getMonth() / 3);
+    return d.getFullYear() === now.getFullYear() && Math.floor(d.getMonth() / 3) === q;
+  }
   return true;
-}
-
-function marginColor(m: number): string {
-  if (m >= 30) return "text-status-won";
-  if (m >= 20) return "text-amber-500";
-  return "text-status-lost";
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -74,6 +98,11 @@ function QuotesPage() {
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | "all">("all");
   const [dateRange, setDateRange] = useState<DateRange>("All Time");
 
+  const { data: quotes = [], isLoading } = useQuery({
+    queryKey: ["quotes-list"],
+    queryFn: fetchQuotesList,
+  });
+
   useEffect(() => {
     setMeta({
       title: "Quotes & Estimates",
@@ -81,20 +110,26 @@ function QuotesPage() {
       onNew: () => navigate({ to: "/sales/quotes/new", search: { opportunityId: undefined } }),
       newLabel: "+ New Quote",
     });
-  }, [setMeta, navigate]);
+  }, [setMeta, navigate, quotes.length]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return quotes.filter((qt) => {
-      if (q && !qt.project.toLowerCase().includes(q) &&
-          !qt.company.toLowerCase().includes(q) &&
-          !qt.number.toLowerCase().includes(q) &&
-          !qt.contactName.toLowerCase().includes(q)) return false;
+      if (q) {
+        const opp = qt.opportunity;
+        const haystack = [
+          qt.number,
+          opp?.title ?? "",
+          opp?.company?.name ?? "",
+          opp?.contact?.full_name ?? "",
+        ].join(" ").toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
       if (statusFilter !== "all" && qt.status !== statusFilter) return false;
-      if (!matchesDateRange(qt, dateRange)) return false;
+      if (!matchesDateRange(qt.created_at, dateRange)) return false;
       return true;
     });
-  }, [search, statusFilter, dateRange]);
+  }, [quotes, search, statusFilter, dateRange]);
 
   const openDetail = useCallback(
     (id: string) => navigate({ to: "/sales/quotes/$quoteId", params: { quoteId: id } }),
@@ -103,7 +138,6 @@ function QuotesPage() {
 
   return (
     <div className="flex flex-col">
-      {/* Filter bar */}
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search quotes…" />
         <FilterSelect value={statusFilter} onChange={(v) => setStatusFilter(v as QuoteStatus | "all")}>
@@ -120,24 +154,31 @@ function QuotesPage() {
         </span>
       </FilterBar>
 
-      {/* Table */}
       <div className="p-4 overflow-x-auto">
         <div className="rounded-lg border border-border bg-card overflow-hidden min-w-[820px]">
           <table className="w-full text-[12.5px]">
             <thead className="bg-surface/50">
               <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 px-3 text-left font-medium">Number</th>
-                <th className="py-2 px-3 text-left font-medium">Project</th>
+                <th className="py-2 px-3 text-left font-medium">Opportunity</th>
                 <th className="py-2 px-3 text-left font-medium">Company / Contact</th>
                 <th className="py-2 px-3 text-left font-medium">Status</th>
-                <th className="py-2 px-3 text-right font-medium">Margin</th>
+                <th className="py-2 px-3 text-right font-medium">Rev</th>
                 <th className="py-2 px-3 text-right font-medium">Total</th>
                 <th className="py-2 px-3 pr-3 text-right font-medium">Expiry</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((q) => {
-                const s = statusStyle[q.status];
+              {isLoading && (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-[12.5px] text-muted-foreground">
+                    Loading quotes…
+                  </td>
+                </tr>
+              )}
+              {!isLoading && filtered.map((q) => {
+                const s = statusStyle[q.status] ?? statusStyle.draft;
+                const opp = q.opportunity;
                 return (
                   <tr
                     key={q.id}
@@ -145,34 +186,34 @@ function QuotesPage() {
                     className="row-hover border-b border-border/60 cursor-pointer"
                   >
                     <td className="py-2.5 px-3 font-mono text-[11px] text-muted-foreground">{q.number}</td>
-                    <td className="py-2.5 px-3 font-medium">{q.project}</td>
+                    <td className="py-2.5 px-3 font-medium">{opp?.title ?? "—"}</td>
                     <td className="py-2.5 px-3">
-                      <div className="text-[12.5px]">{q.company}</div>
-                      <div className="text-[11px] text-muted-foreground">{q.contactName}</div>
+                      <div className="text-[12.5px]">{opp?.company?.name ?? "—"}</div>
+                      <div className="text-[11px] text-muted-foreground">{opp?.contact?.full_name ?? ""}</div>
                     </td>
                     <td className="py-2.5 px-3">
                       <span className={cn("inline-flex items-center gap-1.5 text-[11.5px] capitalize", s.cls)}>
                         <s.icon className="h-3 w-3" /> {s.label}
                       </span>
                     </td>
-                    <td className={cn("py-2.5 px-3 text-right font-mono tabular-nums text-[12px]", marginColor(q.margin))}>
-                      {q.margin}%
+                    <td className="py-2.5 px-3 text-right font-mono text-[11px] text-muted-foreground">
+                      v{q.revision}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold">{currency(q.total)}</td>
+                    <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold">
+                      {q.value != null ? currency(q.value) : "—"}
+                    </td>
                     <td className="py-2.5 px-3 pr-3 text-right text-muted-foreground text-[11.5px]">
-                      {q.expiryDate === "—" ? (
-                        <span className="text-muted-foreground/40">—</span>
-                      ) : (
-                        q.expiryDate
-                      )}
+                      {q.expiry_date ? fmtDate(q.expiry_date) : <span className="text-muted-foreground/40">—</span>}
                     </td>
                   </tr>
                 );
               })}
-              {filtered.length === 0 && (
+              {!isLoading && filtered.length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-[12.5px] text-muted-foreground">
-                    No quotes match the current filters.
+                    {quotes.length === 0
+                      ? "No quotes yet. Create one from an opportunity in Estimating or Negotiation."
+                      : "No quotes match the current filters."}
                   </td>
                 </tr>
               )}
@@ -180,7 +221,6 @@ function QuotesPage() {
           </table>
         </div>
       </div>
-
     </div>
   );
 }
