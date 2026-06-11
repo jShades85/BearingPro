@@ -734,6 +734,76 @@ export type Database = {
           },
         ]
       }
+      project_line_items: {
+        Row: {
+          catalog_item_id: string | null
+          created_at: string
+          id: string
+          labor_hours: number | null
+          name: string
+          notes: string | null
+          phase: string | null
+          project_id: string
+          qty: number
+          source: string
+          status: string
+          tenant_id: string
+          unit_cost: number
+        }
+        Insert: {
+          catalog_item_id?: string | null
+          created_at?: string
+          id?: string
+          labor_hours?: number | null
+          name: string
+          notes?: string | null
+          phase?: string | null
+          project_id: string
+          qty?: number
+          source?: string
+          status?: string
+          tenant_id: string
+          unit_cost?: number
+        }
+        Update: {
+          catalog_item_id?: string | null
+          created_at?: string
+          id?: string
+          labor_hours?: number | null
+          name?: string
+          notes?: string | null
+          phase?: string | null
+          project_id?: string
+          qty?: number
+          source?: string
+          status?: string
+          tenant_id?: string
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_line_items_catalog_item_id_fkey"
+            columns: ["catalog_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_line_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_line_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           budgeted_cost: number | null

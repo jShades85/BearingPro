@@ -155,10 +155,13 @@ async function convertToProject(opp: Opportunity, siteAddress?: string): Promise
   const supabase = createClient();
   const { data: tenantRow } = await supabase.from("tenants").select("id").single();
   if (!tenantRow) throw new Error("No tenant");
+  const tid = tenantRow.id;
+
   const { count } = await supabase.from("projects").select("*", { count: "exact", head: true });
   const code = `AV-${new Date().getFullYear()}-${String((count ?? 0) + 1).padStart(3, "0")}`;
-  const { error } = await supabase.from("projects").insert({
-    tenant_id:      tenantRow.id,
+
+  const { data: project, error } = await supabase.from("projects").insert({
+    tenant_id:      tid,
     code,
     name:           opp.title,
     company_id:     opp.companyId,
@@ -168,8 +171,33 @@ async function convertToProject(opp: Opportunity, siteAddress?: string): Promise
     pm_id:          opp.repId || null,
     status:         "planning",
     site_address:   siteAddress || null,
-  });
-  if (error) throw error;
+  }).select("id").single();
+  if (error || !project) throw error ?? new Error("Project insert failed");
+
+  // Copy quote line items → project parts list
+  const { data: lineItems } = await supabase
+    .from("quote_line_items")
+    .select("catalog_item_id, description, quantity, unit_price, catalog_items(labor_hours)")
+    .eq("tenant_id", tid)
+    .in("quote_id",
+      (await supabase.from("quotes").select("id").eq("opportunity_id", opp.id)).data?.map((q) => q.id) ?? []
+    );
+
+  if (lineItems && lineItems.length > 0) {
+    const parts = lineItems.map((li) => {
+      const cat = li.catalog_items as { labor_hours: number | null } | null;
+      return {
+        tenant_id:       tid,
+        project_id:      project.id,
+        catalog_item_id: li.catalog_item_id,
+        name:            li.description,
+        qty:             li.quantity,
+        unit_cost:       li.unit_price,
+        labor_hours:     cat?.labor_hours ?? null,
+      };
+    });
+    await supabase.from("project_line_items").insert(parts);
+  }
 }
 
 async function convertToWorkOrder(opp: Opportunity): Promise<void> {

@@ -1,4 +1,7 @@
 import { useCallback, useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
+import type { TablesUpdate } from "@/lib/supabase/types";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import { Check, Plus, X } from "lucide-react";
@@ -11,10 +14,12 @@ type EditableCol = "name" | "phase" | "qty" | "unitCost" | "source" | "status" |
 
 interface Part {
   id: string;
+  catalogItemId: string | null;
   name: string;
   phase: string;
   qty: number;
   unitCost: number;
+  laborHours: number | null;
   source: PartSource;
   status: PartStatus;
   notes: string;
@@ -27,13 +32,22 @@ interface EditingCell {
 }
 
 interface DraftPart {
+  catalogItemId: string | null;
   name: string;
   phase: string;
   qty: string;
   unitCost: string;
+  laborHours: string;
   source: PartSource;
   status: PartStatus;
   notes: string;
+}
+
+interface CatalogOption {
+  id: string;
+  name: string;
+  cost: number | null;
+  labor_hours: number | null;
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -56,85 +70,49 @@ const statusMeta: Record<PartStatus, { label: string; cls: string }> = {
   "installed": { label: "Installed", cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
 };
 
-const SOURCE_OPTIONS: PartSource[]  = ["stock", "special-order"];
-const STATUS_OPTIONS: PartStatus[]  = ["needed", "ordered", "received", "installed"];
+const SOURCE_OPTIONS: PartSource[] = ["stock", "special-order"];
+const STATUS_OPTIONS: PartStatus[] = ["needed", "ordered", "received", "installed"];
+const PHASE_OPTIONS = ["Design", "Procurement", "Install", "Commission", "Closeout"];
 
 const DEFAULT_DRAFT: DraftPart = {
-  name: "", phase: "", qty: "1", unitCost: "0",
+  catalogItemId: null,
+  name: "", phase: "Procurement", qty: "1", unitCost: "0", laborHours: "",
   source: "stock", status: "needed", notes: "",
 };
 
-// ─── Seed data ────────────────────────────────────────────────────────────────
+// ─── DB helpers ───────────────────────────────────────────────────────────────
 
-function getInitialParts(projectId: string): Part[] {
-  switch (projectId) {
-    case "pr1":
-      return [
-        { id: "pp1-1", name: "Crestron MX-150 Control Processor", phase: "Procurement", qty: 1,  unitCost: 1820,  source: "stock",         status: "received",  notes: "" },
-        { id: "pp1-2", name: "Poly Studio X70 Video Bar",          phase: "Procurement", qty: 2,  unitCost: 5980,  source: "special-order", status: "received",  notes: "" },
-        { id: "pp1-3", name: "Samsung The Wall 110\" 4K LED",      phase: "Install",     qty: 1,  unitCost: 38400, source: "special-order", status: "ordered",   notes: "Lead time 3 wks" },
-        { id: "pp1-4", name: "Shure MXA920 Ceiling Array Mic",     phase: "Install",     qty: 2,  unitCost: 4520,  source: "stock",         status: "received",  notes: "" },
-        { id: "pp1-5", name: "QSC CX-Q 8K8 Amplifier",            phase: "Commission",  qty: 2,  unitCost: 3120,  source: "stock",         status: "needed",    notes: "" },
-        { id: "pp1-6", name: "Biamp Nexia PL-60 DSP",             phase: "Commission",  qty: 1,  unitCost: 2240,  source: "special-order", status: "ordered",   notes: "Ordered Jun 1" },
-      ];
-    case "pr2":
-      return [
-        { id: "pp2-1", name: "Poly Studio X70 Video Bar",          phase: "Procurement", qty: 8,  unitCost: 5980,  source: "special-order", status: "ordered",   notes: "PO submitted May 10" },
-        { id: "pp2-2", name: "Middle Atlantic 44U AV Rack",        phase: "Install",     qty: 2,  unitCost: 1820,  source: "stock",         status: "needed",    notes: "" },
-        { id: "pp2-3", name: "Crestron MX-150 Control Processor",  phase: "Install",     qty: 1,  unitCost: 1820,  source: "stock",         status: "needed",    notes: "" },
-        { id: "pp2-4", name: "AV Cart Enclosure",                  phase: "Install",     qty: 8,  unitCost: 550,   source: "special-order", status: "needed",    notes: "" },
-        { id: "pp2-5", name: "48-Port Managed Network Switch",     phase: "Install",     qty: 2,  unitCost: 1800,  source: "special-order", status: "needed",    notes: "" },
-        { id: "pp2-6", name: "Labor — AV Tech (per hour)",         phase: "Commission",  qty: 80, unitCost: 65,    source: "stock",         status: "needed",    notes: "" },
-      ];
-    case "pr3":
-      return [
-        { id: "pp3-1", name: "Lutron RA3 Main Repeater",           phase: "Design",      qty: 2,  unitCost: 1180,  source: "special-order", status: "installed", notes: "" },
-        { id: "pp3-2", name: "Sonance Architectural Series IW",    phase: "Install",     qty: 12, unitCost: 380,   source: "stock",         status: "installed", notes: "" },
-        { id: "pp3-3", name: "Atlona OmniStream 2.1 Encoder",      phase: "Install",     qty: 4,  unitCost: 1640,  source: "stock",         status: "installed", notes: "" },
-        { id: "pp3-4", name: "Crestron MX-150 Control Processor",  phase: "Commission",  qty: 1,  unitCost: 1820,  source: "stock",         status: "installed", notes: "" },
-        { id: "pp3-5", name: "Biamp Nexia PL-60 DSP",             phase: "Commission",  qty: 1,  unitCost: 2240,  source: "special-order", status: "installed", notes: "" },
-        { id: "pp3-6", name: "Outdoor Burial Speaker Cable (ft)",  phase: "Install",     qty: 500, unitCost: 1.20, source: "stock",         status: "installed", notes: "Custom Belden" },
-      ];
-    case "wo-0041":
-      return [
-        { id: "ppwo41-1", name: "Hikvision DS-7208HQHI-K2 DVR",      phase: "Install", qty: 1,  unitCost: 420, source: "stock",         status: "installed", notes: "" },
-        { id: "ppwo41-2", name: "CAT6 Patch Cable 3ft (10-pack)",    phase: "Install", qty: 1,  unitCost: 28,  source: "stock",         status: "installed", notes: "" },
-        { id: "ppwo41-3", name: "BNC Female Connector (50-pack)",    phase: "Install", qty: 1,  unitCost: 18,  source: "stock",         status: "installed", notes: "" },
-      ];
-    case "wo-0042":
-      return [
-        { id: "ppwo42-1", name: "HID Access Controller Relay Module", phase: "Install", qty: 1, unitCost: 185, source: "special-order", status: "received",  notes: "Ordered Jun 5" },
-        { id: "ppwo42-2", name: "24 AWG 2-Conductor Wire (50ft)",    phase: "Install", qty: 2, unitCost: 32,  source: "stock",         status: "received",  notes: "" },
-      ];
-    case "wo-0043":
-      return [
-        { id: "ppwo43-1", name: "Cisco SG350-28 28-Port Managed Switch", phase: "Install", qty: 1, unitCost: 680, source: "special-order", status: "received", notes: "" },
-        { id: "ppwo43-2", name: "CAT6 Patch Cable 1ft (25-pack)",       phase: "Install", qty: 1, unitCost: 42,  source: "stock",         status: "received", notes: "" },
-        { id: "ppwo43-3", name: "SFP Fiber Transceiver Module",         phase: "Install", qty: 2, unitCost: 95,  source: "stock",         status: "received", notes: "" },
-      ];
-    default:
-      return [];
-  }
+async function fetchParts(projectId: string): Promise<Part[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("project_line_items")
+    .select("id, catalog_item_id, name, phase, qty, unit_cost, labor_hours, source, status, notes")
+    .eq("project_id", projectId)
+    .order("created_at");
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id:           r.id,
+    catalogItemId: r.catalog_item_id,
+    name:         r.name,
+    phase:        r.phase ?? "",
+    qty:          Number(r.qty),
+    unitCost:     Number(r.unit_cost),
+    laborHours:   r.labor_hours != null ? Number(r.labor_hours) : null,
+    source:       (r.source as PartSource) ?? "stock",
+    status:       (r.status as PartStatus) ?? "needed",
+    notes:        r.notes ?? "",
+  }));
 }
 
-function getPhaseNames(projectId: string): string[] {
-  switch (projectId) {
-    case "pr3":
-      return ["Design", "Install", "Commission", "Closeout"];
-    case "wo-0041":
-    case "wo-0042":
-    case "wo-0043":
-    case "pr8":
-    case "pr9":
-    case "pr11":
-      return ["Install"];
-    case "pr1":
-    case "pr2":
-    case "pr5":
-    case "pr6":
-    default:
-      return ["Design", "Procurement", "Install", "Commission", "Closeout"];
-  }
+async function fetchCatalogOptions(): Promise<CatalogOption[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("catalog_items")
+    .select("id, name, cost, labor_hours")
+    .eq("is_active", true)
+    .order("name");
+  if (error) throw error;
+  return data ?? [];
 }
 
 // ─── Small badge renders ──────────────────────────────────────────────────────
@@ -166,15 +144,65 @@ const cellClickCls = "cursor-text select-none";
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function PartsPanel({ projectId }: PartsPanelProps) {
-  const [parts, setParts] = useState<Part[]>(() => getInitialParts(projectId));
+  const qc = useQueryClient();
+  const { data: parts = [], isLoading } = useQuery({
+    queryKey: ["project-line-items", projectId],
+    queryFn: () => fetchParts(projectId),
+  });
+  const { data: catalogOptions = [] } = useQuery({
+    queryKey: ["catalog-items-parts"],
+    queryFn: fetchCatalogOptions,
+  });
+
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [addingPart, setAddingPart] = useState(false);
   const [draft, setDraft] = useState<DraftPart>({ ...DEFAULT_DRAFT });
+  const [catalogSearch, setCatalogSearch] = useState("");
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const catalogRef = useRef<HTMLDivElement>(null);
 
-  const counterRef = useRef(8000);
-  const nextId = useCallback(() => `pp-gen-${counterRef.current++}`, []);
+  // ── Mutations ──────────────────────────────────────────────────────────────
 
-  const phaseNames = getPhaseNames(projectId);
+  const insertMutation = useMutation({
+    mutationFn: async (d: DraftPart) => {
+      const supabase = createClient();
+      const { data: tenantRow } = await supabase.from("tenants").select("id").single();
+      if (!tenantRow) throw new Error("No tenant");
+      const { error } = await supabase.from("project_line_items").insert({
+        tenant_id:       tenantRow.id,
+        project_id:      projectId,
+        catalog_item_id: d.catalogItemId || null,
+        name:            d.name.trim(),
+        phase:           d.phase || null,
+        qty:             Math.max(1, parseFloat(d.qty) || 1),
+        unit_cost:       Math.max(0, parseFloat(d.unitCost) || 0),
+        labor_hours:     d.laborHours ? parseFloat(d.laborHours) : null,
+        source:          d.source,
+        status:          d.status,
+        notes:           d.notes || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["project-line-items", projectId] }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: TablesUpdate<"project_line_items"> }) => {
+      const supabase = createClient();
+      const { error } = await supabase.from("project_line_items").update(patch).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["project-line-items", projectId] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const supabase = createClient();
+      const { error } = await supabase.from("project_line_items").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["project-line-items", projectId] }),
+  });
 
   // ── Editing helpers ────────────────────────────────────────────────────────
 
@@ -185,87 +213,95 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
   const commitEdit = useCallback(() => {
     if (!editingCell) return;
     const { rowId, col, value } = editingCell;
-    setParts((prev) =>
-      prev.map((p): Part => {
-        if (p.id !== rowId) return p;
-        switch (col) {
-          case "name":      return { ...p, name: value.trim() || p.name };
-          case "phase":     return { ...p, phase: value };
-          case "qty":       return { ...p, qty: Math.max(1, parseInt(value, 10) || 1) };
-          case "unitCost":  return { ...p, unitCost: Math.max(0, parseFloat(value) || 0) };
-          case "source":    return { ...p, source: value as PartSource };
-          case "status":    return { ...p, status: value as PartStatus };
-          case "notes":     return { ...p, notes: value };
-        }
-      }),
-    );
+    let patch: TablesUpdate<"project_line_items">;
+    switch (col) {
+      case "name":     patch = { name: value.trim() || undefined }; break;
+      case "phase":    patch = { phase: value || null }; break;
+      case "qty":      patch = { qty: Math.max(1, parseFloat(value) || 1) }; break;
+      case "unitCost": patch = { unit_cost: Math.max(0, parseFloat(value) || 0) }; break;
+      case "source":   patch = { source: value }; break;
+      case "status":   patch = { status: value }; break;
+      case "notes":    patch = { notes: value || null }; break;
+      default: return;
+    }
+    updateMutation.mutate({ id: rowId, patch });
     setEditingCell(null);
-  }, [editingCell]);
+  }, [editingCell, updateMutation]);
 
   const cancelEdit = useCallback(() => setEditingCell(null), []);
 
-  // For select cells: change + immediate commit in one step
   const commitSelectEdit = useCallback(
     (rowId: string, col: EditableCol, value: string) => {
-      setParts((prev) =>
-        prev.map((p): Part => {
-          if (p.id !== rowId) return p;
-          if (col === "source")  return { ...p, source: value as PartSource };
-          if (col === "status")  return { ...p, status: value as PartStatus };
-          if (col === "phase")   return { ...p, phase: value };
-          return p;
-        }),
-      );
+      let patch: TablesUpdate<"project_line_items">;
+      switch (col) {
+        case "phase":  patch = { phase: value || null }; break;
+        case "source": patch = { source: value }; break;
+        case "status": patch = { status: value }; break;
+        default: return;
+      }
+      updateMutation.mutate({ id: rowId, patch });
       setEditingCell(null);
     },
-    [],
+    [updateMutation],
   );
+
+  // ── Catalog combobox ───────────────────────────────────────────────────────
+
+  const filteredCatalog = catalogSearch.trim()
+    ? catalogOptions.filter((c) => c.name.toLowerCase().includes(catalogSearch.toLowerCase()))
+    : catalogOptions.slice(0, 8);
+
+  const selectCatalogItem = useCallback((item: CatalogOption) => {
+    setDraft((d) => ({
+      ...d,
+      catalogItemId: item.id,
+      name:          item.name,
+      unitCost:      String(item.cost ?? 0),
+      laborHours:    item.labor_hours != null ? String(item.labor_hours) : "",
+    }));
+    setCatalogSearch(item.name);
+    setCatalogOpen(false);
+  }, []);
 
   // ── Add part helpers ───────────────────────────────────────────────────────
 
   const openAddRow = useCallback(() => {
-    setDraft({ ...DEFAULT_DRAFT, phase: phaseNames[0] ?? "" });
+    setDraft({ ...DEFAULT_DRAFT });
+    setCatalogSearch("");
     setAddingPart(true);
     setEditingCell(null);
-  }, [phaseNames]);
+  }, []);
 
-  const commitAdd = useCallback(() => {
+  const commitAdd = useCallback(async () => {
     const name = draft.name.trim();
     if (!name) return;
-    const newPart: Part = {
-      id: nextId(),
-      name,
-      phase: draft.phase || (phaseNames[0] ?? ""),
-      qty: Math.max(1, parseInt(draft.qty, 10) || 1),
-      unitCost: Math.max(0, parseFloat(draft.unitCost) || 0),
-      source: draft.source,
-      status: draft.status,
-      notes: draft.notes,
-    };
-    setParts((prev) => [...prev, newPart]);
-    setDraft({ ...DEFAULT_DRAFT, phase: phaseNames[0] ?? "" });
+    await insertMutation.mutateAsync(draft);
+    setDraft({ ...DEFAULT_DRAFT });
+    setCatalogSearch("");
     setAddingPart(false);
-  }, [draft, nextId, phaseNames]);
+  }, [draft, insertMutation]);
 
   const cancelAdd = useCallback(() => {
     setAddingPart(false);
-    setDraft({ ...DEFAULT_DRAFT, phase: phaseNames[0] ?? "" });
-  }, [phaseNames]);
+    setDraft({ ...DEFAULT_DRAFT });
+    setCatalogSearch("");
+  }, []);
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
   const totalCost = parts.reduce((s, p) => s + p.qty * p.unitCost, 0);
+  const totalLaborHrs = parts.reduce((s, p) => s + p.qty * (p.laborHours ?? 0), 0);
   const statusCounts = STATUS_OPTIONS.map((s) => ({
     status: s,
     count: parts.filter((p) => p.status === s).length,
   })).filter((x) => x.count > 0);
 
-  // ── Shared input classes ───────────────────────────────────────────────────
-
   const selectCls = "bg-transparent text-[11.5px] outline-none cursor-pointer border border-border/60 rounded px-1.5 py-0.5 hover:border-primary/50 focus:border-primary transition-colors";
   const draftInputCls = "h-7 w-full rounded border border-border bg-surface px-2 text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/40";
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-16 text-[12.5px] text-muted-foreground">Loading…</div>;
+  }
 
   return (
     <div className="flex flex-col">
@@ -275,6 +311,12 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Parts Cost</span>
           <span className="text-[15px] font-semibold tabular-nums">{currency(totalCost)}</span>
         </div>
+        {totalLaborHrs > 0 && (
+          <div className="flex items-baseline gap-2">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Budgeted Labor</span>
+            <span className="text-[15px] font-semibold tabular-nums">{totalLaborHrs.toFixed(1)} hrs</span>
+          </div>
+        )}
         {statusCounts.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {statusCounts.map(({ status, count }) => (
@@ -292,54 +334,47 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
 
       {/* Scrollable table */}
       <div className="overflow-x-auto">
-        <div className="min-w-[960px]">
+        <div className="min-w-260">
           <table className="w-full text-[12px]">
             <thead className="bg-surface/50 border-b border-border">
               <tr className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                <th className="py-2 px-4 text-left font-medium w-[220px]">Item Name</th>
-                <th className="py-2 px-3 text-left font-medium w-[120px]">Phase</th>
-                <th className="py-2 px-3 text-right font-medium w-[58px]">Qty</th>
-                <th className="py-2 px-3 text-right font-medium w-[90px]">Unit Cost</th>
-                <th className="py-2 px-3 text-right font-medium w-[90px]">Total</th>
-                <th className="py-2 px-3 text-left font-medium w-[116px]">Source</th>
-                <th className="py-2 px-3 text-left font-medium w-[116px]">Status</th>
+                <th className="py-2 px-4 text-left font-medium w-55">Item Name</th>
+                <th className="py-2 px-3 text-left font-medium w-30">Phase</th>
+                <th className="py-2 px-3 text-right font-medium w-14.5">Qty</th>
+                <th className="py-2 px-3 text-right font-medium w-22.5">Unit Cost</th>
+                <th className="py-2 px-3 text-right font-medium w-22.5">Total</th>
+                <th className="py-2 px-3 text-right font-medium w-18">Labor Hrs</th>
+                <th className="py-2 px-3 text-left font-medium w-29">Source</th>
+                <th className="py-2 px-3 text-left font-medium w-29">Status</th>
                 <th className="py-2 px-3 text-left font-medium">Notes</th>
+                <th className="py-2 px-3 w-8" />
               </tr>
             </thead>
 
             <tbody>
               {parts.map((part) => {
-                const isEditingName      = editingCell?.rowId === part.id && editingCell.col === "name";
-                const isEditingPhase     = editingCell?.rowId === part.id && editingCell.col === "phase";
-                const isEditingQty       = editingCell?.rowId === part.id && editingCell.col === "qty";
-                const isEditingUnitCost  = editingCell?.rowId === part.id && editingCell.col === "unitCost";
-                const isEditingSource    = editingCell?.rowId === part.id && editingCell.col === "source";
-                const isEditingStatus    = editingCell?.rowId === part.id && editingCell.col === "status";
-                const isEditingNotes     = editingCell?.rowId === part.id && editingCell.col === "notes";
+                const isEditingName     = editingCell?.rowId === part.id && editingCell.col === "name";
+                const isEditingPhase    = editingCell?.rowId === part.id && editingCell.col === "phase";
+                const isEditingQty      = editingCell?.rowId === part.id && editingCell.col === "qty";
+                const isEditingUnitCost = editingCell?.rowId === part.id && editingCell.col === "unitCost";
+                const isEditingSource   = editingCell?.rowId === part.id && editingCell.col === "source";
+                const isEditingStatus   = editingCell?.rowId === part.id && editingCell.col === "status";
+                const isEditingNotes    = editingCell?.rowId === part.id && editingCell.col === "notes";
                 const lineTotal = part.qty * part.unitCost;
 
                 return (
-                  <tr
-                    key={part.id}
-                    className="border-b border-border/50 hover:bg-accent/20 transition-colors group"
-                  >
+                  <tr key={part.id} className="border-b border-border/50 hover:bg-accent/20 transition-colors group">
                     {/* Item Name */}
                     <td className="py-2 px-4">
                       {isEditingName ? (
-                        <input
-                          autoFocus
-                          value={editingCell.value}
+                        <input autoFocus value={editingCell.value}
                           onChange={(e) => setEditingCell({ ...editingCell, value: e.target.value })}
                           onBlur={commitEdit}
                           onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") cancelEdit(); }}
-                          className={cn(inputCls, "min-w-[160px]")}
-                        />
+                          className={cn(inputCls, "min-w-40")} />
                       ) : (
-                        <span
-                          onClick={() => startEdit(part.id, "name", part.name)}
-                          className={cn(cellClickCls, "block font-medium leading-snug")}
-                          title="Click to edit"
-                        >
+                        <span onClick={() => startEdit(part.id, "name", part.name)}
+                          className={cn(cellClickCls, "block font-medium leading-snug")} title="Click to edit">
                           {part.name}
                         </span>
                       )}
@@ -348,21 +383,15 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                     {/* Phase */}
                     <td className="py-2 px-3">
                       {isEditingPhase ? (
-                        <select
-                          autoFocus
-                          value={editingCell.value}
+                        <select autoFocus value={editingCell.value}
                           onChange={(e) => commitSelectEdit(part.id, "phase", e.target.value)}
-                          onBlur={cancelEdit}
-                          className={selectCls}
-                        >
+                          onBlur={cancelEdit} className={selectCls}>
                           <option value="">— None —</option>
-                          {phaseNames.map((n) => <option key={n} value={n}>{n}</option>)}
+                          {PHASE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
                         </select>
                       ) : (
-                        <span
-                          onClick={() => startEdit(part.id, "phase", part.phase)}
-                          className={cn(cellClickCls, "text-muted-foreground")}
-                        >
+                        <span onClick={() => startEdit(part.id, "phase", part.phase)}
+                          className={cn(cellClickCls, "text-muted-foreground")}>
                           {part.phase || <span className="opacity-40">—</span>}
                         </span>
                       )}
@@ -371,76 +400,57 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                     {/* Qty */}
                     <td className="py-2 px-3 text-right">
                       {isEditingQty ? (
-                        <input
-                          autoFocus
-                          type="number"
-                          min={1}
-                          value={editingCell.value}
+                        <input autoFocus type="number" min={1} value={editingCell.value}
                           onChange={(e) => setEditingCell({ ...editingCell, value: e.target.value })}
                           onBlur={commitEdit}
                           onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") cancelEdit(); }}
-                          className={cn(inputCls, "text-right [appearance:textfield] w-14")}
-                        />
+                          className={cn(inputCls, "text-right [appearance:textfield] w-14")} />
                       ) : (
-                        <span
-                          onClick={() => startEdit(part.id, "qty", String(part.qty))}
-                          className={cn(cellClickCls, "tabular-nums")}
-                        >
-                          {part.qty}
-                        </span>
+                        <span onClick={() => startEdit(part.id, "qty", String(part.qty))}
+                          className={cn(cellClickCls, "tabular-nums")}>{part.qty}</span>
                       )}
                     </td>
 
                     {/* Unit Cost */}
                     <td className="py-2 px-3 text-right">
                       {isEditingUnitCost ? (
-                        <input
-                          autoFocus
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={editingCell.value}
+                        <input autoFocus type="number" min={0} step={0.01} value={editingCell.value}
                           onChange={(e) => setEditingCell({ ...editingCell, value: e.target.value })}
                           onBlur={commitEdit}
                           onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") cancelEdit(); }}
-                          className={cn(inputCls, "text-right [appearance:textfield] w-20")}
-                        />
+                          className={cn(inputCls, "text-right [appearance:textfield] w-20")} />
                       ) : (
-                        <span
-                          onClick={() => startEdit(part.id, "unitCost", String(part.unitCost))}
-                          className={cn(cellClickCls, "tabular-nums font-mono text-muted-foreground")}
-                        >
+                        <span onClick={() => startEdit(part.id, "unitCost", String(part.unitCost))}
+                          className={cn(cellClickCls, "tabular-nums font-mono text-muted-foreground")}>
                           {currency(part.unitCost)}
                         </span>
                       )}
                     </td>
 
-                    {/* Total Cost (read-only) */}
+                    {/* Total Cost */}
                     <td className="py-2 px-3 text-right">
-                      <span className="tabular-nums font-mono text-muted-foreground">
-                        {currency(lineTotal)}
+                      <span className="tabular-nums font-mono text-muted-foreground">{currency(lineTotal)}</span>
+                    </td>
+
+                    {/* Labor Hrs */}
+                    <td className="py-2 px-3 text-right">
+                      <span className="tabular-nums text-muted-foreground">
+                        {part.laborHours != null
+                          ? (part.qty * part.laborHours).toFixed(1)
+                          : <span className="opacity-40">—</span>}
                       </span>
                     </td>
 
                     {/* Source */}
                     <td className="py-2 px-3">
                       {isEditingSource ? (
-                        <select
-                          autoFocus
-                          value={editingCell.value}
+                        <select autoFocus value={editingCell.value}
                           onChange={(e) => commitSelectEdit(part.id, "source", e.target.value)}
-                          onBlur={cancelEdit}
-                          className={selectCls}
-                        >
-                          {SOURCE_OPTIONS.map((s) => (
-                            <option key={s} value={s}>{sourceMeta[s].label}</option>
-                          ))}
+                          onBlur={cancelEdit} className={selectCls}>
+                          {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{sourceMeta[s].label}</option>)}
                         </select>
                       ) : (
-                        <span
-                          onClick={() => startEdit(part.id, "source", part.source)}
-                          className="cursor-pointer"
-                        >
+                        <span onClick={() => startEdit(part.id, "source", part.source)} className="cursor-pointer">
                           <SourceBadge source={part.source} />
                         </span>
                       )}
@@ -449,22 +459,13 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                     {/* Status */}
                     <td className="py-2 px-3">
                       {isEditingStatus ? (
-                        <select
-                          autoFocus
-                          value={editingCell.value}
+                        <select autoFocus value={editingCell.value}
                           onChange={(e) => commitSelectEdit(part.id, "status", e.target.value)}
-                          onBlur={cancelEdit}
-                          className={selectCls}
-                        >
-                          {STATUS_OPTIONS.map((s) => (
-                            <option key={s} value={s}>{statusMeta[s].label}</option>
-                          ))}
+                          onBlur={cancelEdit} className={selectCls}>
+                          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{statusMeta[s].label}</option>)}
                         </select>
                       ) : (
-                        <span
-                          onClick={() => startEdit(part.id, "status", part.status)}
-                          className="cursor-pointer"
-                        >
+                        <span onClick={() => startEdit(part.id, "status", part.status)} className="cursor-pointer">
                           <StatusBadge status={part.status} />
                         </span>
                       )}
@@ -473,122 +474,150 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                     {/* Notes */}
                     <td className="py-2 px-3">
                       {isEditingNotes ? (
-                        <input
-                          autoFocus
-                          value={editingCell.value}
+                        <input autoFocus value={editingCell.value}
                           onChange={(e) => setEditingCell({ ...editingCell, value: e.target.value })}
                           onBlur={commitEdit}
                           onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") cancelEdit(); }}
-                          className={cn(inputCls, "min-w-[120px]")}
-                        />
+                          className={cn(inputCls, "min-w-30")} />
                       ) : (
-                        <span
-                          onClick={() => startEdit(part.id, "notes", part.notes)}
-                          className={cn(cellClickCls, "text-muted-foreground")}
-                        >
+                        <span onClick={() => startEdit(part.id, "notes", part.notes)}
+                          className={cn(cellClickCls, "text-muted-foreground")}>
                           {part.notes || <span className="opacity-0 group-hover:opacity-30 transition-opacity">Add note…</span>}
                         </span>
                       )}
+                    </td>
+
+                    {/* Delete */}
+                    <td className="py-2 px-2">
+                      <button
+                        onClick={() => deleteMutation.mutate(part.id)}
+                        className="opacity-0 group-hover:opacity-100 flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
+                        aria-label="Remove part"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </td>
                   </tr>
                 );
               })}
 
-              {/* ── Add Part inline row ────────────────────────────────────── */}
+              {/* ── Add Part inline row ──────────────────────────────────── */}
               {addingPart && (
                 <tr className="border-b border-border/50 bg-surface/30">
-                  <td className="py-2 px-4">
-                    <input
-                      autoFocus
-                      placeholder="Item name…"
-                      value={draft.name}
-                      onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-                      onKeyDown={(e) => { if (e.key === "Enter") commitAdd(); if (e.key === "Escape") cancelAdd(); }}
-                      className={draftInputCls}
-                    />
+                  {/* Catalog combobox / name */}
+                  <td className="py-2 px-4" colSpan={1}>
+                    <div className="relative" ref={catalogRef}>
+                      <input
+                        autoFocus
+                        placeholder="Search catalog or type name…"
+                        value={catalogSearch}
+                        onChange={(e) => {
+                          setCatalogSearch(e.target.value);
+                          setDraft((d) => ({ ...d, name: e.target.value, catalogItemId: null }));
+                          setCatalogOpen(true);
+                        }}
+                        onFocus={() => setCatalogOpen(true)}
+                        onBlur={() => setTimeout(() => setCatalogOpen(false), 150)}
+                        onKeyDown={(e) => { if (e.key === "Escape") cancelAdd(); }}
+                        className={draftInputCls}
+                      />
+                      {catalogOpen && filteredCatalog.length > 0 && (
+                        <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-md border border-border bg-popover shadow-lg">
+                          {filteredCatalog.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onMouseDown={() => selectCatalogItem(item)}
+                              className="flex w-full items-center justify-between px-3 py-2 text-left text-[12px] hover:bg-accent transition-colors"
+                            >
+                              <span className="font-medium truncate">{item.name}</span>
+                              <span className="ml-3 shrink-0 text-[11px] text-muted-foreground tabular-nums">
+                                {item.cost != null ? currency(item.cost) : ""}
+                                {item.labor_hours != null ? ` · ${item.labor_hours}h` : ""}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </td>
+
+                  {/* Phase */}
                   <td className="py-2 px-3">
-                    <select
-                      value={draft.phase}
+                    <select value={draft.phase}
                       onChange={(e) => setDraft((d) => ({ ...d, phase: e.target.value }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
                       <option value="">— None —</option>
-                      {phaseNames.map((n) => <option key={n} value={n}>{n}</option>)}
+                      {PHASE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </td>
+
+                  {/* Qty */}
                   <td className="py-2 px-3">
-                    <input
-                      type="number"
-                      min={1}
-                      value={draft.qty}
+                    <input type="number" min={1} value={draft.qty}
                       onChange={(e) => setDraft((d) => ({ ...d, qty: e.target.value }))}
                       onKeyDown={(e) => { if (e.key === "Enter") commitAdd(); if (e.key === "Escape") cancelAdd(); }}
-                      className={cn(draftInputCls, "text-right [appearance:textfield]")}
-                    />
+                      className={cn(draftInputCls, "text-right [appearance:textfield]")} />
                   </td>
+
+                  {/* Unit Cost */}
                   <td className="py-2 px-3">
-                    <input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={draft.unitCost}
+                    <input type="number" min={0} step={0.01} value={draft.unitCost}
                       onChange={(e) => setDraft((d) => ({ ...d, unitCost: e.target.value }))}
                       onKeyDown={(e) => { if (e.key === "Enter") commitAdd(); if (e.key === "Escape") cancelAdd(); }}
-                      className={cn(draftInputCls, "text-right [appearance:textfield]")}
-                    />
+                      className={cn(draftInputCls, "text-right [appearance:textfield]")} />
                   </td>
+
+                  {/* Total */}
                   <td className="py-2 px-3 text-right">
                     <span className="tabular-nums font-mono text-muted-foreground/60 text-[11.5px]">
-                      {currency((parseInt(draft.qty, 10) || 1) * (parseFloat(draft.unitCost) || 0))}
+                      {currency((parseFloat(draft.qty) || 1) * (parseFloat(draft.unitCost) || 0))}
                     </span>
                   </td>
+
+                  {/* Labor Hrs */}
                   <td className="py-2 px-3">
-                    <select
-                      value={draft.source}
+                    <input type="number" min={0} step={0.25} placeholder="hrs"
+                      value={draft.laborHours}
+                      onChange={(e) => setDraft((d) => ({ ...d, laborHours: e.target.value }))}
+                      onKeyDown={(e) => { if (e.key === "Enter") commitAdd(); if (e.key === "Escape") cancelAdd(); }}
+                      className={cn(draftInputCls, "text-right [appearance:textfield]")} />
+                  </td>
+
+                  {/* Source */}
+                  <td className="py-2 px-3">
+                    <select value={draft.source}
                       onChange={(e) => setDraft((d) => ({ ...d, source: e.target.value as PartSource }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
-                      {SOURCE_OPTIONS.map((s) => (
-                        <option key={s} value={s}>{sourceMeta[s].label}</option>
-                      ))}
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{sourceMeta[s].label}</option>)}
                     </select>
                   </td>
+
+                  {/* Status */}
                   <td className="py-2 px-3">
-                    <select
-                      value={draft.status}
+                    <select value={draft.status}
                       onChange={(e) => setDraft((d) => ({ ...d, status: e.target.value as PartStatus }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s} value={s}>{statusMeta[s].label}</option>
-                      ))}
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{statusMeta[s].label}</option>)}
                     </select>
                   </td>
-                  <td className="py-2 px-3">
+
+                  {/* Notes + actions */}
+                  <td className="py-2 px-3" colSpan={2}>
                     <div className="flex items-center gap-1.5">
-                      <input
-                        placeholder="Notes…"
-                        value={draft.notes}
+                      <input placeholder="Notes…" value={draft.notes}
                         onChange={(e) => setDraft((d) => ({ ...d, notes: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === "Enter") commitAdd(); if (e.key === "Escape") cancelAdd(); }}
-                        className={cn(draftInputCls, "min-w-[80px]")}
-                      />
-                      <button
-                        type="button"
-                        onClick={commitAdd}
-                        disabled={!draft.name.trim()}
+                        className={cn(draftInputCls, "min-w-20")} />
+                      <button type="button" onClick={commitAdd}
+                        disabled={!draft.name.trim() || insertMutation.isPending}
                         className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-opacity"
-                        aria-label="Add part"
-                      >
+                        aria-label="Add part">
                         <Check className="h-3.5 w-3.5" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={cancelAdd}
+                      <button type="button" onClick={cancelAdd}
                         className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                        aria-label="Cancel"
-                      >
+                        aria-label="Cancel">
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -599,7 +628,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
               {/* Empty state */}
               {parts.length === 0 && !addingPart && (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-[12.5px] text-muted-foreground">
+                  <td colSpan={10} className="py-12 text-center text-[12.5px] text-muted-foreground">
                     No parts added yet.
                   </td>
                 </tr>
@@ -612,11 +641,8 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
       {/* Add Part button */}
       {!addingPart && (
         <div className="border-t border-border/60 px-4 py-2">
-          <button
-            type="button"
-            onClick={openAddRow}
-            className="flex items-center gap-1.5 rounded-md px-3 py-2 text-[12px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-          >
+          <button type="button" onClick={openAddRow}
+            className="flex items-center gap-1.5 rounded-md px-3 py-2 text-[12px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Plus className="h-3.5 w-3.5" />
             Add Part
           </button>
