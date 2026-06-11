@@ -7,7 +7,7 @@
 ## Current Status
 
 **Phase:** Backend — All modules live; permissions enforced; seed data connected
-**Last Updated:** Session 034
+**Last Updated:** Session 035
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -17,12 +17,11 @@
 
 **Start here next session:**
 
-1. **Wire Team + Scheduling pages to real DB** — Scheduling calendar needs backend before the Derek Paulson flow test can be completed (work orders need to be dispatchable to dates/crew)
-2. **Planner/Gantt backend** — phases + team assignments; deferred until Scheduling is live
-3. **Resume Derek Paulson flow test** once Scheduling is live — paused at Project created (work orders → dispatch → invoice → payment remaining)
+1. **Projects page: add `'planning'` to status filter + badge config** — migration is live and `convertToProject` now defaults to `planning`, but the Projects list page badge/filter still doesn't have a `planning` entry. Small fix.
+2. **Resume Derek Paulson flow test** — all blockers cleared. Paused at: work orders created → need to dispatch to Scheduling calendar → then invoice → payment.
+3. **Planner/Gantt backend** — phases + team assignments; deferred until Scheduling is confirmed stable
 
 **Specced items queued for build (in progress log):**
-- Project initial status fix (`planning` instead of `scheduled` on convert)
 - Referral partner tracking (lead → contact referral FK trail)
 - Job number / quote number scheme (Q-YYYY-NNN + source_quote_id on project)
 
@@ -85,14 +84,11 @@ ALTER TABLE projects ADD COLUMN source_quote_id uuid references quotes(id);
 
 ---
 
-## Planned Fix — Project Initial Status on Convert
+## Planned Fix — Projects Page `planning` Status Badge
 
-**Problem:** `convertToProject` defaults to `status: "scheduled"` but a project that just converted from Closed Won hasn't been scheduled yet. "Scheduled" implies dates are set and crew is assigned.
+**Status:** Partially done. Migration (`20260611000001`) and `convertToProject` default are fixed. Step 3 still pending.
 
-**Fix:**
-1. Migration — add `'planning'` to the `projects.status` check constraint
-2. Update `convertToProject` in `opportunities.tsx` to default to `"planning"` instead of `"scheduled"`
-3. Update `Projects` page status filter/badge config to include `"planning"`
+**Remaining:** Update `src/routes/operations/projects/index.tsx` — add `'planning'` to the status filter tabs and badge color config. Small change, no migration needed.
 
 **Correct status progression:** `planning` → `scheduled` → `in-progress` → `on-hold` → `completed` / `cancelled`
 
@@ -174,7 +170,7 @@ No RLS changes needed — both FKs reference tenant-scoped tables and existing p
 | Vercel Deployment | ✅ Live | bearingpro.tech, nitro vercel preset |
 | CRM (Contacts/Companies/Lead Inbox) | ✅ Live | Schema + RLS live; all pages wired; Lead Inbox reads/writes `leads` table; Convert button creates Contact + Opportunity atomically |
 | Sales (Opps, Quotes) | ✅ Opps live | Opportunities reads/writes DB; kanban stage moves + new opp modal wired; Quotes still demo |
-| Operations (Projects, Work Orders, Team, Scheduling) | ✅ Projects + WOs live | Schema + RLS live; list + detail pages read/write DB; status persists; Edit drawer live (name, dates, PM, value); Convert from Opportunity wired; Team + Scheduling still demo |
+| Operations (Projects, Work Orders, Team, Scheduling) | ✅ Projects + WOs + Scheduling live | Schema + RLS live; list + detail pages read/write DB; status persists; Edit drawer live; Convert from Opportunity captures site address + copies quote line items; Scheduling calendar wired to `scheduled_jobs` table (multi-tech dispatch, seed events); New WO modal has project picker (auto-fills company/contact/address); Team still demo |
 | Service (Tickets, Plans) | ✅ Live | Tickets: status + notes + new ticket wired; Service Plans: schema + RLS live; 8 seed plans; all CRUD wired (tier/status inline, notes blur-save, Renew/Cancel, New Plan modal) |
 | Inventory → Catalog | ✅ Live | Schema + RLS live; category landing + item grid wired; tenant-defined categories with trade templates + icon picker; CategorySetupModal on first visit; New Category / New Item context-aware button |
 | Inventory → Stock | ✅ Live | Schema + RLS live; 12 seed items + 35 movements; all CRUD wired; Adjust popover writes to DB; movements lazy-loaded per item in drawer; manufacturers derived from live data |
@@ -228,6 +224,10 @@ No RLS changes needed — both FKs reference tenant-scoped tables and existing p
 | `20260610000022_invoices` | `invoices`, `invoice_line_items`, `invoice_payments` tables with full RLS; `set_invoices_updated_at` trigger | ✅ Live |
 | `20260610000023_invoices_seed` | 10 seed invoices + 55 line items + 6 payments; `linked_project_id` wired to "Surgical Center A/V Overhaul" via ilike | ✅ Live (replaced by 024) |
 | `20260610000024_reseed_connected` | Replaces all operational seed data with a fully connected story — all 5 projects now use real CRM company_ids, carry `opportunity_id` FK, linked POs and invoices carry `linked_project_id`; companies/contacts/leads/tickets/plans/stock untouched | ✅ Live |
+| `20260610000025_quotes` | `quotes` + `quote_line_items` tables with full RLS; `set_updated_at` trigger on quotes | ✅ Live |
+| `20260610000026_scheduled_jobs` | `scheduled_jobs` + `scheduled_job_techs` tables with full RLS; 9 seed events linked to real WO/project codes; techs seeded (mike, jordan, riley, chris) | ✅ Live |
+| `20260611000001_projects_planning_status` | Adds `'planning'` to `projects.status` check constraint; correct initial status for freshly-converted projects | ✅ Live |
+| `20260611000002_project_line_items` | `project_line_items` table with full RLS; backfill copies existing `quote_line_items` → `project_line_items` for already-converted projects via `opportunity_id` FK trail | ✅ Live |
 
 **Trigger logic:** New signup → creates `tenants` row + `user_profiles` row (Owner role). Invited user (has `tenant_id` in metadata) → joins existing tenant with assigned role. Upserts on conflict so re-inviting a removed user reactivates their profile.
 
@@ -284,10 +284,10 @@ Use this to manually walk the full app flow end-to-end. Every step is wired to t
    - Add note on the opp with scope details from the site visit
 
 4. **Convert to Project** (since Quote Builder isn't built yet, skip straight to project)
-   - Button in opportunity drawer (Closed Won stage) → Convert to Project
-   - Project name: "Paulson New Build — AV & Security"
-   - PM: Riley Torres
-   - Site address: 1847 Whitmore Ln, Naperville, IL 60565
+   - Button in opportunity drawer (Closed Won stage) → Convert to Project / Work Order → Project
+   - Enter site address: 1847 Whitmore Ln, Naperville, IL 60565 → Convert
+   - Project starts in `planning` status; any quote line items carry forward to Parts List automatically
+   - PM can be set via Edit drawer after creation
 
 5. **Create Work Orders** (from the project, or the New Work Order modal)
    - WO 1: "Paulson — Rough-In (conduit + cable pull)" → assigned Mike Okafor, scheduled during framing
@@ -308,6 +308,43 @@ Use this to manually walk the full app flow end-to-end. Every step is wired to t
 **What this tests:** Lead creation → conversion → opportunity stages → project creation → work order dispatch → invoicing → payment collection. Every write goes to the live DB.
 
 **Note on Quote Builder gap:** In the real flow, step 4 would be: Estimating stage → Create Quote (line items from catalog) → client approves → Closed Won → auto-convert to Project. That step is deferred. For now, manually move the opp to Closed Won and convert directly.
+
+---
+
+## Session 035 — Scheduling Live + Project Parts List + Convert Fixes
+
+**Date:** June 11, 2026
+
+**Completed:**
+
+- **Scheduling calendar wired to Supabase** (`/operations/scheduling`):
+  - Migration `20260610000026`: `scheduled_jobs` (soft FK to project or work order, category/status enums, address, time slot) + `scheduled_job_techs` join table (multi-tech per event, cascade delete); 9 seed events linked to real WO/project codes; RLS on both tables
+  - Scheduling page fully rewritten: `useQuery(["scheduled-jobs"])` replaces `INITIAL_JOBS` demo array; `saveMutation` handles INSERT + UPDATE with tech delete/re-insert; week nav, day columns, and tech filter all use live data
+  - Dispatch drawer: work-order-only picker (projects removed as a separate scheduleable type); tech checkboxes use real member IDs; job selection auto-fills customer name + address from WO joins (falls back through contact → linked project for residential clients with no company)
+  - `toHHMM()` helper normalises Postgres `time` column format (`HH:MM:SS` → `HH:MM`)
+  - Query keys: `["scheduled-jobs"]`, `["user-profiles-basic"]`, `["work-orders-scheduling"]`
+
+- **New Work Order modal: project picker added**
+  - Project combobox at top of form (`["projects-wo-options"]` query); selecting a project auto-fills company, contact, and site address
+  - "— Standalone (no project) —" option preserved for WOs with no project
+
+- **Convert to Project: site address captured**
+  - `convertToProject` now takes an optional `siteAddress` param and writes it to `projects.site_address`
+  - Convert drawer shows a site address input step between type selection and the actual convert call
+  - Default project status changed from `'scheduled'` → `'planning'` — a freshly-converted project hasn't had dates/crew assigned yet
+  - Migration `20260611000001`: adds `'planning'` to `projects.status` check constraint
+
+- **Project Parts List wired to DB**:
+  - Migration `20260611000002`: `project_line_items` table (tenant_id, project_id, catalog_item_id nullable, name, qty, unit_cost, labor_hours, source, status, phase, notes); full RLS; backfill INSERT copies existing `quote_line_items` → `project_line_items` for already-converted projects via the `opportunity_id` FK trail
+  - `convertToProject` now copies quote line items to `project_line_items` on every future conversion; `labor_hours` pulled live from `catalog_items` at snapshot time (denormalized)
+  - `PartsPanel` fully rewritten: `useQuery(["project-line-items", projectId])`; inline cell edits save on blur/Enter via `TablesUpdate<"project_line_items">`; delete button on row hover; `insertMutation` + `deleteMutation`
+  - Add Part row has catalog combobox (searches `["catalog-items-parts"]`) — selecting an item auto-fills name, unit cost, and labor hours
+  - New **Labor Hrs** column: shows `qty × labor_hours` per row; summary bar shows total budgeted labor hours across all parts
+
+**Architecture notes:**
+- `labor_hours` is denormalized at add-time — catalog edits don't retroactively change project estimates
+- `project_line_items` has full UPDATE/DELETE (unlike `stock_movements` and `invoice_payments` which are immutable audit trails) — PM can correct scope errors
+- `budgeted_hours` on the project row is not yet auto-summed from line items — stored field, manual for now; auto-calc deferred
 
 ---
 
