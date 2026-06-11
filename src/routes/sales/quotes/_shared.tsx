@@ -291,7 +291,6 @@ export async function saveQuoteToDb(params: {
         quantity:        li.qty,
         unit_price:      li.unitPrice,
         unit_cost:       li.unitCost,
-        total:           li.qty * li.unitPrice,
         unit:            li.unit,
         item_type:       li.type,
         section_name:    section.name,
