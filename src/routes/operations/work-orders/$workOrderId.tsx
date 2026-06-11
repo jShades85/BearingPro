@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { statusMeta, type ProjectStatus } from "@/data/projects";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import { PhasesPanel } from "@/components/projects/PhasesPanel";
 import { PartsPanel } from "@/components/projects/PartsPanel";
 import { TeamPanel } from "@/components/projects/TeamPanel";
@@ -55,9 +56,11 @@ interface DbWorkOrder {
   budgeted_hours: number | null;
   scheduled_date: string | null;
   notes: string | null;
+  project_id: string | null;
   company: { id: string; name: string } | null;
   assignee: { id: string; full_name: string | null } | null;
   opportunity: { id: string; title: string } | null;
+  project: { id: string; name: string; code: string | null } | null;
 }
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -83,7 +86,7 @@ async function fetchWorkOrderById(id: string): Promise<DbWorkOrder | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("work_orders")
-    .select("id,code,name,status,site_address,contract_value,budgeted_hours,scheduled_date,notes,company:companies(id,name),assignee:user_profiles!assigned_to(id,full_name),opportunity:opportunities(id,title)")
+    .select("id,code,name,status,site_address,contract_value,budgeted_hours,scheduled_date,notes,project_id,company:companies(id,name),assignee:user_profiles!assigned_to(id,full_name),opportunity:opportunities(id,title),project:projects(id,name,code)")
     .eq("id", id)
     .single();
   if (error) return null;
@@ -117,9 +120,11 @@ async function updateWorkOrder(id: string, fields: WOUpdateFields): Promise<void
 function StatusDropdown({
   status,
   onChange,
+  disabled = false,
 }: {
   status: WOStatus;
   onChange: (s: WOStatus) => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -139,17 +144,18 @@ function StatusDropdown({
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => !disabled && setOpen((v) => !v)}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium transition-opacity hover:opacity-80",
+          "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium transition-opacity",
+          disabled ? "cursor-default" : "hover:opacity-80",
           cls,
         )}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-current" />
         {label}
-        <ChevronDown className="h-3 w-3 opacity-60" />
+        {!disabled && <ChevronDown className="h-3 w-3 opacity-60" />}
       </button>
-      {open && (
+      {!disabled && open && (
         <div className="absolute left-0 top-full z-50 mt-1 w-40 rounded-lg border border-border bg-popover py-1 shadow-md">
           {WO_STATUS_OPTIONS.map(({ value }) => {
             const { label: l, cls: c } = statusMeta[value as ProjectStatus];
@@ -181,6 +187,8 @@ function StatusDropdown({
 export default function WorkOrderDetailPage() {
   const { workOrderId } = Route.useParams();
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("operations", "write");
   const qc = useQueryClient();
   const [tab, setTab] = useState<WOTabId>("tasks");
   const [editOpen, setEditOpen] = useState(false);
@@ -261,15 +269,28 @@ export default function WorkOrderDetailPage() {
     <div className="flex flex-col">
       {/* Back nav */}
       <div className="border-b border-border px-5 py-2.5">
-        <Link
-          to="/operations/work-orders"
-          className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M10 13L5 8l5-5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          All Work Orders
-        </Link>
+        {wo.project ? (
+          <Link
+            to="/operations/projects/$projectId"
+            params={{ projectId: wo.project.id }}
+            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M10 13L5 8l5-5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {wo.project.code ? `${wo.project.code} — ` : ""}{wo.project.name}
+          </Link>
+        ) : (
+          <Link
+            to="/operations/work-orders"
+            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M10 13L5 8l5-5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            All Work Orders
+          </Link>
+        )}
       </div>
 
       {/* Header */}
@@ -287,7 +308,7 @@ export default function WorkOrderDetailPage() {
           </div>
 
           <div className="flex flex-col items-end gap-2 shrink-0">
-            <StatusDropdown status={status} onChange={(s) => statusMutation.mutate(s)} />
+            <StatusDropdown status={status} onChange={(s) => statusMutation.mutate(s)} disabled={!canWrite} />
             <p className="text-[22px] font-semibold tabular-nums">
               {wo.contract_value != null ? currency(Number(wo.contract_value)) : "—"}
             </p>
@@ -297,6 +318,20 @@ export default function WorkOrderDetailPage() {
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           <dl className="flex flex-wrap gap-x-6 gap-y-2 text-[12px]">
+            {wo.project && (
+              <div className="flex items-center gap-1.5">
+                <dt className="text-muted-foreground">Project</dt>
+                <dd>
+                  <Link
+                    to="/operations/projects/$projectId"
+                    params={{ projectId: wo.project.id }}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {wo.project.name}
+                  </Link>
+                </dd>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <dt className="text-muted-foreground">Assigned</dt>
               <dd className="flex items-center gap-1.5">
@@ -319,10 +354,12 @@ export default function WorkOrderDetailPage() {
           </dl>
 
           <div className="flex items-center gap-2 shrink-0">
-            <button type="button" onClick={() => setEditOpen(true)} className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
-              <Pencil className="h-3.5 w-3.5" />
-              Edit
-            </button>
+            {canWrite && (
+              <button type="button" onClick={() => setEditOpen(true)} className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button type="button" className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors" aria-label="More options">

@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { usePermissions } from "@/contexts/PermissionsContext";
 
 export const Route = createFileRoute("/crm/contacts")({
   head: () => ({ meta: [{ title: "Contacts · BearingPro" }] }),
@@ -128,6 +129,8 @@ function StageBadge({ stage }: { stage: LifecycleStage }) {
 
 function ContactsPage() {
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("crm", "write");
   const [selected, setSelected] = useState<DbContact | null>(null);
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">("view");
   const [newOpen, setNewOpen] = useState(false);
@@ -278,13 +281,15 @@ function ContactsPage() {
                   </td>
                   <td className="py-2.5 px-3 pr-3 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openDrawer(c, "edit"); }}
-                        className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                        aria-label="Edit contact"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
+                      {canWrite && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openDrawer(c, "edit"); }}
+                          className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                          aria-label="Edit contact"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                       <button
                         onClick={(e) => { e.stopPropagation(); openDrawer(c, "view"); }}
                         className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
@@ -317,6 +322,7 @@ function ContactsPage() {
             key={selected.id}
             contact={selected}
             mode={drawerMode}
+            canWrite={canWrite}
             onSwitchToEdit={() => setDrawerMode("edit")}
             onSaved={() => { setSelected(null); setDrawerMode("view"); }}
             teamMembers={teamMembers}
@@ -337,12 +343,14 @@ function ContactsPage() {
 function ContactDrawer({
   contact: c,
   mode,
+  canWrite,
   onSwitchToEdit,
   onSaved,
   teamMembers,
 }: {
   contact: DbContact;
   mode: "view" | "edit";
+  canWrite: boolean;
   onSwitchToEdit: () => void;
   onSaved: () => void;
   teamMembers: TeamMember[];
@@ -360,7 +368,7 @@ function ContactDrawer({
               {c.title}{!isResidential && c.company ? ` · ${c.company.name}` : ""}
             </p>
           </div>
-          {mode === "view" && (
+          {mode === "view" && canWrite && (
             <button
               onClick={onSwitchToEdit}
               className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"

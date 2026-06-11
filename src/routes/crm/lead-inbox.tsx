@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import { Avatar } from "@/components/ui-bits";
 import { PageTabs, PageTab, FilterBar, FilterSelect } from "@/components/ui/page-components";
 import { useMeta } from "@/contexts/PageMetaContext";
@@ -213,6 +214,8 @@ function LeadInbox() {
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
   const [assignedFilter, setAssignedFilter] = useState<string>("all");
 
+  const { can } = usePermissions();
+  const canWrite = can("crm", "write");
   const { data: leads = [] } = useQuery({ queryKey: ["leads"], queryFn: fetchLeads });
   const { data: team = [] } = useQuery({ queryKey: ["team-members"], queryFn: fetchTeamMembers });
 
@@ -334,28 +337,30 @@ function LeadInbox() {
                   </td>
                   <td className="py-2.5 px-3"><StatusBadge status={lead.status} /></td>
                   <td className="py-2.5 px-3 pr-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConvertModalLead(lead);
-                        }}
-                        disabled={lead.status === "converted" || lead.status === "dismissed" || convertMutation.isPending}
-                        className="h-6 rounded px-2 text-[11px] font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-35 disabled:cursor-default transition-opacity"
-                      >
-                        Convert
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          statusMutation.mutate({ id: lead.id, status: "dismissed" });
-                        }}
-                        disabled={lead.status === "dismissed" || lead.status === "converted"}
-                        className="h-6 rounded px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-35 disabled:cursor-default transition-colors"
-                      >
-                        Dismiss
-                      </button>
-                    </div>
+                    {canWrite && (
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConvertModalLead(lead);
+                          }}
+                          disabled={lead.status === "converted" || lead.status === "dismissed" || convertMutation.isPending}
+                          className="h-6 rounded px-2 text-[11px] font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-35 disabled:cursor-default transition-opacity"
+                        >
+                          Convert
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            statusMutation.mutate({ id: lead.id, status: "dismissed" });
+                          }}
+                          disabled={lead.status === "dismissed" || lead.status === "converted"}
+                          className="h-6 rounded px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-35 disabled:cursor-default transition-colors"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -376,6 +381,7 @@ function LeadInbox() {
           <LeadDrawer
             key={selectedLead.id}
             lead={selectedLead}
+            canWrite={canWrite}
             converting={convertMutation.isPending}
             onStatusChange={(status) => statusMutation.mutate({ id: selectedLead.id, status })}
             onNotesChange={(notes) => updateLeadNotes(selectedLead.id, notes)}
@@ -416,9 +422,10 @@ function LeadInbox() {
 // ─── Lead detail drawer ───────────────────────────────────────────────────────
 
 function LeadDrawer({
-  lead, converting, onStatusChange, onNotesChange, onConvert,
+  lead, canWrite, converting, onStatusChange, onNotesChange, onConvert,
 }: {
   lead: DbLead;
+  canWrite: boolean;
   converting: boolean;
   onStatusChange: (status: LeadStatus) => void;
   onNotesChange: (notes: string) => void;
@@ -494,11 +501,12 @@ function LeadDrawer({
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            onBlur={() => onNotesChange(notes)}
-            placeholder="Add notes…"
+            onChange={(e) => canWrite && setNotes(e.target.value)}
+            onBlur={() => canWrite && onNotesChange(notes)}
+            readOnly={!canWrite}
+            placeholder={canWrite ? "Add notes…" : ""}
             rows={3}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
           />
         </div>
 
@@ -509,30 +517,32 @@ function LeadDrawer({
         )}
       </div>
 
-      <div className="border-t border-border px-5 py-4 flex flex-col gap-2">
-        {lead.status !== "converted" && lead.status !== "dismissed" && (
+      {canWrite && (
+        <div className="border-t border-border px-5 py-4 flex flex-col gap-2">
+          {lead.status !== "converted" && lead.status !== "dismissed" && (
+            <button
+              onClick={() => onStatusChange(lead.status === "new" ? "contacted" : "qualified")}
+              className="w-full h-8 rounded-md bg-accent text-foreground text-[12.5px] font-medium hover:opacity-90 transition-opacity"
+            >
+              Mark as {lead.status === "new" ? "Contacted" : "Qualified"}
+            </button>
+          )}
           <button
-            onClick={() => onStatusChange(lead.status === "new" ? "contacted" : "qualified")}
-            className="w-full h-8 rounded-md bg-accent text-foreground text-[12.5px] font-medium hover:opacity-90 transition-opacity"
+            onClick={onConvert}
+            disabled={lead.status === "converted" || lead.status === "dismissed" || converting}
+            className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
           >
-            Mark as {lead.status === "new" ? "Contacted" : "Qualified"}
+            {converting ? "Converting…" : "Convert to Contact + Opportunity"}
           </button>
-        )}
-        <button
-          onClick={onConvert}
-          disabled={lead.status === "converted" || lead.status === "dismissed" || converting}
-          className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
-        >
-          {converting ? "Converting…" : "Convert to Contact + Opportunity"}
-        </button>
-        <button
-          onClick={() => onStatusChange("dismissed")}
-          disabled={lead.status === "dismissed" || lead.status === "converted"}
-          className="w-full h-8 rounded-md border border-destructive text-destructive text-[12.5px] font-medium hover:bg-destructive/10 disabled:opacity-40 disabled:cursor-default transition-colors"
-        >
-          Dismiss Lead
-        </button>
-      </div>
+          <button
+            onClick={() => onStatusChange("dismissed")}
+            disabled={lead.status === "dismissed" || lead.status === "converted"}
+            className="w-full h-8 rounded-md border border-destructive text-destructive text-[12.5px] font-medium hover:bg-destructive/10 disabled:opacity-40 disabled:cursor-default transition-colors"
+          >
+            Dismiss Lead
+          </button>
+        </div>
+      )}
     </SheetContent>
   );
 }

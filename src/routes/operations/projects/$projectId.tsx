@@ -1,27 +1,29 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import {
-  Archive, Briefcase, ChevronDown, Clock, Copy, FileText,
-  FolderKanban, MapPin, MoreHorizontal, Pencil, Trash2, UploadCloud,
+  Archive, Briefcase, Calendar, ChevronDown, Clock, Copy, FileText,
+  FolderKanban, MapPin, MoreHorizontal, Pencil, Plus, Trash2, UploadCloud,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar } from "@/components/ui-bits";
 import {
   statusMeta, STATUS_OPTIONS,
   type ProjectStatus, type ProjectRecord,
 } from "@/data/projects";
-import { PhasesPanel } from "@/components/projects/PhasesPanel";
 import { PartsPanel } from "@/components/projects/PartsPanel";
 import { TeamPanel } from "@/components/projects/TeamPanel";
 import { ActivityPanel } from "@/components/projects/ActivityPanel";
+import { usePermissions } from "@/contexts/PermissionsContext";
 
 export const Route = createFileRoute("/operations/projects/$projectId")({
   component: ProjectDetailPage,
@@ -61,6 +63,7 @@ interface DbProject {
   start_date: string | null;
   target_end_date: string | null;
   notes: string | null;
+  contact_id: string | null;
   company: { id: string; name: string } | null;
   pm: { id: string; full_name: string | null } | null;
   opportunity: { id: string; title: string } | null;
@@ -89,7 +92,7 @@ async function fetchProjectById(id: string): Promise<DbProject | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("projects")
-    .select("id,code,name,status,site_address,contract_value,budgeted_cost,budgeted_hours,start_date,target_end_date,notes,company:companies(id,name),pm:user_profiles!pm_id(id,full_name),opportunity:opportunities(id,title)")
+    .select("id,code,name,status,site_address,contract_value,budgeted_cost,budgeted_hours,start_date,target_end_date,notes,contact_id,company:companies(id,name),pm:user_profiles!pm_id(id,full_name),opportunity:opportunities(id,title)")
     .eq("id", id)
     .single();
   if (error) return null;
@@ -115,6 +118,56 @@ async function fetchTeamMembers(): Promise<TeamMember[]> {
 async function updateProject(id: string, fields: ProjectUpdateFields): Promise<void> {
   const supabase = createClient();
   const { error } = await supabase.from("projects").update(fields).eq("id", id).select().single();
+  if (error) throw error;
+}
+
+// ─── Phase (WO) types + data ──────────────────────────────────────────────────
+
+type PhaseStatus = "scheduled" | "in-progress" | "on-hold" | "completed" | "cancelled";
+
+interface DbPhaseWO {
+  id: string;
+  code: string | null;
+  name: string;
+  status: PhaseStatus;
+  scheduled_date: string | null;
+  budgeted_hours: number | null;
+  assignee: { id: string; full_name: string | null } | null;
+}
+
+async function fetchProjectPhases(projectId: string): Promise<DbPhaseWO[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("work_orders")
+    .select("id,code,name,status,scheduled_date,budgeted_hours,assignee:user_profiles!assigned_to(id,full_name)")
+    .eq("project_id", projectId)
+    .order("created_at");
+  if (error) throw error;
+  return (data ?? []) as DbPhaseWO[];
+}
+
+async function insertProjectPhase(values: {
+  name: string;
+  project_id: string;
+  company_id: string | null;
+  contact_id: string | null;
+  site_address: string | null;
+  assigned_to: string | null;
+  scheduled_date: string | null;
+  budgeted_hours: number | null;
+  notes: string;
+}): Promise<void> {
+  const supabase = createClient();
+  const { data: tenantRow } = await supabase.from("tenants").select("id").single();
+  if (!tenantRow) throw new Error("No tenant");
+  const { count } = await supabase.from("work_orders").select("*", { count: "exact", head: true });
+  const code = `WO-${String((count ?? 0) + 1).padStart(4, "0")}`;
+  const { error } = await supabase.from("work_orders").insert({
+    ...values,
+    tenant_id: tenantRow.id,
+    code,
+    status: "scheduled",
+  });
   if (error) throw error;
 }
 
@@ -162,9 +215,11 @@ function TypeBadge({ type }: { type: ProjectRecord["type"] }) {
 function StatusDropdown({
   status,
   onChange,
+  disabled = false,
 }: {
   status: ProjectStatus;
   onChange: (s: ProjectStatus) => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -184,17 +239,18 @@ function StatusDropdown({
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => !disabled && setOpen((v) => !v)}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium transition-opacity hover:opacity-80",
+          "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium transition-opacity",
+          disabled ? "cursor-default" : "hover:opacity-80",
           cls,
         )}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-current" />
         {label}
-        <ChevronDown className="h-3 w-3 opacity-60" />
+        {!disabled && <ChevronDown className="h-3 w-3 opacity-60" />}
       </button>
-      {open && (
+      {!disabled && open && (
         <div className="absolute left-0 top-full z-50 mt-1 w-40 rounded-lg border border-border bg-popover py-1 shadow-md">
           {STATUS_OPTIONS.filter((o) => o.value !== "all").map((o) => {
             const s = o.value as ProjectStatus;
@@ -242,6 +298,235 @@ function StatBlock({
   );
 }
 
+// ─── Project phases tab (live work orders) ────────────────────────────────────
+
+function AddPhaseModal({
+  projectId,
+  dbProject,
+  teamMembers,
+  onClose,
+  onSaved,
+}: {
+  projectId: string;
+  dbProject: DbProject;
+  teamMembers: TeamMember[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
+  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await insertProjectPhase({
+        name:           fd.get("name") as string,
+        project_id:     projectId,
+        company_id:     dbProject.company?.id ?? null,
+        contact_id:     dbProject.contact_id ?? null,
+        site_address:   dbProject.site_address,
+        assigned_to:    (fd.get("assigned_to") as string) || null,
+        scheduled_date: (fd.get("scheduled_date") as string) || null,
+        budgeted_hours: fd.get("budgeted_hours") ? parseFloat(fd.get("budgeted_hours") as string) : null,
+        notes:          (fd.get("notes") as string) ?? "",
+      });
+      onSaved();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to add phase — check console for details");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <DialogContent className="max-w-md" onInteractOutside={(e) => { if (saving) e.preventDefault(); }}>
+      <DialogHeader><DialogTitle>Add Phase</DialogTitle></DialogHeader>
+      {(dbProject.company || dbProject.site_address) && (
+        <div className="rounded-md bg-muted/40 border border-border px-3 py-2 text-[12px] text-muted-foreground space-y-0.5">
+          {dbProject.company && <p><span className="font-medium text-foreground">{dbProject.company.name}</span></p>}
+          {dbProject.site_address && <p>{dbProject.site_address}</p>}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div>
+          <label className={labelCls}>Phase Name *</label>
+          <input name="name" required className={inputCls} placeholder="e.g. Rough-In, Trim-Out, Commission" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Assigned Technician</label>
+            <select name="assigned_to" className={selectCls}>
+              <option value="">— Unassigned —</option>
+              {teamMembers.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Scheduled Date</label>
+            <input name="scheduled_date" type="date" className={inputCls} />
+          </div>
+          <div className="col-span-2">
+            <label className={labelCls}>Budgeted Hours</label>
+            <input name="budgeted_hours" type="number" min="0" step="0.5" className={inputCls} placeholder="0" />
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>Notes</label>
+          <textarea name="notes" rows={2} className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Any additional context…" />
+        </div>
+        {saveError && (
+          <p className="rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-[12px] text-destructive">{saveError}</p>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">Cancel</button>
+          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+            {saving ? "Adding…" : "Add Phase"}
+          </button>
+        </div>
+      </form>
+    </DialogContent>
+  );
+}
+
+function ProjectPhasesTab({
+  projectId,
+  dbProject,
+  teamMembers,
+  canWrite,
+}: {
+  projectId: string;
+  dbProject: DbProject;
+  teamMembers: TeamMember[];
+  canWrite: boolean;
+}) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [addOpen, setAddOpen] = useState(false);
+
+  const { data: phases = [], isLoading } = useQuery({
+    queryKey: ["project-work-orders", projectId],
+    queryFn: () => fetchProjectPhases(projectId),
+  });
+
+  const handleSaved = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["project-work-orders", projectId] });
+    qc.invalidateQueries({ queryKey: ["work-orders"] });
+    setAddOpen(false);
+  }, [qc, projectId]);
+
+  return (
+    <div className="px-5 py-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          {phases.length} phase{phases.length !== 1 ? "s" : ""}
+        </p>
+        {canWrite && (
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="flex items-center gap-1.5 h-7 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Phase
+          </button>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="py-10 text-center text-[12.5px] text-muted-foreground">Loading phases…</div>
+      ) : phases.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
+          <p className="text-[13px] font-medium">No phases yet</p>
+          <p className="mt-1 text-[12px] text-muted-foreground mb-4">
+            Add phases to break this project into schedulable work orders.
+          </p>
+          {canWrite && (
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              className="flex items-center gap-1.5 h-7 rounded-md bg-primary px-3 text-[12px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add First Phase
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-border overflow-hidden">
+          <table className="w-full text-[12.5px]">
+            <thead className="bg-surface/50 border-b border-border">
+              <tr className="text-[10.5px] uppercase tracking-wide text-muted-foreground">
+                <th className="py-2 px-4 text-left font-medium">Phase</th>
+                <th className="py-2 px-3 text-left font-medium">Status</th>
+                <th className="py-2 px-3 text-left font-medium">Assigned</th>
+                <th className="py-2 px-3 text-left font-medium">Scheduled</th>
+                <th className="py-2 px-3 text-right font-medium">Hours</th>
+              </tr>
+            </thead>
+            <tbody>
+              {phases.map((phase) => {
+                const { label, cls } = statusMeta[phase.status as ProjectStatus];
+                const techName = phase.assignee?.full_name ?? "Unassigned";
+                const techInitials = techName.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+                return (
+                  <tr
+                    key={phase.id}
+                    onClick={() => navigate({ to: "/operations/work-orders/$workOrderId", params: { workOrderId: phase.id } })}
+                    className="border-b border-border/60 last:border-0 cursor-pointer hover:bg-accent/40 transition-colors"
+                  >
+                    <td className="py-2.5 px-4">
+                      <div className="font-medium leading-snug">{phase.name}</div>
+                      <div className="text-[10.5px] font-mono text-muted-foreground">{phase.code ?? "—"}</div>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                        {label}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-1.5">
+                        <Avatar initials={techInitials} className="!h-5 !w-5 !text-[8px] shrink-0" />
+                        <span className="text-muted-foreground">{techName.split(" ")[0]}</span>
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">
+                      {phase.scheduled_date ? (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3 shrink-0" />
+                          {phase.scheduled_date}
+                        </span>
+                      ) : "—"}
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                      {phase.budgeted_hours != null ? `${phase.budgeted_hours}h` : "—"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <AddPhaseModal
+          projectId={projectId}
+          dbProject={dbProject}
+          teamMembers={teamMembers}
+          onClose={() => setAddOpen(false)}
+          onSaved={handleSaved}
+        />
+      </Dialog>
+    </div>
+  );
+}
+
 // ─── Shared detail view ───────────────────────────────────────────────────────
 
 export interface ProjectDetailViewProps {
@@ -254,6 +539,8 @@ export function ProjectDetailView({
   section = "Projects",
 }: ProjectDetailViewProps) {
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("operations", "write");
   const qc = useQueryClient();
   const [tab, setTab] = useState<TabId>("overview");
   const [editOpen, setEditOpen] = useState(false);
@@ -376,7 +663,7 @@ export function ProjectDetailView({
           </div>
 
           <div className="flex flex-col items-end gap-2 shrink-0">
-            <StatusDropdown status={status} onChange={(s) => statusMutation.mutate(s)} />
+            <StatusDropdown status={status} onChange={(s) => statusMutation.mutate(s)} disabled={!canWrite} />
             <p className="text-[22px] font-semibold tabular-nums">{currency(project.contractValue)}</p>
             <p className="text-[10.5px] text-muted-foreground">Contract Value</p>
           </div>
@@ -407,10 +694,12 @@ export function ProjectDetailView({
           </dl>
 
           <div className="flex items-center gap-2 shrink-0">
-            <button type="button" onClick={() => setEditOpen(true)} className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
-              <Pencil className="h-3.5 w-3.5" />
-              Edit
-            </button>
+            {canWrite && (
+              <button type="button" onClick={() => setEditOpen(true)} className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button type="button" className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors" aria-label="More options">
@@ -458,7 +747,7 @@ export function ProjectDetailView({
       {/* Tab content */}
       <div className="flex-1">
         {tab === "overview" && <OverviewTab project={project} margin={margin} completionPct={completionPct} />}
-        {tab === "phases"   && <PhasesPanel projectId={project.id} projectType={project.type} />}
+        {tab === "phases"   && dbProject && <ProjectPhasesTab projectId={project.id} dbProject={dbProject} teamMembers={teamMembers} canWrite={canWrite} />}
         {tab === "parts"    && <PartsPanel projectId={project.id} />}
         {tab === "team"     && <TeamPanel projectId={project.id} />}
         {tab === "activity" && <ActivityPanel projectId={project.id} />}

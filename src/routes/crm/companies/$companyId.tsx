@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/crm/companies/$companyId")({
@@ -97,6 +98,8 @@ function StageBadge({ stage }: { stage: CompanyStage }) {
 function CompanyDetailPage() {
   const { companyId } = Route.useParams();
   const { setMeta } = useMeta();
+  const { can } = usePermissions();
+  const canWrite = can("crm", "write");
   const qc = useQueryClient();
 
   const { data: company, isLoading } = useQuery({
@@ -189,12 +192,14 @@ function CompanyDetailPage() {
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-[17px] font-semibold">{company.name}</h1>
               <StageBadge stage={company.stage} />
-              <button
-                onClick={() => setEditOpen(true)}
-                className="ml-auto flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              >
-                <Pencil className="h-3 w-3" /> Edit
-              </button>
+              {canWrite && (
+                <button
+                  onClick={() => setEditOpen(true)}
+                  className="ml-auto flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                >
+                  <Pencil className="h-3 w-3" /> Edit
+                </button>
+              )}
             </div>
             <p className="text-[12.5px] text-muted-foreground mt-0.5">
               {[company.industry, company.city && company.state ? `${company.city}, ${company.state}` : company.city ?? company.state].filter(Boolean).join(" · ")}
@@ -312,7 +317,7 @@ function CompanyDetailPage() {
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between mb-2.5">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Notes</p>
-              {!editingNotes && (
+              {canWrite && !editingNotes && (
                 <button
                   onClick={() => setEditingNotes(true)}
                   className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
