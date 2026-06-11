@@ -1013,30 +1013,45 @@ export type Database = {
           catalog_item_id: string | null
           description: string
           id: string
+          item_type: string
           quantity: number
           quote_id: string
+          section_name: string | null
+          sort_order: number
           tenant_id: string
           total: number | null
+          unit: string
+          unit_cost: number
           unit_price: number
         }
         Insert: {
           catalog_item_id?: string | null
           description: string
           id?: string
+          item_type?: string
           quantity?: number
           quote_id: string
+          section_name?: string | null
+          sort_order?: number
           tenant_id: string
           total?: number | null
+          unit?: string
+          unit_cost?: number
           unit_price?: number
         }
         Update: {
           catalog_item_id?: string | null
           description?: string
           id?: string
+          item_type?: string
           quantity?: number
           quote_id?: string
+          section_name?: string | null
+          sort_order?: number
           tenant_id?: string
           total?: number | null
+          unit?: string
+          unit_cost?: number
           unit_price?: number
         }
         Relationships: [

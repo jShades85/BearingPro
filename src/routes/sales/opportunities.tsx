@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -50,23 +50,6 @@ interface DbOpportunity {
   quotes: { id: string; number: string; status: QuoteStatus; value: number; notes: string | null; expiry_date: string | null; revision: number }[];
 }
 
-interface DraftLineItem {
-  key: string;
-  catalogItemId: string | null;
-  description: string;
-  quantity: string;
-  unitPrice: string;
-}
-
-interface DbQuoteLineItem {
-  id: string;
-  catalog_item_id: string | null;
-  description: string;
-  quantity: number;
-  unit_price: number;
-}
-
-interface CatalogItemOption { id: string; name: string; msrp: number | null; sku: string | null }
 
 interface Opportunity {
   id: string;
@@ -244,84 +227,6 @@ async function fetchOpportunities(): Promise<DbOpportunity[]> {
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as DbOpportunity[];
-}
-
-async function fetchCatalogItems(): Promise<CatalogItemOption[]> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("catalog_items").select("id,name,msrp,sku").eq("is_active", true).order("name");
-  if (error) throw error;
-  return data ?? [];
-}
-
-async function fetchQuoteLineItems(quoteId: string): Promise<DbQuoteLineItem[]> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("quote_line_items")
-    .select("id, catalog_item_id, description, quantity, unit_price")
-    .eq("quote_id", quoteId)
-    .order("id");
-  if (error) throw error;
-  return data ?? [];
-}
-
-async function saveQuote(
-  opportunityId: string,
-  quoteId: string | null,
-  currentRevision: number,
-  items: DraftLineItem[],
-  notes: string,
-  expiryDate: string,
-): Promise<void> {
-  const supabase = createClient();
-  const { data: tenantRow } = await supabase.from("tenants").select("id").single();
-  if (!tenantRow) throw new Error("No tenant");
-  const tid = tenantRow.id;
-
-  const value = items.reduce((s, li) => s + (parseFloat(li.quantity) || 0) * (parseFloat(li.unitPrice) || 0), 0);
-  const lineItemRows = items
-    .filter((li) => li.description.trim())
-    .map((li) => ({
-      tenant_id:       tid,
-      catalog_item_id: li.catalogItemId,
-      description:     li.description.trim(),
-      quantity:        parseFloat(li.quantity) || 1,
-      unit_price:      parseFloat(li.unitPrice) || 0,
-      total:           (parseFloat(li.quantity) || 1) * (parseFloat(li.unitPrice) || 0),
-    }));
-
-  const expiry = expiryDate || null;
-
-  if (quoteId) {
-    const { error: ue } = await supabase.from("quotes").update({
-      value, notes: notes || null, expiry_date: expiry, revision: currentRevision + 1,
-    }).eq("id", quoteId);
-    if (ue) throw ue;
-    await supabase.from("quote_line_items").delete().eq("quote_id", quoteId);
-    if (lineItemRows.length > 0) {
-      const { error: le } = await supabase.from("quote_line_items").insert(
-        lineItemRows.map((r) => ({ ...r, quote_id: quoteId }))
-      );
-      if (le) throw le;
-    }
-  } else {
-    const { count } = await supabase.from("quotes").select("*", { count: "exact", head: true });
-    const year = new Date().getFullYear();
-    const number = `Q-${year}-${String((count ?? 0) + 1).padStart(3, "0")}`;
-    const { data: quote, error: qe } = await supabase
-      .from("quotes").insert({ tenant_id: tid, opportunity_id: opportunityId, number, value, notes: notes || null, status: "draft", expiry_date: expiry, revision: 1 })
-      .select("id").single();
-    if (qe || !quote) throw qe ?? new Error("Quote insert failed");
-    if (lineItemRows.length > 0) {
-      const { error: le } = await supabase.from("quote_line_items").insert(
-        lineItemRows.map((r) => ({ ...r, quote_id: quote.id }))
-      );
-      if (le) throw le;
-    }
-  }
-
-  const { error: oe } = await supabase.from("opportunities").update({ value }).eq("id", opportunityId);
-  if (oe) throw oe;
 }
 
 async function updateQuoteStatus(quoteId: string, status: QuoteStatus): Promise<void> {
@@ -765,224 +670,6 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
 
 // ─── Opportunity detail drawer ────────────────────────────────────────────────
 
-function freshRow(): DraftLineItem {
-  return { key: crypto.randomUUID(), catalogItemId: null, description: "", quantity: "1", unitPrice: "" };
-}
-
-function QuoteBuilderModal({
-  opportunityId,
-  existingQuote,
-  onClose,
-  onSaved,
-}: {
-  opportunityId: string;
-  existingQuote: LinkedQuote | null;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const [saving, setSaving] = useState(false);
-  const [notes, setNotes] = useState(existingQuote?.notes ?? "");
-  const [expiryDate, setExpiryDate] = useState(existingQuote?.expiryDate ?? "");
-  const [items, setItems] = useState<DraftLineItem[]>([freshRow()]);
-  const initializedRef = useRef(false);
-
-  const { data: catalogItems = [] } = useQuery({ queryKey: ["catalog-items-quote"], queryFn: fetchCatalogItems });
-  const { data: existingLineItems } = useQuery({
-    queryKey: ["quote-line-items", existingQuote?.id],
-    queryFn: () => fetchQuoteLineItems(existingQuote!.id),
-    enabled: !!existingQuote,
-  });
-
-  useEffect(() => {
-    if (!existingLineItems || initializedRef.current) return;
-    initializedRef.current = true;
-    if (existingLineItems.length > 0) {
-      setItems(existingLineItems.map((li) => ({
-        key: li.id,
-        catalogItemId: li.catalog_item_id,
-        description: li.description,
-        quantity: String(li.quantity),
-        unitPrice: String(li.unit_price),
-      })));
-    }
-  }, [existingLineItems]);
-
-  const inputCls = "h-8 rounded-md border border-border bg-background px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
-
-  const total = items.reduce((s, li) => s + (parseFloat(li.quantity) || 0) * (parseFloat(li.unitPrice) || 0), 0);
-  const hasItems = items.some((li) => li.description.trim());
-
-  function updateRow(key: string, patch: Partial<DraftLineItem>) {
-    setItems((prev) => prev.map((r) => r.key === key ? { ...r, ...patch } : r));
-  }
-
-  function handleCatalogSelect(key: string, itemId: string) {
-    const cat = catalogItems.find((c) => c.id === itemId);
-    if (cat) {
-      updateRow(key, {
-        catalogItemId: cat.id,
-        description: cat.name,
-        unitPrice: cat.msrp ? String(cat.msrp) : "",
-      });
-    }
-  }
-
-  async function handleSave() {
-    if (!hasItems) return;
-    setSaving(true);
-    try {
-      await saveQuote(opportunityId, existingQuote?.id ?? null, existingQuote?.revision ?? 1, items, notes, expiryDate);
-      onSaved();
-      onClose();
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <DialogContent className="max-w-2xl">
-      <DialogHeader>
-        <DialogTitle>
-          {existingQuote ? `Edit Quote — ${existingQuote.number}` : "Create Quote"}
-        </DialogTitle>
-      </DialogHeader>
-      <div className="mt-2 space-y-4">
-        {/* Line items table */}
-        <div>
-          <label className={labelCls}>Line Items</label>
-          <div className="rounded-md border border-border overflow-hidden">
-            <table className="w-full text-[12px]">
-              <thead className="bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left py-1.5 px-3 font-medium">Description</th>
-                  <th className="text-right py-1.5 px-2 font-medium w-16">Qty</th>
-                  <th className="text-right py-1.5 px-2 font-medium w-28">Unit Price</th>
-                  <th className="text-right py-1.5 px-3 font-medium w-24">Total</th>
-                  <th className="w-8" />
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((row) => (
-                  <tr key={row.key} className="border-t border-border/60">
-                    <td className="py-1.5 px-2">
-                      <div className="flex flex-col gap-1">
-                        <select
-                          className="h-7 w-full rounded border border-border bg-background px-2 text-[11.5px] text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                          value=""
-                          onChange={(e) => { if (e.target.value) handleCatalogSelect(row.key, e.target.value); e.target.value = ""; }}
-                        >
-                          <option value="">— Pick from catalog —</option>
-                          {catalogItems.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}{c.sku ? ` (${c.sku})` : ""}</option>
-                          ))}
-                        </select>
-                        <input
-                          className={cn(inputCls, "w-full")}
-                          placeholder="Description"
-                          value={row.description}
-                          onChange={(e) => updateRow(row.key, { description: e.target.value, catalogItemId: e.target.value !== row.description ? null : row.catalogItemId })}
-                        />
-                      </div>
-                    </td>
-                    <td className="py-1.5 px-2">
-                      <input
-                        type="number" min="0.01" step="0.01"
-                        className={cn(inputCls, "w-full text-right")}
-                        value={row.quantity}
-                        onChange={(e) => updateRow(row.key, { quantity: e.target.value })}
-                      />
-                    </td>
-                    <td className="py-1.5 px-2">
-                      <input
-                        type="number" min="0" step="0.01"
-                        placeholder="0.00"
-                        className={cn(inputCls, "w-full text-right")}
-                        value={row.unitPrice}
-                        onChange={(e) => updateRow(row.key, { unitPrice: e.target.value })}
-                      />
-                    </td>
-                    <td className="py-1.5 px-3 text-right tabular-nums font-medium text-[11.5px]">
-                      {row.quantity && row.unitPrice
-                        ? currency((parseFloat(row.quantity) || 0) * (parseFloat(row.unitPrice) || 0))
-                        : "—"}
-                    </td>
-                    <td className="py-1 pr-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setItems((prev) => prev.filter((r) => r.key !== row.key))}
-                        disabled={items.length === 1}
-                        className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <button
-            type="button"
-            onClick={() => setItems((prev) => [...prev, freshRow()])}
-            className="mt-2 flex items-center gap-1 text-[11.5px] text-primary hover:underline"
-          >
-            <Plus className="h-3.5 w-3.5" /> Add Line Item
-          </button>
-        </div>
-
-        {/* Expiry + Notes */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelCls}>Expiry Date</label>
-            <input
-              type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-              className={cn(inputCls, "w-full")}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Notes</label>
-            <textarea
-              rows={1}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Scope notes, exclusions…"
-              className="w-full resize-none rounded-md border border-border bg-background px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-        </div>
-
-        {/* Total + actions */}
-        {total > 0 && (
-          <div className="rounded-md bg-surface border border-border px-4 py-2.5 flex items-center justify-between">
-            <span className="text-[12px] text-muted-foreground">Quote Total</span>
-            <span className="font-mono text-[14px] font-semibold">{currency(total)}</span>
-          </div>
-        )}
-        <div className="flex gap-2 pt-1">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || !hasItems}
-            className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
-          >
-            {saving ? "Saving…" : existingQuote ? "Save Changes" : "Create Quote"}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </DialogContent>
-  );
-}
-
 function OpportunityDrawer({
   opp,
   onNotesChange,
@@ -1010,8 +697,8 @@ function OpportunityDrawer({
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [siteAddr, setSiteAddr] = useState("");
   const [mode, setMode] = useState<"view" | "edit">("view");
-  const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
@@ -1183,7 +870,7 @@ function OpportunityDrawer({
                 <div className="flex gap-2 pt-0.5">
                   <button
                     type="button"
-                    onClick={() => setQuoteModalOpen(true)}
+                    onClick={() => navigate({ to: "/sales/quotes/$quoteId", params: { quoteId: opp.linkedQuote!.id } })}
                     className="flex items-center gap-1 h-7 rounded-md border border-border bg-background px-2.5 text-[11.5px] hover:bg-accent transition-colors"
                   >
                     <Pencil className="h-3 w-3" /> Edit
@@ -1213,7 +900,11 @@ function OpportunityDrawer({
             <div className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2.5 text-[12px]">
               <span className="text-muted-foreground">No quote linked yet</span>
               {canWrite && (
-                <button type="button" onClick={() => setQuoteModalOpen(true)} className="text-primary text-[11.5px] font-medium hover:underline">
+                <button
+                  type="button"
+                  onClick={() => navigate({ to: "/sales/quotes/new", search: { opportunityId: opp.id } })}
+                  className="text-primary text-[11.5px] font-medium hover:underline"
+                >
                   Create Quote
                 </button>
               )}
@@ -1334,16 +1025,6 @@ function OpportunityDrawer({
           </button>
         )}
       </div>
-      <Dialog open={quoteModalOpen} onOpenChange={setQuoteModalOpen}>
-        {quoteModalOpen && (
-          <QuoteBuilderModal
-            opportunityId={opp.id}
-            existingQuote={opp.linkedQuote ?? null}
-            onClose={() => setQuoteModalOpen(false)}
-            onSaved={() => { setQuoteModalOpen(false); onQuoteSaved(); }}
-          />
-        )}
-      </Dialog>
     </SheetContent>
   );
 }
