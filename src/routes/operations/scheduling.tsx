@@ -984,18 +984,23 @@ function SchedulingPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select("id, code, name, site_address, companies!company_id(name)")
+        .select("id, code, name, site_address, companies!company_id(name), contacts!contact_id(full_name)")
         .neq("status", "cancelled")
         .order("code");
       if (error) throw error;
-      return (data ?? []).map((r) => ({
-        id: r.id,
-        code: r.code ?? "",
-        name: r.name,
-        site_address: r.site_address ?? "",
+      return (data ?? []).map((r) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        customer_name: (r.companies as any)?.name ?? "",
-      }));
+        const co = r.companies as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ct = r.contacts as any;
+        return {
+          id: r.id,
+          code: r.code ?? "",
+          name: r.name,
+          site_address: r.site_address ?? "",
+          customer_name: co?.name ?? ct?.full_name ?? "",
+        };
+      });
     },
   });
 
@@ -1004,18 +1009,30 @@ function SchedulingPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("work_orders")
-        .select("id, code, name, site_address, companies!company_id(name)")
+        .select(`
+          id, code, name, site_address,
+          companies!company_id(name),
+          contacts!contact_id(full_name),
+          projects!project_id(site_address, companies!company_id(name), contacts!contact_id(full_name))
+        `)
         .neq("status", "cancelled")
         .order("code");
       if (error) throw error;
-      return (data ?? []).map((r) => ({
-        id: r.id,
-        code: r.code ?? "",
-        name: r.name,
-        site_address: r.site_address ?? "",
+      return (data ?? []).map((r) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        customer_name: (r.companies as any)?.name ?? "",
-      }));
+        const co = r.companies as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ct = r.contacts as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const proj = r.projects as any;
+        return {
+          id: r.id,
+          code: r.code ?? "",
+          name: r.name,
+          site_address: r.site_address || proj?.site_address || "",
+          customer_name: co?.name ?? ct?.full_name ?? proj?.companies?.name ?? proj?.contacts?.full_name ?? "",
+        };
+      });
     },
   });
 
