@@ -658,8 +658,8 @@ function ScheduleDrawer({
   onSave: (data: FormData, editingId?: string) => void;
   editingJob?: ScheduledJob | null;
   teamMembers: { id: string; full_name: string }[];
-  projects: { id: string; code: string; name: string }[];
-  workOrders: { id: string; code: string; name: string }[];
+  projects: { id: string; code: string; name: string; site_address: string; customer_name: string }[];
+  workOrders: { id: string; code: string; name: string; site_address: string; customer_name: string }[];
 }) {
   const {
     register,
@@ -707,6 +707,8 @@ function ScheduleDrawer({
     if (record) {
       setValue("jobReference", record.code);
       setValue("title", record.name);
+      if (record.customer_name) setValue("customer", record.customer_name);
+      if (record.site_address) setValue("address", record.site_address);
     }
   };
 
@@ -978,28 +980,42 @@ function SchedulingPage() {
   });
 
   const { data: projects = [] } = useQuery({
-    queryKey: ["projects-basic"],
+    queryKey: ["projects-scheduling"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select("id, code, name")
+        .select("id, code, name, site_address, companies!company_id(name)")
         .neq("status", "cancelled")
         .order("code");
       if (error) throw error;
-      return data as { id: string; code: string; name: string }[];
+      return (data ?? []).map((r) => ({
+        id: r.id,
+        code: r.code ?? "",
+        name: r.name,
+        site_address: r.site_address ?? "",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        customer_name: (r.companies as any)?.name ?? "",
+      }));
     },
   });
 
   const { data: workOrders = [] } = useQuery({
-    queryKey: ["work-orders-basic"],
+    queryKey: ["work-orders-scheduling"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("work_orders")
-        .select("id, code, name")
+        .select("id, code, name, site_address, companies!company_id(name)")
         .neq("status", "cancelled")
         .order("code");
       if (error) throw error;
-      return data as { id: string; code: string; name: string }[];
+      return (data ?? []).map((r) => ({
+        id: r.id,
+        code: r.code ?? "",
+        name: r.name,
+        site_address: r.site_address ?? "",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        customer_name: (r.companies as any)?.name ?? "",
+      }));
     },
   });
 
