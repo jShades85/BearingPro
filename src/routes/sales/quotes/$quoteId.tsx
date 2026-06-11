@@ -85,6 +85,14 @@ function QuoteDetailPage() {
       const { error } = await supabase
         .from("quotes").update({ status: "sent" }).eq("id", quoteId);
       if (error) throw error;
+      const oppId = loaded?.quote.opportunity_id;
+      if (oppId) {
+        await supabase
+          .from("opportunities")
+          .update({ stage: "negotiation" })
+          .eq("id", oppId)
+          .eq("stage", "estimating"); // only advance if still in estimating
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quote-detail", quoteId] });
