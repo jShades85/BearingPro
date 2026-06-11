@@ -89,11 +89,10 @@ async function fetchContactOptions(): Promise<ContactOption[]> {
 }
 
 async function insertWorkOrder(values: {
-  name: string; project_id: string | null; company_id: string | null; contact_id: string | null;
+  name: string; project_id?: string | null; company_id: string | null; contact_id: string | null;
   assigned_to: string | null; site_address: string; contract_value: number | null;
   budgeted_cost: number | null; budgeted_hours: number | null;
   scheduled_date: string | null; status: WOStatus; notes: string;
-  project_id?: string | null;
 }) {
   const supabase = createClient();
   const { data: tenantRow } = await supabase.from("tenants").select("id").single();
