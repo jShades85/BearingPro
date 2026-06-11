@@ -6,7 +6,7 @@ import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import {
   AlertCircle, Check, CheckCircle2, ChevronsUpDown,
-  CreditCard, FileText, Pencil, X,
+  CreditCard, Download, FileText, Pencil, Plus, X,
 } from "lucide-react";
 import {
   StatBar, StatItem, FilterBar, SearchInput, FilterSelect,
@@ -112,7 +112,11 @@ interface Invoice {
   payments: Payment[];
 }
 
-type DbProject = { id: string; code: string; name: string };
+type DbProject = {
+  id: string; code: string; name: string;
+  company: { id: string; name: string } | null;
+  contact: { id: string; full_name: string } | null;
+};
 type DbWorkOrder = { id: string; code: string; name: string };
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -198,6 +202,64 @@ function toInvoice(r: DbInvoice): Invoice {
         reference: p.reference,
       })),
   };
+}
+
+// ─── Line item data functions ─────────────────────────────────────────────────
+
+async function recalcInvoiceTotals(invoiceId: string) {
+  const { data } = await supabase
+    .from("invoices")
+    .select("tax_rate, amount_paid, invoice_line_items(total)")
+    .eq("id", invoiceId)
+    .single();
+  if (!data) return;
+  const subtotal = (data.invoice_line_items as { total: number }[])
+    .reduce((s, li) => s + Number(li.total), 0);
+  const taxAmount = subtotal * Number(data.tax_rate ?? 0);
+  const total = subtotal + taxAmount;
+  const balanceDue = Math.max(0, total - Number(data.amount_paid ?? 0));
+  const { error } = await supabase
+    .from("invoices")
+    .update({ subtotal, tax_amount: taxAmount, total, balance_due: balanceDue })
+    .eq("id", invoiceId);
+  if (error) throw error;
+}
+
+async function insertInvoiceLineItem(
+  invoiceId: string,
+  item: { description: string; qty: number; unit_price: number },
+) {
+  const total = item.qty * item.unit_price;
+  const { error } = await supabase
+    .from("invoice_line_items")
+    .insert({ invoice_id: invoiceId, ...item, total });
+  if (error) throw error;
+  await recalcInvoiceTotals(invoiceId);
+}
+
+async function deleteInvoiceLineItem(invoiceId: string, lineItemId: string) {
+  const { error } = await supabase.from("invoice_line_items").delete().eq("id", lineItemId);
+  if (error) throw error;
+  await recalcInvoiceTotals(invoiceId);
+}
+
+async function importProjectLineItems(invoiceId: string, projectId: string) {
+  const { data: parts, error: fetchErr } = await supabase
+    .from("project_line_items")
+    .select("name, qty, unit_cost")
+    .eq("project_id", projectId);
+  if (fetchErr) throw fetchErr;
+  if (!parts || parts.length === 0) return;
+  const rows = parts.map((p) => ({
+    invoice_id:  invoiceId,
+    description: p.name,
+    qty:         Number(p.qty),
+    unit_price:  Number(p.unit_cost),
+    total:       Number(p.qty) * Number(p.unit_cost),
+  }));
+  const { error: insertErr } = await supabase.from("invoice_line_items").insert(rows);
+  if (insertErr) throw insertErr;
+  await recalcInvoiceTotals(invoiceId);
 }
 
 // ─── StatusBadge ──────────────────────────────────────────────────────────────
@@ -331,6 +393,10 @@ function InvoiceDrawer({
   onSwitchToEdit,
   onSave,
   isPending,
+  onAddLineItem,
+  onDeleteLineItem,
+  onImportFromParts,
+  isLineItemPending,
 }: {
   open: boolean;
   invoice: Invoice | null;
@@ -341,6 +407,10 @@ function InvoiceDrawer({
   onSwitchToEdit: () => void;
   onSave: (patch: TablesUpdate<"invoices">) => void;
   isPending: boolean;
+  onAddLineItem: (item: { description: string; qty: number; unit_price: number }) => void;
+  onDeleteLineItem: (lineItemId: string) => void;
+  onImportFromParts: () => void;
+  isLineItemPending?: boolean;
 }) {
   const [form, setForm] = useState<{
     status: InvoiceStatus;
@@ -359,9 +429,11 @@ function InvoiceDrawer({
   });
 
   const initializedRef = useRef(false);
+  const [addingItem, setAddingItem] = useState(false);
+  const [newItem, setNewItem] = useState({ description: "", qty: "1", unit_price: "" });
 
   useEffect(() => {
-    if (!open || !invoice) { initializedRef.current = false; return; }
+    if (!open || !invoice) { initializedRef.current = false; setAddingItem(false); return; }
     if (initializedRef.current) return;
     initializedRef.current = true;
     setForm({
@@ -462,7 +534,29 @@ function InvoiceDrawer({
 
               {/* Line items */}
               <div>
-                <p className={labelCls}>Line Items</p>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className={labelCls}>Line Items</p>
+                  <div className="flex items-center gap-2">
+                    {invoice.linkedProjectId && invoice.lineItems.length === 0 && (
+                      <button
+                        type="button"
+                        onClick={onImportFromParts}
+                        disabled={isLineItemPending}
+                        className="flex items-center gap-1 text-[11px] text-primary hover:underline disabled:opacity-50"
+                      >
+                        <Download className="h-3 w-3" /> Import from Parts List
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { setAddingItem(true); setNewItem({ description: "", qty: "1", unit_price: "" }); }}
+                      disabled={addingItem || isLineItemPending}
+                      className="flex items-center gap-1 text-[11px] text-primary hover:underline disabled:opacity-50"
+                    >
+                      <Plus className="h-3 w-3" /> Add Item
+                    </button>
+                  </div>
+                </div>
                 <div className="rounded-md border border-border overflow-hidden">
                   <table className="w-full text-[11.5px]">
                     <thead className="bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -471,24 +565,98 @@ function InvoiceDrawer({
                         <th className="text-right py-1.5 px-3 font-medium">Qty</th>
                         <th className="text-right py-1.5 px-3 font-medium">Unit</th>
                         <th className="text-right py-1.5 px-3 font-medium">Total</th>
+                        <th className="w-6" />
                       </tr>
                     </thead>
                     <tbody>
-                      {invoice.lineItems.length === 0 && (
+                      {invoice.lineItems.length === 0 && !addingItem && (
                         <tr>
-                          <td colSpan={4} className="px-3 py-4 text-center text-[11.5px] text-muted-foreground italic">
-                            No line items — add via Quote Builder
+                          <td colSpan={5} className="px-3 py-4 text-center text-[11.5px] text-muted-foreground italic">
+                            No line items yet
                           </td>
                         </tr>
                       )}
                       {invoice.lineItems.map((li, idx) => (
-                        <tr key={li.id} className={cn("border-t border-border/60", idx % 2 === 1 && "bg-muted/20")}>
+                        <tr key={li.id} className={cn("group border-t border-border/60", idx % 2 === 1 && "bg-muted/20")}>
                           <td className="py-2 px-3 text-foreground">{li.description}</td>
                           <td className="py-2 px-3 text-right tabular-nums text-muted-foreground">{li.qty}</td>
                           <td className="py-2 px-3 text-right tabular-nums text-muted-foreground">{currency(li.unitPrice)}</td>
                           <td className="py-2 px-3 text-right tabular-nums font-medium">{currency(li.total)}</td>
+                          <td className="py-1 pr-2 text-right">
+                            <button
+                              type="button"
+                              onClick={() => onDeleteLineItem(li.id)}
+                              disabled={isLineItemPending}
+                              className="opacity-0 group-hover:opacity-100 h-5 w-5 flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all disabled:opacity-30"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </td>
                         </tr>
                       ))}
+                      {addingItem && (
+                        <tr className="border-t border-border/60 bg-muted/10">
+                          <td className="py-1.5 px-2">
+                            <input
+                              autoFocus
+                              value={newItem.description}
+                              onChange={(e) => setNewItem((n) => ({ ...n, description: e.target.value }))}
+                              placeholder="Description"
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-[11.5px] focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                          </td>
+                          <td className="py-1.5 px-2 w-16">
+                            <input
+                              type="number"
+                              min="1"
+                              value={newItem.qty}
+                              onChange={(e) => setNewItem((n) => ({ ...n, qty: e.target.value }))}
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-[11.5px] text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                          </td>
+                          <td className="py-1.5 px-2 w-24">
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={newItem.unit_price}
+                              onChange={(e) => setNewItem((n) => ({ ...n, unit_price: e.target.value }))}
+                              placeholder="0.00"
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-[11.5px] text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                          </td>
+                          <td className="py-1.5 px-3 text-right tabular-nums text-muted-foreground text-[11px]">
+                            {newItem.qty && newItem.unit_price
+                              ? currency(Number(newItem.qty) * Number(newItem.unit_price))
+                              : "—"}
+                          </td>
+                          <td className="py-1 pr-2">
+                            <div className="flex items-center gap-1 justify-end">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const qty = Number(newItem.qty);
+                                  const unit_price = Number(newItem.unit_price);
+                                  if (!newItem.description.trim() || qty <= 0 || unit_price < 0) return;
+                                  onAddLineItem({ description: newItem.description.trim(), qty, unit_price });
+                                  setAddingItem(false);
+                                }}
+                                disabled={!newItem.description.trim() || !newItem.qty || !newItem.unit_price || isLineItemPending}
+                                className="h-5 px-1.5 rounded text-[10px] bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40"
+                              >
+                                Add
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setAddingItem(false)}
+                                className="h-5 w-5 flex items-center justify-center rounded text-muted-foreground hover:bg-accent"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -639,10 +807,10 @@ function InvoiceDrawer({
                 />
               </div>
 
-              {/* Line items read-only */}
+              {/* Line items read-only in edit mode — editing happens in view mode */}
               {invoice.lineItems.length > 0 && (
                 <div>
-                  <p className={labelCls}>Line Items</p>
+                  <p className={labelCls}>Line Items ({invoice.lineItems.length})</p>
                   <div className="rounded-md border border-border overflow-hidden">
                     <table className="w-full text-[11.5px]">
                       <thead className="bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -665,7 +833,6 @@ function InvoiceDrawer({
                       </tbody>
                     </table>
                   </div>
-                  <p className="text-[10.5px] text-muted-foreground mt-1.5">Line item editing coming in the quote builder integration.</p>
                 </div>
               )}
 
@@ -763,7 +930,15 @@ function NewInvoiceModal({
             <label className={labelCls}>Linked Job</label>
             <JobCombobox
               value={form.linkedJobId}
-              onChange={(v) => setForm((f) => ({ ...f, linkedJobId: v }))}
+              onChange={(v) => {
+                const update: Partial<typeof form> = { linkedJobId: v };
+                if (v.startsWith("p:")) {
+                  const proj = projects.find((p) => p.id === v.slice(2));
+                  if (proj?.company?.name) update.companyName = proj.company.name;
+                  if (proj?.contact?.full_name) update.contactName = proj.contact.full_name;
+                }
+                setForm((f) => ({ ...f, ...update }));
+              }}
               projects={projects}
               workOrders={workOrders}
             />
@@ -789,7 +964,7 @@ function NewInvoiceModal({
               className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
             />
           </div>
-          <p className="text-[10.5px] text-muted-foreground">Invoice is created as a draft. Add line items via the Quote Builder.</p>
+          <p className="text-[10.5px] text-muted-foreground">Invoice is created as a draft. Add line items after creating.</p>
         </div>
         <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
           <button onClick={onClose} className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
@@ -833,15 +1008,15 @@ function InvoicesPage() {
   });
 
   const { data: rawProjects = [] } = useQuery({
-    queryKey: ["projects-basic"],
+    queryKey: ["projects-invoice-options"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select("id, code, name")
+        .select("id, code, name, company:companies(id, name), contact:contacts(id, full_name)")
         .neq("status", "cancelled")
         .order("code");
       if (error) throw error;
-      return data as DbProject[];
+      return data as unknown as DbProject[];
     },
   });
 
@@ -921,6 +1096,24 @@ function InvoicesPage() {
       qc.setQueryData<DbInvoice[]>(["invoices"], (prev = []) => [created, ...prev]);
       setNewOpen(false);
     },
+  });
+
+  const addLineItemMutation = useMutation({
+    mutationFn: ({ invoiceId, item }: { invoiceId: string; item: { description: string; qty: number; unit_price: number } }) =>
+      insertInvoiceLineItem(invoiceId, item),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["invoices"] }),
+  });
+
+  const deleteLineItemMutation = useMutation({
+    mutationFn: ({ invoiceId, lineItemId }: { invoiceId: string; lineItemId: string }) =>
+      deleteInvoiceLineItem(invoiceId, lineItemId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["invoices"] }),
+  });
+
+  const importPartsMutation = useMutation({
+    mutationFn: ({ invoiceId, projectId }: { invoiceId: string; projectId: string }) =>
+      importProjectLineItems(invoiceId, projectId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["invoices"] }),
   });
 
   const filtered = useMemo(() => {
@@ -1050,6 +1243,10 @@ function InvoicesPage() {
         onSwitchToEdit={() => setDrawerMode(drawerMode === "view" ? "edit" : "view")}
         onSave={(patch) => { if (selectedId) saveMutation.mutate({ id: selectedId, patch }); }}
         isPending={saveMutation.isPending}
+        onAddLineItem={(item) => { if (selectedId) addLineItemMutation.mutate({ invoiceId: selectedId, item }); }}
+        onDeleteLineItem={(lineItemId) => { if (selectedId) deleteLineItemMutation.mutate({ invoiceId: selectedId, lineItemId }); }}
+        onImportFromParts={() => { if (selectedId && selected?.linkedProjectId) importPartsMutation.mutate({ invoiceId: selectedId, projectId: selected.linkedProjectId }); }}
+        isLineItemPending={addLineItemMutation.isPending || deleteLineItemMutation.isPending || importPartsMutation.isPending}
       />
 
       {newOpen && (
