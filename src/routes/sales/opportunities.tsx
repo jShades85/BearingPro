@@ -151,7 +151,7 @@ function toUiOpp(d: DbOpportunity): Opportunity {
   };
 }
 
-async function convertToProject(opp: Opportunity): Promise<void> {
+async function convertToProject(opp: Opportunity, siteAddress?: string): Promise<void> {
   const supabase = createClient();
   const { data: tenantRow } = await supabase.from("tenants").select("id").single();
   if (!tenantRow) throw new Error("No tenant");
@@ -166,7 +166,8 @@ async function convertToProject(opp: Opportunity): Promise<void> {
     opportunity_id: opp.id,
     contract_value: opp.value || null,
     pm_id:          opp.repId || null,
-    status:         "scheduled",
+    status:         "planning",
+    site_address:   siteAddress || null,
   });
   if (error) throw error;
 }
@@ -419,8 +420,8 @@ function Opportunities() {
             onCreateQuote={async (item, qty, unitPrice, notes) => {
               await quoteMutation.mutateAsync({ oppId: selected.id, item, qty, unitPrice, notes });
             }}
-            onConvert={async (type) => {
-              if (type === "project") await convertToProject(selected);
+            onConvert={async (type, siteAddress) => {
+              if (type === "project") await convertToProject(selected, siteAddress);
               else await convertToWorkOrder(selected);
               qc.invalidateQueries({ queryKey: ["projects"] });
               qc.invalidateQueries({ queryKey: ["work-orders"] });
@@ -761,13 +762,15 @@ function OpportunityDrawer({
   onNotesChange: (notes: string) => void;
   onSave: (values: Parameters<typeof updateOpportunity>[1]) => Promise<void>;
   onCreateQuote: (item: CatalogItemOption, qty: number, unitPrice: number, notes: string) => Promise<void>;
-  onConvert: (type: "project" | "work-order") => Promise<void>;
+  onConvert: (type: "project" | "work-order", siteAddress?: string) => Promise<void>;
   canWrite: boolean;
   team: TeamMember[];
 }) {
   const [notes, setNotes] = useState(opp.notes);
   const [converting, setConverting] = useState(false);
   const [convertPicking, setConvertPicking] = useState(false);
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [siteAddr, setSiteAddr] = useState("");
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -981,16 +984,13 @@ function OpportunityDrawer({
             Convert to Project / Work Order
           </button>
         )}
-        {canWrite && opp.stage === "closed-won" && convertPicking && (
+        {canWrite && opp.stage === "closed-won" && convertPicking && !showProjectForm && (
           <div className="rounded-md border border-border bg-surface/50 p-3 space-y-2">
             <p className="text-[11px] text-muted-foreground text-center">What type of record is this?</p>
             <div className="flex gap-2">
               <button
                 disabled={converting}
-                onClick={async () => {
-                  setConverting(true);
-                  try { await onConvert("project"); } finally { setConverting(false); }
-                }}
+                onClick={() => { setConvertPicking(false); setShowProjectForm(true); }}
                 className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
               >
                 Project
@@ -1011,6 +1011,38 @@ function OpportunityDrawer({
               className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
               Cancel
+            </button>
+          </div>
+        )}
+        {canWrite && opp.stage === "closed-won" && showProjectForm && (
+          <div className="rounded-md border border-border bg-surface/50 p-3 space-y-2">
+            <p className="text-[11px] font-medium text-foreground">Convert to Project</p>
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                Site Address
+              </label>
+              <input
+                value={siteAddr}
+                onChange={(e) => setSiteAddr(e.target.value)}
+                placeholder="123 Main St, City, ST 00000"
+                className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <button
+              disabled={converting}
+              onClick={async () => {
+                setConverting(true);
+                try { await onConvert("project", siteAddr || undefined); } finally { setConverting(false); }
+              }}
+              className="w-full h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              {converting ? "Converting…" : "Convert"}
+            </button>
+            <button
+              onClick={() => { setShowProjectForm(false); setSiteAddr(""); }}
+              className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Back
             </button>
           </div>
         )}
