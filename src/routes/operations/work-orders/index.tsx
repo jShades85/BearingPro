@@ -33,6 +33,7 @@ interface DbWorkOrder {
 interface TeamMember { id: string; full_name: string | null }
 interface CompanyOption { id: string; name: string }
 interface ContactOption { id: string; full_name: string }
+interface ProjectOption { id: string; code: string; name: string; company_id: string | null; contact_id: string | null; site_address: string | null }
 
 const WO_STATUS_OPTIONS: Array<{ value: WOStatus | "all"; label: string }> = [
   { value: "all",         label: "All" },
@@ -69,6 +70,17 @@ async function fetchCompanyOptions(): Promise<CompanyOption[]> {
   return data ?? [];
 }
 
+async function fetchProjectOptions(): Promise<ProjectOption[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("id,code,name,company_id,contact_id,site_address")
+    .neq("status", "cancelled")
+    .order("code");
+  if (error) throw error;
+  return (data ?? []) as ProjectOption[];
+}
+
 async function fetchContactOptions(): Promise<ContactOption[]> {
   const supabase = createClient();
   const { data, error } = await supabase.from("contacts").select("id,full_name").order("full_name");
@@ -77,7 +89,7 @@ async function fetchContactOptions(): Promise<ContactOption[]> {
 }
 
 async function insertWorkOrder(values: {
-  name: string; company_id: string | null; contact_id: string | null;
+  name: string; project_id: string | null; company_id: string | null; contact_id: string | null;
   assigned_to: string | null; site_address: string; contract_value: number | null;
   budgeted_cost: number | null; budgeted_hours: number | null;
   scheduled_date: string | null; status: WOStatus; notes: string;
@@ -229,12 +241,33 @@ function NewWorkOrderModal({
   onSave: (values: Parameters<typeof insertWorkOrder>[0]) => Promise<void>;
 }) {
   const [saving, setSaving] = useState(false);
+  const [projectId, setProjectId] = useState("");
+  const [companyId, setCompanyId] = useState("");
+  const [contactId, setContactId] = useState("");
+  const [siteAddress, setSiteAddress] = useState("");
+
+  const { data: projects = [] } = useQuery({ queryKey: ["projects-wo-options"], queryFn: fetchProjectOptions });
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
   const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
   const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
   const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+
+  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    setProjectId(id);
+    const proj = projects.find((p) => p.id === id);
+    if (proj) {
+      if (proj.company_id) setCompanyId(proj.company_id);
+      if (proj.contact_id) setContactId(proj.contact_id);
+      if (proj.site_address) setSiteAddress(proj.site_address);
+    } else {
+      setCompanyId("");
+      setContactId("");
+      setSiteAddress("");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -243,10 +276,11 @@ function NewWorkOrderModal({
     try {
       await onSave({
         name:           fd.get("name") as string,
-        company_id:     (fd.get("company_id") as string) || null,
-        contact_id:     (fd.get("contact_id") as string) || null,
+        project_id:     projectId || null,
+        company_id:     companyId || null,
+        contact_id:     contactId || null,
         assigned_to:    (fd.get("assigned_to") as string) || null,
-        site_address:   fd.get("site_address") as string,
+        site_address:   siteAddress,
         contract_value: fd.get("contract_value") ? parseFloat(fd.get("contract_value") as string) : null,
         budgeted_cost:  fd.get("budgeted_cost") ? parseFloat(fd.get("budgeted_cost") as string) : null,
         budgeted_hours: fd.get("budgeted_hours") ? parseFloat(fd.get("budgeted_hours") as string) : null,
@@ -265,19 +299,28 @@ function NewWorkOrderModal({
       <form onSubmit={handleSubmit} className="mt-1 space-y-3">
         <div>
           <label className={labelCls}>Work Order Name *</label>
-          <input name="name" required className={inputCls} placeholder="e.g. AV System Service Call" />
+          <input name="name" required className={inputCls} placeholder="e.g. Paulson — Rough-In" />
+        </div>
+        <div>
+          <label className={labelCls}>Link to Project</label>
+          <select value={projectId} onChange={handleProjectChange} className={selectCls}>
+            <option value="">— Standalone (no project) —</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
+            ))}
+          </select>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Company</label>
-            <select name="company_id" className={selectCls}>
+            <select value={companyId} onChange={(e) => setCompanyId(e.target.value)} className={selectCls}>
               <option value="">— None —</option>
               {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
             <label className={labelCls}>Contact</label>
-            <select name="contact_id" className={selectCls}>
+            <select value={contactId} onChange={(e) => setContactId(e.target.value)} className={selectCls}>
               <option value="">— None —</option>
               {contacts.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
             </select>
@@ -312,7 +355,12 @@ function NewWorkOrderModal({
         </div>
         <div>
           <label className={labelCls}>Site Address</label>
-          <input name="site_address" className={inputCls} placeholder="123 Main St, City, ST" />
+          <input
+            value={siteAddress}
+            onChange={(e) => setSiteAddress(e.target.value)}
+            className={inputCls}
+            placeholder="123 Main St, City, ST"
+          />
         </div>
         <div>
           <label className={labelCls}>Notes</label>
