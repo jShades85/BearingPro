@@ -657,7 +657,7 @@ function ScheduleDrawer({
   onSave: (data: FormData, editingId?: string) => void;
   editingJob?: ScheduledJob | null;
   teamMembers: { id: string; full_name: string }[];
-  workOrders: { id: string; code: string; name: string; site_address: string; customer_name: string }[];
+  workOrders: { id: string; code: string; name: string; site_address: string; customer_name: string; scheduled_date: string | null; assigned_to: string | null }[];
 }) {
   const {
     register,
@@ -705,6 +705,8 @@ function ScheduleDrawer({
       setValue("title", record.name);
       if (record.customer_name) setValue("customer", record.customer_name);
       if (record.site_address) setValue("address", record.site_address);
+      if (record.scheduled_date) setValue("date", record.scheduled_date);
+      if (record.assigned_to) setValue("techIds", [record.assigned_to], { shouldValidate: true });
     }
   };
 
@@ -966,7 +968,7 @@ function SchedulingPage() {
       const { data, error } = await supabase
         .from("work_orders")
         .select(`
-          id, code, name, site_address,
+          id, code, name, site_address, scheduled_date, assigned_to,
           companies!company_id(name),
           contacts!contact_id(full_name),
           projects!project_id(site_address, companies!company_id(name), contacts!contact_id(full_name))
@@ -987,6 +989,8 @@ function SchedulingPage() {
           name: r.name,
           site_address: r.site_address || proj?.site_address || "",
           customer_name: co?.name ?? ct?.full_name ?? proj?.companies?.name ?? proj?.contacts?.full_name ?? "",
+          scheduled_date: r.scheduled_date ?? null,
+          assigned_to: r.assigned_to ?? null,
         };
       });
     },
