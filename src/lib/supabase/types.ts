@@ -1083,6 +1083,104 @@ export type Database = {
           },
         ]
       }
+      scheduled_job_techs: {
+        Row: {
+          id: string
+          scheduled_job_id: string
+          team_member_id: string
+        }
+        Insert: {
+          id?: string
+          scheduled_job_id: string
+          team_member_id: string
+        }
+        Update: {
+          id?: string
+          scheduled_job_id?: string
+          team_member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_job_techs_scheduled_job_id_fkey"
+            columns: ["scheduled_job_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_job_techs_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_jobs: {
+        Row: {
+          address: string | null
+          category: string
+          created_at: string
+          customer_name: string
+          date: string
+          end_time: string
+          id: string
+          job_id: string | null
+          job_reference: string | null
+          job_type: string
+          notes: string | null
+          start_time: string
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          category: string
+          created_at?: string
+          customer_name: string
+          date: string
+          end_time: string
+          id?: string
+          job_id?: string | null
+          job_reference?: string | null
+          job_type: string
+          notes?: string | null
+          start_time: string
+          status?: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          customer_name?: string
+          date?: string
+          end_time?: string
+          id?: string
+          job_id?: string | null
+          job_reference?: string | null
+          job_type?: string
+          notes?: string | null
+          start_time?: string
+          status?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_jobs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_plans: {
         Row: {
           account_manager_id: string | null

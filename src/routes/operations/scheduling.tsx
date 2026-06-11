@@ -5,8 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ChevronLeft, ChevronRight, ChevronDown, MapPin, Clock } from "lucide-react";
 import { useMeta } from "@/contexts/PageMetaContext";
-import { ownerNames } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
 import {
   Sheet,
   SheetContent,
@@ -40,13 +41,14 @@ type JobType = "project" | "work_order";
 
 interface ScheduledJob {
   id: string;
-  title: string;
+  jobId: string | null;
   jobType: JobType;
   jobReference: string;
+  title: string;
   category: JobCategory;
   customer: string;
   address: string;
-  assignedTechs: string[];
+  assignedTechs: { id: string; name: string }[];
   date: string;       // YYYY-MM-DD
   startTime: string;  // HH:MM 24h
   endTime: string;    // HH:MM 24h
@@ -60,8 +62,6 @@ const HOUR_START = 7;
 const HOUR_END = 19;
 const CELL_H = 60; // px per hour
 const HOURS = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
-
-const TECH_NAMES = Object.values(ownerNames);
 
 const CATEGORY_LABELS: Record<JobCategory, string> = {
   security: "Security",
@@ -95,172 +95,6 @@ const STATUS_BADGE_CLASSES: Record<JobStatus, string> = {
   cancelled:   "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300",
 };
 
-// ─── Demo Data ────────────────────────────────────────────────────────────────
-
-/*
-  SCHEMA NOTES — scheduled_jobs table
-  id, tenant_id, job_type, job_id (FK to projects or work_orders),
-  category, customer_name, address, date, start_time, end_time,
-  status, notes, created_at, updated_at
-
-  scheduled_job_techs (join table)
-  id, scheduled_job_id, team_member_id
-*/
-
-const INITIAL_JOBS: ScheduledJob[] = [
-  // ── Jun 7 (Sun) — 2 jobs ────────────────────────────────────────────────────
-  {
-    id: "sj-001", title: "DVR Replacement", jobType: "work_order",
-    jobReference: "WO-0041", category: "security",
-    customer: "Pacific Coast Security Systems", address: "4200 Harbor Blvd, Costa Mesa, CA",
-    assignedTechs: ["Ravi Tate"],
-    date: "2026-06-07", startTime: "08:00", endTime: "14:00",
-    status: "completed", notes: null,
-  },
-  {
-    id: "sj-002", title: "Network Switch Install", jobType: "work_order",
-    jobReference: "WO-0043", category: "networking",
-    customer: "Pacific Coast Security Systems", address: "1820 Newport Blvd, Newport Beach, CA",
-    assignedTechs: ["Maya Okafor"],
-    date: "2026-06-07", startTime: "09:00", endTime: "15:00",
-    status: "scheduled", notes: null,
-  },
-  // ── Jun 8 (Mon) — 3 jobs ────────────────────────────────────────────────────
-  {
-    id: "sj-003", title: "Penthouse Cinema — Install Day 1", jobType: "project",
-    jobReference: "AV-2026-014", category: "audio_video",
-    customer: "Northbeam Architects", address: "44 Berry St, Brooklyn, NY",
-    assignedTechs: ["Ravi Tate", "Sofia Nakamura"],
-    date: "2026-06-08", startTime: "07:00", endTime: "15:00",
-    status: "in_progress", notes: "Bring rack #2 from warehouse",
-  },
-  {
-    id: "sj-004", title: "Quay Residence Commissioning", jobType: "project",
-    jobReference: "AV-2026-009", category: "audio_video",
-    customer: "Quay Residential", address: "1408 Bayshore Dr, Miami, FL",
-    assignedTechs: ["Sofia Nakamura"],
-    date: "2026-06-08", startTime: "09:00", endTime: "13:00",
-    status: "in_progress", notes: null,
-  },
-  {
-    id: "sj-005", title: "Vertex 14F Closeout Walk", jobType: "project",
-    jobReference: "AV-2025-138", category: "service_call",
-    customer: "Vertex Capital Partners", address: "200 W Madison St, Chicago, IL",
-    assignedTechs: ["Eli Moreno"],
-    date: "2026-06-08", startTime: "14:00", endTime: "16:00",
-    status: "scheduled", notes: null,
-  },
-  // ── Jun 9 (Tue) — 4 jobs (overlap test) ────────────────────────────────────
-  {
-    id: "sj-006", title: "Halcyon Auditorium Punch List", jobType: "project",
-    jobReference: "AV-2025-132", category: "audio_video",
-    customer: "Halcyon Public Schools", address: "1010 SE Powell Blvd, Portland, OR",
-    assignedTechs: ["Maya Okafor", "Eli Moreno"],
-    date: "2026-06-09", startTime: "07:00", endTime: "16:00",
-    status: "in_progress", notes: null,
-  },
-  {
-    id: "sj-007", title: "Arden — DSP Programming", jobType: "project",
-    jobReference: "AV-2026-005", category: "audio_video",
-    customer: "Arden & Loom Studios", address: "5200 Lankershim Blvd, Los Angeles, CA",
-    assignedTechs: ["Aman Verma"],
-    date: "2026-06-09", startTime: "08:00", endTime: "12:00",
-    status: "scheduled", notes: "Crestron programmer on site",
-  },
-  {
-    id: "sj-008", title: "Helio — Rack Build Day 1", jobType: "project",
-    jobReference: "AV-2026-011", category: "audio_video",
-    customer: "Helio Health Systems", address: "1719 E 19th Ave, Denver, CO",
-    assignedTechs: ["Ravi Tate"],
-    date: "2026-06-09", startTime: "09:00", endTime: "17:00",
-    status: "in_progress", notes: null,
-  },
-  {
-    id: "sj-009", title: "Pinecrest Site Survey", jobType: "project",
-    jobReference: "AV-2026-016", category: "service_call",
-    customer: "Pinecrest Hospitality Group", address: "905 Congress Ave, Austin, TX",
-    assignedTechs: ["Jess Kim"],
-    date: "2026-06-09", startTime: "10:00", endTime: "12:00",
-    status: "scheduled", notes: null,
-  },
-  // ── Jun 10 (Wed) — 3 jobs ───────────────────────────────────────────────────
-  {
-    id: "sj-010", title: "Surgical Center Cable Run", jobType: "project",
-    jobReference: "AV-2026-011", category: "audio_video",
-    customer: "Helio Health Systems", address: "1719 E 19th Ave, Denver, CO",
-    assignedTechs: ["Ravi Tate", "Aman Verma"],
-    date: "2026-06-10", startTime: "07:00", endTime: "13:00",
-    status: "in_progress", notes: null,
-  },
-  {
-    id: "sj-011", title: "Access Control Fault", jobType: "work_order",
-    jobReference: "WO-0042", category: "access_control",
-    customer: "Pacific Coast Security Systems", address: "4200 Harbor Blvd, Costa Mesa, CA",
-    assignedTechs: ["Aman Verma"],
-    date: "2026-06-10", startTime: "09:00", endTime: "13:00",
-    status: "in_progress", notes: "Panel at entry door #3",
-  },
-  {
-    id: "sj-012", title: "Smart Home Final Walkthrough", jobType: "project",
-    jobReference: "AV-2026-009", category: "audio_video",
-    customer: "Quay Residential", address: "1408 Bayshore Dr, Miami, FL",
-    assignedTechs: ["Sofia Nakamura"],
-    date: "2026-06-10", startTime: "14:00", endTime: "17:00",
-    status: "scheduled", notes: null,
-  },
-  // ── Jun 11 (Thu) — 2 jobs ───────────────────────────────────────────────────
-  {
-    id: "sj-013", title: "Cinder & Oak Staff Training", jobType: "work_order",
-    jobReference: "WO-0044", category: "service_call",
-    customer: "Cinder & Oak Hospitality", address: "112 3rd Ave S, Nashville, TN",
-    assignedTechs: ["Jess Kim"],
-    date: "2026-06-11", startTime: "10:00", endTime: "12:00",
-    status: "completed", notes: null,
-  },
-  {
-    id: "sj-014", title: "Lobby Video Wall — Structural Survey", jobType: "project",
-    jobReference: "AV-2026-016", category: "audio_video",
-    customer: "Pinecrest Hospitality Group", address: "905 Congress Ave, Austin, TX",
-    assignedTechs: ["Jess Kim", "Maya Okafor"],
-    date: "2026-06-11", startTime: "13:00", endTime: "17:00",
-    status: "scheduled", notes: null,
-  },
-  // ── Jun 12 (Fri) — 1 job ────────────────────────────────────────────────────
-  {
-    id: "sj-015", title: "Vertex Boardroom Rack Install", jobType: "work_order",
-    jobReference: "AV-2026-017", category: "audio_video",
-    customer: "Vertex Capital Partners", address: "200 W Madison St, Chicago, IL",
-    assignedTechs: ["Ravi Tate"],
-    date: "2026-06-12", startTime: "08:00", endTime: "16:00",
-    status: "scheduled", notes: null,
-  },
-  // ── Jun 14 (Sun) — 1 job ────────────────────────────────────────────────────
-  {
-    id: "sj-016", title: "Northbeam Projector Calibration", jobType: "work_order",
-    jobReference: "AV-2026-018", category: "audio_video",
-    customer: "Northbeam Architects", address: "44 Berry St, Brooklyn, NY",
-    assignedTechs: ["Maya Okafor"],
-    date: "2026-06-14", startTime: "09:00", endTime: "12:00",
-    status: "scheduled", notes: null,
-  },
-  // ── Jun 16 (Tue) — 2 jobs ───────────────────────────────────────────────────
-  {
-    id: "sj-017", title: "Trading Floor Network Prep", jobType: "project",
-    jobReference: "AV-2026-019", category: "networking",
-    customer: "Vertex Capital Partners", address: "200 W Madison St, Chicago, IL",
-    assignedTechs: ["Ravi Tate", "Aman Verma"],
-    date: "2026-06-16", startTime: "07:00", endTime: "11:00",
-    status: "scheduled", notes: null,
-  },
-  {
-    id: "sj-018", title: "Halcyon Classroom AV Kickoff", jobType: "project",
-    jobReference: "AV-2026-020", category: "audio_video",
-    customer: "Halcyon Public Schools", address: "1010 SE Powell Blvd, Portland, OR",
-    assignedTechs: ["Maya Okafor", "Eli Moreno", "Sofia Nakamura"],
-    date: "2026-06-16", startTime: "08:00", endTime: "17:00",
-    status: "scheduled", notes: "First day — bring all staging equipment",
-  },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -439,10 +273,11 @@ function JobBlock({
 
   const handleViewJob = () => {
     setOpen(false);
+    if (!job.jobId) return;
     if (job.jobType === "work_order") {
-      navigate({ to: "/operations/work-orders/$workOrderId", params: { workOrderId: job.id } });
+      navigate({ to: "/operations/work-orders/$workOrderId", params: { workOrderId: job.jobId } });
     } else {
-      navigate({ to: "/operations/projects/$projectId", params: { projectId: job.id } });
+      navigate({ to: "/operations/projects/$projectId", params: { projectId: job.jobId } });
     }
   };
 
@@ -474,11 +309,11 @@ function JobBlock({
             <div className="mt-1 flex flex-wrap items-center gap-1">
               {job.assignedTechs.map((tech) => (
                 <span
-                  key={tech}
-                  title={tech}
+                  key={tech.id}
+                  title={tech.name}
                   className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/30 dark:bg-black/20 border border-current/30 text-[8px] font-bold"
                 >
-                  {techInitials(tech)}
+                  {techInitials(tech.name)}
                 </span>
               ))}
               <span className={cn("ml-0.5 rounded border border-current/20 px-1 py-px text-[9px] font-semibold", colors.bg, colors.text)}>
@@ -538,13 +373,13 @@ function JobBlock({
             <div className="flex flex-wrap gap-1">
               {job.assignedTechs.map((tech) => (
                 <span
-                  key={tech}
+                  key={tech.id}
                   className="inline-flex items-center gap-1 rounded-full border border-border bg-accent/60 px-2 py-0.5 text-[10.5px]"
                 >
                   <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[7.5px] font-bold">
-                    {techInitials(tech)}
+                    {techInitials(tech.name)}
                   </span>
-                  {tech}
+                  {tech.name}
                 </span>
               ))}
             </div>
@@ -788,16 +623,17 @@ function DayView({
 // ─── Schedule Job Drawer ──────────────────────────────────────────────────────
 
 const formSchema = z.object({
-  jobReference: z.string().min(1, "Required"),
-  title: z.string().min(1, "Required"),
   jobType: z.enum(["project", "work_order"]),
+  jobId: z.string().optional(),
+  jobReference: z.string().optional(),
+  title: z.string().min(1, "Required"),
   category: z.enum(["security", "networking", "audio_video", "access_control", "service_call", "other"]),
   customer: z.string().min(1, "Required"),
   address: z.string().optional(),
   date: z.string().min(1, "Required"),
   startTime: z.string().min(1, "Required"),
   endTime: z.string().min(1, "Required"),
-  assignedTechs: z.array(z.string()).min(1, "Select at least one tech"),
+  techIds: z.array(z.string()).min(1, "Select at least one tech"),
   notes: z.string().optional(),
 });
 
@@ -813,11 +649,17 @@ function ScheduleDrawer({
   onOpenChange,
   onSave,
   editingJob = null,
+  teamMembers,
+  projects,
+  workOrders,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onSave: (job: ScheduledJob) => void;
+  onSave: (data: FormData, editingId?: string) => void;
   editingJob?: ScheduledJob | null;
+  teamMembers: { id: string; full_name: string }[];
+  projects: { id: string; code: string; name: string }[];
+  workOrders: { id: string; code: string; name: string }[];
 }) {
   const {
     register,
@@ -828,62 +670,62 @@ function ScheduleDrawer({
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { jobType: "work_order", assignedTechs: [], notes: "" },
+    defaultValues: { jobType: "work_order", techIds: [], notes: "" },
   });
 
-  const assignedTechs = watch("assignedTechs");
+  const techIds = watch("techIds");
   const selectedCategory = watch("category") as JobCategory | undefined;
+  const jobType = watch("jobType");
 
   useEffect(() => {
     if (!open) return;
     if (editingJob) {
       reset({
+        jobType: editingJob.jobType,
+        jobId: editingJob.jobId ?? undefined,
         jobReference: editingJob.jobReference,
         title: editingJob.title,
-        jobType: editingJob.jobType,
         category: editingJob.category,
         customer: editingJob.customer,
         address: editingJob.address,
         date: editingJob.date,
         startTime: editingJob.startTime,
         endTime: editingJob.endTime,
-        assignedTechs: editingJob.assignedTechs,
+        techIds: editingJob.assignedTechs.map((t) => t.id),
         notes: editingJob.notes ?? "",
       });
     } else {
-      reset({ jobType: "work_order", assignedTechs: [], notes: "" });
+      reset({ jobType: "work_order", techIds: [], notes: "" });
     }
   }, [open, editingJob, reset]);
 
-  const toggleTech = (name: string) => {
-    const current = assignedTechs ?? [];
+  const handleJobSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    setValue("jobId", selectedId);
+    const list = jobType === "project" ? projects : workOrders;
+    const record = list.find((r) => r.id === selectedId);
+    if (record) {
+      setValue("jobReference", record.code);
+      setValue("title", record.name);
+    }
+  };
+
+  const toggleTech = (id: string) => {
+    const current = techIds ?? [];
     setValue(
-      "assignedTechs",
-      current.includes(name) ? current.filter((t) => t !== name) : [...current, name],
+      "techIds",
+      current.includes(id) ? current.filter((t) => t !== id) : [...current, id],
       { shouldValidate: true },
     );
   };
 
   const onSubmit = (data: FormData) => {
-    const job: ScheduledJob = {
-      id: editingJob?.id ?? `sj-${Date.now()}`,
-      title: data.title,
-      jobType: data.jobType,
-      jobReference: data.jobReference,
-      category: data.category,
-      customer: data.customer,
-      address: data.address ?? "",
-      assignedTechs: data.assignedTechs,
-      date: data.date,
-      startTime: data.startTime,
-      endTime: data.endTime,
-      status: editingJob?.status ?? "scheduled",
-      notes: data.notes ?? null,
-    };
-    onSave(job);
+    onSave(data, editingJob?.id);
     reset();
     onOpenChange(false);
   };
+
+  const jobList = jobType === "project" ? projects : workOrders;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -893,15 +735,34 @@ function ScheduleDrawer({
         </SheetHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 px-5 py-4">
-          {/* Job Reference */}
+          {/* Job Type */}
           <div>
-            <label className={labelCls}>Job Reference *</label>
-            <input
-              {...register("jobReference")}
-              placeholder="e.g. PRJ-0023 or WO-0042"
-              className={inputCls}
-            />
-            {errors.jobReference && <p className={errorCls}>{errors.jobReference.message}</p>}
+            <label className={labelCls}>Job Type *</label>
+            <div className="flex gap-2">
+              {(["project", "work_order"] as const).map((t) => (
+                <label key={t} className="flex items-center gap-1.5 cursor-pointer text-[12.5px]">
+                  <input type="radio" value={t} {...register("jobType")} className="accent-primary" />
+                  {t === "project" ? "Project" : "Work Order"}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Link Job */}
+          <div>
+            <label className={labelCls}>Link Job</label>
+            <select
+              className={cn(inputCls, "cursor-pointer")}
+              onChange={handleJobSelect}
+              defaultValue=""
+            >
+              <option value="">— Select {jobType === "project" ? "project" : "work order"}…</option>
+              {jobList.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.code} — {r.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Title */}
@@ -909,24 +770,6 @@ function ScheduleDrawer({
             <label className={labelCls}>Title *</label>
             <input {...register("title")} placeholder="Job title" className={inputCls} />
             {errors.title && <p className={errorCls}>{errors.title.message}</p>}
-          </div>
-
-          {/* Job Type */}
-          <div>
-            <label className={labelCls}>Job Type *</label>
-            <div className="flex gap-2">
-              {(["project", "work_order"] as const).map((t) => (
-                <label key={t} className="flex items-center gap-1.5 cursor-pointer text-[12.5px]">
-                  <input
-                    type="radio"
-                    value={t}
-                    {...register("jobType")}
-                    className="accent-primary"
-                  />
-                  {t === "project" ? "Project" : "Work Order"}
-                </label>
-              ))}
-            </div>
           </div>
 
           {/* Category */}
@@ -983,19 +826,19 @@ function ScheduleDrawer({
           <div>
             <label className={labelCls}>Assign Techs *</label>
             <div className="rounded-md border border-border bg-surface p-2 flex flex-col gap-1">
-              {TECH_NAMES.map((name) => (
-                <label key={name} className="flex items-center gap-2 cursor-pointer text-[12.5px]">
+              {teamMembers.map((member) => (
+                <label key={member.id} className="flex items-center gap-2 cursor-pointer text-[12.5px]">
                   <input
                     type="checkbox"
-                    checked={assignedTechs?.includes(name) ?? false}
-                    onChange={() => toggleTech(name)}
+                    checked={techIds?.includes(member.id) ?? false}
+                    onChange={() => toggleTech(member.id)}
                     className="h-3.5 w-3.5 accent-primary"
                   />
-                  {name}
+                  {member.full_name}
                 </label>
               ))}
             </div>
-            {errors.assignedTechs && <p className={errorCls}>{errors.assignedTechs.message}</p>}
+            {errors.techIds && <p className={errorCls}>{errors.techIds.message}</p>}
           </div>
 
           {/* Notes */}
@@ -1031,14 +874,47 @@ function ScheduleDrawer({
   );
 }
 
+// ─── DB → ScheduledJob mapper ─────────────────────────────────────────────────
+
+// Postgres time columns come back as "HH:MM:SS" — strip seconds for display.
+function toHHMM(t: string): string {
+  return t.slice(0, 5);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toScheduledJob(row: any): ScheduledJob {
+  return {
+    id: row.id,
+    jobId: row.job_id ?? null,
+    jobType: row.job_type as JobType,
+    jobReference: row.job_reference ?? "",
+    title: row.title,
+    category: row.category as JobCategory,
+    customer: row.customer_name,
+    address: row.address ?? "",
+    date: row.date,
+    startTime: toHHMM(row.start_time),
+    endTime: toHHMM(row.end_time),
+    status: row.status as JobStatus,
+    notes: row.notes ?? null,
+    assignedTechs: (row.scheduled_job_techs ?? []).map(
+      (t: { team_member_id: string; user_profiles: { id: string; full_name: string } | null }) => ({
+        id: t.team_member_id,
+        name: t.user_profiles?.full_name ?? "Unknown",
+      }),
+    ),
+  };
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 function SchedulingPage() {
   const { setMeta } = useMeta();
+  const supabase = createClient();
+  const qc = useQueryClient();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<ScheduledJob | null>(null);
-  const [jobs, setJobs] = useState<ScheduledJob[]>(INITIAL_JOBS);
 
   // Auto-refresh current-time indicator every 60 s
   const [, setTimeTick] = useState(0);
@@ -1059,7 +935,7 @@ function SchedulingPage() {
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
   const [selectedDate, setSelectedDate] = useState(() => todayStr());
 
-  // Filters
+  // Filters — tech filter uses IDs, category/status as before
   const [techFilter, setTechFilter] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
@@ -1072,6 +948,109 @@ function SchedulingPage() {
       onNew: () => setDrawerOpen(true),
     });
   }, [setMeta]);
+
+  // ── Queries ────────────────────────────────────────────────────────────────
+
+  const { data: rawJobs = [] } = useQuery({
+    queryKey: ["scheduled-jobs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_jobs")
+        .select(`*, scheduled_job_techs(team_member_id, user_profiles!team_member_id(id, full_name))`)
+        .order("date")
+        .order("start_time");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ["user-profiles-basic"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("id, full_name")
+        .eq("is_active", true)
+        .order("full_name");
+      if (error) throw error;
+      return data as { id: string; full_name: string }[];
+    },
+  });
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects-basic"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, code, name")
+        .neq("status", "cancelled")
+        .order("code");
+      if (error) throw error;
+      return data as { id: string; code: string; name: string }[];
+    },
+  });
+
+  const { data: workOrders = [] } = useQuery({
+    queryKey: ["work-orders-basic"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("work_orders")
+        .select("id, code, name")
+        .neq("status", "cancelled")
+        .order("code");
+      if (error) throw error;
+      return data as { id: string; code: string; name: string }[];
+    },
+  });
+
+  const jobs = useMemo(() => rawJobs.map(toScheduledJob), [rawJobs]);
+
+  // ── Mutation ───────────────────────────────────────────────────────────────
+
+  const saveMutation = useMutation({
+    mutationFn: async ({ formData, editingId }: { formData: ReturnType<typeof Object.assign> & { jobType: "project" | "work_order"; jobId?: string; jobReference?: string; title: string; category: string; customer: string; address?: string; date: string; startTime: string; endTime: string; techIds: string[]; notes?: string }, editingId?: string }) => {
+      const tenantId = qc.getQueryData<{ id: string }>(["tenant"])?.id;
+      if (!tenantId) throw new Error("tenant not loaded");
+      const payload = {
+        tenant_id: tenantId,
+        job_type: formData.jobType,
+        job_id: formData.jobId || null,
+        job_reference: formData.jobReference || null,
+        title: formData.title,
+        category: formData.category,
+        customer_name: formData.customer,
+        address: formData.address || null,
+        date: formData.date,
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        notes: formData.notes || null,
+      };
+
+      let sjId: string;
+      if (editingId) {
+        await supabase.from("scheduled_jobs").update(payload).eq("id", editingId);
+        sjId = editingId;
+        await supabase.from("scheduled_job_techs").delete().eq("scheduled_job_id", sjId);
+      } else {
+        const { data, error } = await supabase
+          .from("scheduled_jobs")
+          .insert(payload)
+          .select("id")
+          .single();
+        if (error) throw error;
+        sjId = data.id;
+      }
+
+      if (formData.techIds.length > 0) {
+        await supabase.from("scheduled_job_techs").insert(
+          formData.techIds.map((mid: string) => ({ scheduled_job_id: sjId, team_member_id: mid })),
+        );
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["scheduled-jobs"] }),
+  });
+
+  // ── Calendar helpers ───────────────────────────────────────────────────────
 
   const changeView = (v: "week" | "day") => {
     setView(v);
@@ -1115,7 +1094,7 @@ function SchedulingPage() {
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((j) => {
-      if (techFilter.length > 0 && !j.assignedTechs.some((t) => techFilter.includes(t))) return false;
+      if (techFilter.length > 0 && !j.assignedTechs.some((t) => techFilter.includes(t.id))) return false;
       if (categoryFilter.length > 0 && !categoryFilter.includes(j.category)) return false;
       if (statusFilter !== "all" && j.status !== statusFilter) return false;
       return true;
@@ -1131,17 +1110,6 @@ function SchedulingPage() {
     return filteredJobs.filter((j) => j.date === selectedDate);
   }, [filteredJobs, view, weekStart, selectedDate]);
 
-  const saveJob = (job: ScheduledJob) =>
-    setJobs((prev) => {
-      const idx = prev.findIndex((j) => j.id === job.id);
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = job;
-        return updated;
-      }
-      return [...prev, job];
-    });
-
   const openEditDrawer = (job: ScheduledJob) => {
     setEditingJob(job);
     setDrawerOpen(true);
@@ -1150,6 +1118,11 @@ function SchedulingPage() {
   const handleDrawerOpenChange = (v: boolean) => {
     setDrawerOpen(v);
     if (!v) setEditingJob(null);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSave = (formData: any, editingId?: string) => {
+    saveMutation.mutate({ formData, editingId });
   };
 
   return (
@@ -1206,9 +1179,13 @@ function SchedulingPage() {
       <FilterBar>
         <MultiSelect
           label="Techs"
-          options={TECH_NAMES}
+          options={teamMembers.map((m) => m.id)}
           selected={techFilter}
           onChange={setTechFilter}
+          renderOption={(id) => {
+            const m = teamMembers.find((t) => t.id === id);
+            return <span>{m?.full_name ?? id}</span>;
+          }}
         />
         <MultiSelect
           label="Category"
@@ -1261,8 +1238,11 @@ function SchedulingPage() {
       <ScheduleDrawer
         open={drawerOpen}
         onOpenChange={handleDrawerOpenChange}
-        onSave={saveJob}
+        onSave={handleSave}
         editingJob={editingJob}
+        teamMembers={teamMembers}
+        projects={projects}
+        workOrders={workOrders}
       />
     </div>
   );
