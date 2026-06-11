@@ -12,7 +12,7 @@ import {
 import {
   type BuilderSection, type BuilderLineItem, type EditingCell,
   BUILDER_TEMPLATES, CatalogSearchModal, SectionBlock,
-  marginColor, freshId, saveQuoteToDb,
+  marginColor, freshId, errMsg, saveQuoteToDb,
   fetchBuilderCatalog, fetchQuoteForEdit,
 } from "./_shared";
 
@@ -221,7 +221,7 @@ function QuoteDetailPage() {
       qc.invalidateQueries({ queryKey: ["quote-detail", quoteId] });
       qc.invalidateQueries({ queryKey: ["opportunities"] });
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : "Save failed");
+      setSaveError(errMsg(e));
     } finally {
       setSaving(false);
     }

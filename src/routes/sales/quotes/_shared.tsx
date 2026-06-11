@@ -126,6 +126,12 @@ export function freshId(prefix = "li"): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+export function errMsg(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "object" && e !== null && "message" in e) return String((e as { message: unknown }).message);
+  return "Unknown error";
+}
+
 // ─── Data functions ───────────────────────────────────────────────────────────
 
 export async function fetchBuilderCatalog(): Promise<BuilderCatalogItem[]> {
@@ -256,7 +262,7 @@ export async function saveQuoteToDb(params: {
     const { error } = await supabase.from("quotes").update({
       value, notes: notes || null, expiry_date: expiry, revision: currentRevision + 1,
     }).eq("id", quoteId);
-    if (error) throw error;
+    if (error) throw new Error(`Quote update failed: ${error.message}`);
   } else {
     const { count } = await supabase.from("quotes").select("*", { count: "exact", head: true });
     const year = new Date().getFullYear();
@@ -265,7 +271,8 @@ export async function saveQuoteToDb(params: {
       .from("quotes")
       .insert({ tenant_id: tid, opportunity_id: opportunityId, number, value, notes: notes || null, status: "draft", expiry_date: expiry, revision: 1 })
       .select("id").single();
-    if (error || !created) throw error ?? new Error("Quote insert failed");
+    if (error) throw new Error(`Quote insert failed: ${error.message}`);
+    if (!created) throw new Error("Quote insert returned no data");
     resolvedQuoteId = created.id;
   }
 
@@ -294,7 +301,7 @@ export async function saveQuoteToDb(params: {
 
   if (rows.length > 0) {
     const { error } = await supabase.from("quote_line_items").insert(rows);
-    if (error) throw error;
+    if (error) throw new Error(`Line items insert failed: ${error.message}`);
   }
 
   // Sync opportunity value

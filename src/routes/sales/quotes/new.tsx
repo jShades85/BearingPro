@@ -8,7 +8,7 @@ import { ArrowLeft, ChevronDown, Clock, FileText, Loader2 } from "lucide-react";
 import {
   type BuilderSection, type BuilderLineItem, type EditingCell,
   BUILDER_TEMPLATES, CatalogSearchModal, SectionBlock,
-  marginColor, freshId, saveQuoteToDb,
+  marginColor, freshId, errMsg, saveQuoteToDb,
   fetchBuilderCatalog, fetchCompanyOptions, fetchAllContacts,
   fetchTeamMembers, fetchOpportunityById,
 } from "./_shared";
@@ -206,7 +206,7 @@ function NewQuotePage() {
       });
       navigate({ to: "/sales/quotes" });
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : "Save failed");
+      setSaveError(errMsg(e));
     } finally {
       setSaving(false);
     }
