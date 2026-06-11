@@ -51,6 +51,7 @@ function QuoteDetailPage() {
   const [lineItems, setLineItems] = useState<BuilderLineItem[]>([]);
   const [editingCell, setEditingCell]     = useState<EditingCell>(null);
   const [modalSectionId, setModalSectionId] = useState<string | null>(null);
+  const [laborModalOpen, setLaborModalOpen] = useState(false);
   const [notes, setNotes]         = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [inited, setInited]       = useState(false);
@@ -146,6 +147,26 @@ function QuoteDetailPage() {
       });
     }
     setLineItems((prev) => [...prev, ...newItems]);
+  }
+
+  const laborItems = useMemo(
+    () => catalog.filter((i) => i.category.toLowerCase().includes("labor")),
+    [catalog],
+  );
+
+  function handleAddLaborItem(catalogItem: typeof catalog[0] | null) {
+    const existing = sections.find((s) => s.name.toLowerCase().includes("labor"));
+    const sectionId = existing?.id ?? freshId("sec");
+    if (!existing) {
+      setSections((prev) => [...prev, { id: sectionId, name: "Labor", order: prev.length + 1 }]);
+    }
+    const newItem: BuilderLineItem = catalogItem
+      ? { id: freshId("li"), sectionId, type: "labor", catalogItemId: catalogItem.id,
+          description: catalogItem.name, qty: 1, unitCost: catalogItem.unitCost,
+          unitPrice: catalogItem.unitPrice, unit: catalogItem.unit }
+      : { id: freshId("li"), sectionId, type: "labor", catalogItemId: null,
+          description: "Labor", qty: 1, unitCost: 0, unitPrice: 0, unit: "hr" };
+    setLineItems((prev) => [...prev, newItem]);
   }
 
   function handleCellClick(id: string, field: "qty" | "unitCost" | "unitPrice", current: number) {
@@ -345,6 +366,14 @@ function QuoteDetailPage() {
                     onAddItem={(sid) => setModalSectionId(sid)}
                   />
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setLaborModalOpen(true)}
+                  className="flex items-center gap-2 w-full rounded-lg border border-dashed border-border px-4 py-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-surface/40 transition-colors"
+                >
+                  <Clock className="h-3.5 w-3.5 shrink-0" />
+                  Add Additional Labor
+                </button>
                 {/* Totals */}
                 <div className="rounded-lg border border-border overflow-hidden">
                   <div className="divide-y divide-border">
@@ -512,6 +541,12 @@ function QuoteDetailPage() {
         onAddItem={(item) => {
           if (modalSectionId) handleAddItem(modalSectionId, item);
         }}
+      />
+      <CatalogSearchModal
+        open={laborModalOpen}
+        onClose={() => setLaborModalOpen(false)}
+        items={laborItems}
+        onAddItem={(item) => handleAddLaborItem(item)}
       />
     </div>
   );

@@ -93,18 +93,16 @@ export const BUILDER_TEMPLATES = [
     id: "qt-001", name: "Commercial Install",
     sections: [
       { id: "s-001-1", name: "Equipment",             order: 1 },
-      { id: "s-001-2", name: "Labor",                 order: 2 },
-      { id: "s-001-3", name: "Low-Voltage Materials", order: 3 },
-      { id: "s-001-4", name: "Subcontractor",         order: 4 },
-      { id: "s-001-5", name: "Misc",                  order: 5 },
+      { id: "s-001-2", name: "Low-Voltage Materials", order: 2 },
+      { id: "s-001-3", name: "Subcontractor",         order: 3 },
+      { id: "s-001-4", name: "Misc",                  order: 4 },
     ],
   },
   {
     id: "qt-002", name: "Residential Install",
     sections: [
-      { id: "s-002-1", name: "Equipment",          order: 1 },
-      { id: "s-002-2", name: "Installation Labor", order: 2 },
-      { id: "s-002-3", name: "Materials",          order: 3 },
+      { id: "s-002-1", name: "Equipment", order: 1 },
+      { id: "s-002-2", name: "Materials", order: 2 },
     ],
   },
   {
@@ -349,7 +347,11 @@ export function CatalogSearchModal({
         <div className="overflow-y-auto max-h-72">
           {filtered.length === 0 ? (
             <div className="px-4 py-6 text-center text-[12px] text-muted-foreground">
-              No items match "{query}"
+              {query.trim()
+                ? `No items match "${query}"`
+                : items.length === 0
+                  ? "No items available — add items to your catalog first"
+                  : "No items found"}
             </div>
           ) : filtered.map((item) => (
             <button

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ChevronDown, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Clock, FileText, Loader2 } from "lucide-react";
 import {
   type BuilderSection, type BuilderLineItem, type EditingCell,
   BUILDER_TEMPLATES, CatalogSearchModal, SectionBlock,
@@ -45,6 +45,7 @@ function NewQuotePage() {
   const [lineItems, setLineItems]       = useState<BuilderLineItem[]>([]);
   const [editingCell, setEditingCell]   = useState<EditingCell>(null);
   const [modalSectionId, setModalSectionId] = useState<string | null>(null);
+  const [laborModalOpen, setLaborModalOpen] = useState(false);
 
   useEffect(() => {
     setMeta({ title: "New Quote", subtitle: "Build & price a new quote" });
@@ -101,7 +102,11 @@ function NewQuotePage() {
     () => allContacts.filter((c) => !companyId || c.company_id === companyId),
     [allContacts, companyId],
   );
-  void teamMembers; // available for future assigned-to dropdown
+  const laborItems = useMemo(
+    () => catalog.filter((i) => i.category.toLowerCase().includes("labor")),
+    [catalog],
+  );
+  void teamMembers;
 
   // ── Builder helpers ───────────────────────────────────────────────────────
   function handleTemplateChange(id: string) {
@@ -138,6 +143,21 @@ function NewQuotePage() {
       });
     }
     setLineItems((prev) => [...prev, ...newItems]);
+  }
+
+  function handleAddLaborItem(catalogItem: typeof catalog[0] | null) {
+    const existing = sections.find((s) => s.name.toLowerCase().includes("labor"));
+    const sectionId = existing?.id ?? freshId("sec");
+    if (!existing) {
+      setSections((prev) => [...prev, { id: sectionId, name: "Labor", order: prev.length + 1 }]);
+    }
+    const newItem: BuilderLineItem = catalogItem
+      ? { id: freshId("li"), sectionId, type: "labor", catalogItemId: catalogItem.id,
+          description: catalogItem.name, qty: 1, unitCost: catalogItem.unitCost,
+          unitPrice: catalogItem.unitPrice, unit: catalogItem.unit }
+      : { id: freshId("li"), sectionId, type: "labor", catalogItemId: null,
+          description: "Labor", qty: 1, unitCost: 0, unitPrice: 0, unit: "hr" };
+    setLineItems((prev) => [...prev, newItem]);
   }
 
   function handleCellClick(id: string, field: "qty" | "unitCost" | "unitPrice", current: number) {
@@ -335,6 +355,14 @@ function NewQuotePage() {
                   onAddItem={(sid) => setModalSectionId(sid)}
                 />
               ))}
+              <button
+                type="button"
+                onClick={() => setLaborModalOpen(true)}
+                className="flex items-center gap-2 w-full rounded-lg border border-dashed border-border px-4 py-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-surface/40 transition-colors"
+              >
+                <Clock className="h-3.5 w-3.5 shrink-0" />
+                Add Additional Labor
+              </button>
             </div>
           )}
         </div>
@@ -386,6 +414,12 @@ function NewQuotePage() {
         onAddItem={(item) => {
           if (modalSectionId) handleAddItem(modalSectionId, item);
         }}
+      />
+      <CatalogSearchModal
+        open={laborModalOpen}
+        onClose={() => setLaborModalOpen(false)}
+        items={laborItems}
+        onAddItem={(item) => handleAddLaborItem(item)}
       />
     </div>
   );
