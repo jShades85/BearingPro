@@ -128,7 +128,7 @@ async function fetchTenant() {
 function AppShellContent() {
   const { meta } = useMeta();
   const { signOut, user } = useAuth();
-  const { can, loading: permsLoading } = usePermissions();
+  const { can, loading: permsLoading, roleName } = usePermissions();
   const { data: tenant } = useQuery({ queryKey: ["tenant"], queryFn: fetchTenant, staleTime: Infinity });
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
@@ -248,7 +248,7 @@ function AppShellContent() {
               <>
                 <div className="flex min-w-0 flex-col leading-tight">
                   <span className="truncate text-[12px] font-medium">{user?.email ?? "—"}</span>
-                  <span className="text-[10px] text-muted-foreground">Admin · Workspace</span>
+                  <span className="text-[10px] text-muted-foreground">{roleName ?? "—"} · {tenant?.name ?? "Workspace"}</span>
                 </div>
                 <div className="ml-auto flex items-center gap-0.5">
                   <button
