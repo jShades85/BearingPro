@@ -21,6 +21,9 @@
 2. **Test Add Phase modal** — error handling is now live; verify the `insertProjectPhase` insert succeeds on the deployed Vercel site (open a project → Phases & Tasks → Add Phase → check for error banner or confirm WO appears).
 3. **Planner/Gantt backend** — phases + team assignments; deferred until Scheduling is confirmed stable
 
+**Tooling / setup:**
+- Set up Codacy Guardrails MCP — free for public repos; ~5 min setup (API token → MCP config); adds real-time security scanning to Claude Code. Docs: https://docs.codacy.com/codacy-guardrails/codacy-guardrails-getting-started/
+
 **Specced items queued for build (in progress log):**
 - Referral partner tracking (lead → contact referral FK trail)
 - Job number / quote number scheme (Q-YYYY-NNN + source_quote_id on project)
