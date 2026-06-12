@@ -1,6 +1,14 @@
+import { Children, isValidElement, type ReactElement, type ReactNode } from "react";
 import { Search } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // ─── PageShell ────────────────────────────────────────────────────────────────
 
@@ -88,22 +96,41 @@ export function SearchInput({ value, onChange, placeholder = "Search…", classN
 interface FilterSelectProps {
   value: string;
   onChange: (v: string) => void;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }
 
 export function FilterSelect({ value, onChange, children, className }: FilterSelectProps) {
+  const options = Children.toArray(children)
+    .filter(isValidElement)
+    .map((child) => {
+      const el = child as ReactElement<{ value: string; children: ReactNode }>;
+      return { value: String(el.props.value ?? ""), label: el.props.children };
+    });
+
+  const isActive = value !== "" && value !== "all";
+
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={cn(
-        "h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary",
-        className,
-      )}
-    >
-      {children}
-    </select>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger
+        className={cn(
+          "h-7 w-auto min-w-27.5 gap-1.5 rounded-md border bg-surface px-2.5 text-[11.5px] focus:ring-1 focus:ring-primary",
+          isActive
+            ? "border-primary/50 text-primary"
+            : "border-border text-foreground",
+          className,
+        )}
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value} className="text-[12px]">
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
