@@ -545,6 +545,9 @@ function RolesPage() {
         }) ?? []
       );
     },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["user-permissions"] });
+    },
     onError: () => {
       qc.invalidateQueries({ queryKey: ["roles"] });
     },
