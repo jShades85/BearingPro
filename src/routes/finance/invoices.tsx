@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/command";
 import { createClient } from "@/lib/supabase/client";
 import type { TablesUpdate } from "@/lib/supabase/types";
+import { SC } from "@/lib/status-colors";
 
 export const Route = createFileRoute("/finance/invoices")({
   head: () => ({ meta: [{ title: "Invoices · BearingPro" }] }),
@@ -123,12 +124,12 @@ type DbWorkOrder = { id: string; code: string; name: string };
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const STATUS_META: Record<InvoiceStatus, { label: string; cls: string }> = {
-  draft:   { label: "Draft",   cls: "bg-muted text-muted-foreground" },
-  sent:    { label: "Sent",    cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
-  partial: { label: "Partial", cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
-  paid:    { label: "Paid",    cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
-  overdue: { label: "Overdue", cls: "bg-red-500/15 text-red-600 dark:text-red-400" },
-  void:    { label: "Void",    cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
+  draft:   { label: "Draft",   cls: SC.neutral },
+  sent:    { label: "Sent",    cls: SC.blue },
+  partial: { label: "Partial", cls: SC.amber },
+  paid:    { label: "Paid",    cls: SC.green },
+  overdue: { label: "Overdue", cls: SC.red },
+  void:    { label: "Void",    cls: SC.neutral },
 };
 
 const TABS: { key: InvoiceStatus | "all"; label: string }[] = [

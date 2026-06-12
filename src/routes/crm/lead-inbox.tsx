@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { SC } from "@/lib/status-colors";
 import { usePermissions } from "@/contexts/PermissionsContext";
 import { Avatar } from "@/components/ui-bits";
 import { PageTabs, PageTab, FilterBar, FilterSelect } from "@/components/ui/page-components";
@@ -48,19 +49,19 @@ interface ContactMatch { id: string; full_name: string; email: string | null }
 // ─── Config ──────────────────────────────────────────────────────────────────
 
 const statusMeta: Record<LeadStatus, { label: string; cls: string }> = {
-  new:       { label: "New",       cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
-  contacted: { label: "Contacted", cls: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400" },
-  qualified: { label: "Qualified", cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
-  converted: { label: "Converted", cls: "bg-teal-500/15 text-teal-600 dark:text-teal-400" },
-  dismissed: { label: "Dismissed", cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
+  new:       { label: "New",       cls: SC.blue },
+  contacted: { label: "Contacted", cls: SC.yellow },
+  qualified: { label: "Qualified", cls: SC.green },
+  converted: { label: "Converted", cls: SC.teal },
+  dismissed: { label: "Dismissed", cls: SC.neutral },
 };
 
 const sourceCls: Record<LeadSource, string> = {
-  "Phone":    "bg-violet-500/15 text-violet-600 dark:text-violet-400",
-  "Web Form": "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  "Referral": "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  "Email":    "bg-orange-500/15 text-orange-600 dark:text-orange-400",
-  "Walk-in":  "bg-teal-500/15 text-teal-600 dark:text-teal-400",
+  "Phone":    SC.violet,
+  "Web Form": SC.blue,
+  "Referral": SC.emerald,
+  "Email":    SC.orange,
+  "Walk-in":  SC.teal,
 };
 
 const statusOrder: LeadStatus[] = ["new", "contacted", "qualified", "converted", "dismissed"];

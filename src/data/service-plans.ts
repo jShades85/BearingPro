@@ -1,3 +1,5 @@
+import { SC } from "@/lib/status-colors";
+
 export type PlanStatus = "active" | "expiring" | "expired" | "cancelled" | "pending";
 export type PlanTier = "Essential" | "Standard" | "Professional" | "Elite";
 export type CoveredSystem = "Security" | "AV / Audio" | "Networking" | "Access Control" | "Surveillance" | "Smart Home";
@@ -24,18 +26,18 @@ export interface ServicePlan {
 }
 
 export const statusMeta: Record<PlanStatus, { label: string; cls: string }> = {
-  active:    { label: "Active",    cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
-  expiring:  { label: "Expiring",  cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
-  expired:   { label: "Expired",   cls: "bg-red-500/15 text-red-600 dark:text-red-400" },
-  cancelled: { label: "Cancelled", cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
-  pending:   { label: "Pending",   cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
+  active:    { label: "Active",    cls: SC.green },
+  expiring:  { label: "Expiring",  cls: SC.amber },
+  expired:   { label: "Expired",   cls: SC.red },
+  cancelled: { label: "Cancelled", cls: SC.neutral },
+  pending:   { label: "Pending",   cls: SC.blue },
 };
 
 export const tierMeta: Record<PlanTier, { cls: string; description: string }> = {
-  Essential:    { cls: "bg-slate-500/15 text-slate-600 dark:text-slate-400",   description: "Annual inspection · Remote monitoring · NBD response" },
-  Standard:     { cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400",      description: "2 visits/yr · Remote monitoring · 8hr response" },
-  Professional: { cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400",description: "4 visits/yr · Remote monitoring · 4hr response" },
-  Elite:        { cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400",   description: "Monthly visits · 24/7 monitoring · 2hr response" },
+  Essential:    { cls: SC.neutral, description: "Annual inspection · Remote monitoring · NBD response" },
+  Standard:     { cls: SC.blue,    description: "2 visits/yr · Remote monitoring · 8hr response" },
+  Professional: { cls: SC.violet,  description: "4 visits/yr · Remote monitoring · 4hr response" },
+  Elite:        { cls: SC.amber,   description: "Monthly visits · 24/7 monitoring · 2hr response" },
 };
 
 export const STATUS_ORDER: PlanStatus[] = ["active", "expiring", "expired", "pending", "cancelled"];

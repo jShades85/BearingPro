@@ -1,3 +1,5 @@
+import { SC } from "@/lib/status-colors";
+
 export type TicketStatus = "open" | "assigned" | "in-progress" | "pending-parts" | "resolved" | "closed";
 export type TicketPriority = "urgent" | "high" | "medium" | "low";
 export type TicketCategory = "Security" | "AV / Audio" | "Networking" | "Access Control" | "Surveillance" | "Smart Home";
@@ -21,12 +23,12 @@ export interface ServiceTicket {
 }
 
 export const statusMeta: Record<TicketStatus, { label: string; cls: string }> = {
-  "open":          { label: "Open",          cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
-  "assigned":      { label: "Assigned",      cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
-  "in-progress":   { label: "In Progress",   cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
-  "pending-parts": { label: "Pending Parts", cls: "bg-orange-500/15 text-orange-600 dark:text-orange-400" },
-  "resolved":      { label: "Resolved",      cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
-  "closed":        { label: "Closed",        cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
+  "open":          { label: "Open",          cls: SC.blue },
+  "assigned":      { label: "Assigned",      cls: SC.violet },
+  "in-progress":   { label: "In Progress",   cls: SC.amber },
+  "pending-parts": { label: "Pending Parts", cls: SC.orange },
+  "resolved":      { label: "Resolved",      cls: SC.green },
+  "closed":        { label: "Closed",        cls: SC.neutral },
 };
 
 export const priorityMeta: Record<TicketPriority, { label: string; cls: string; dot: string }> = {

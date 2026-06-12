@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { SC } from "@/lib/status-colors";
 import { Avatar, PriorityDot } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { usePermissions } from "@/contexts/PermissionsContext";
@@ -84,21 +85,21 @@ const stageOrder: OpportunityStage[] = [
 ];
 
 const stageMeta: Record<OpportunityStage, { label: string; badge: string; dim?: true }> = {
-  "site-visit":    { label: "Site Visit",    badge: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
-  "estimating":    { label: "Estimating",    badge: "bg-purple-500/15 text-purple-600 dark:text-purple-400" },
-  "proposal-sent": { label: "Proposal Sent", badge: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400" },
-  "negotiation":   { label: "Negotiation",   badge: "bg-orange-500/15 text-orange-600 dark:text-orange-400" },
-  "closed-won":    { label: "Closed Won",    badge: "bg-green-500/15 text-green-600 dark:text-green-400",  dim: true },
-  "closed-lost":   { label: "Closed Lost",   badge: "bg-red-500/15 text-red-500 dark:text-red-400",        dim: true },
+  "site-visit":    { label: "Site Visit",    badge: SC.blue },
+  "estimating":    { label: "Estimating",    badge: SC.violet },
+  "proposal-sent": { label: "Proposal Sent", badge: SC.yellow },
+  "negotiation":   { label: "Negotiation",   badge: SC.orange },
+  "closed-won":    { label: "Closed Won",    badge: SC.green, dim: true },
+  "closed-lost":   { label: "Closed Lost",   badge: SC.red,   dim: true },
 };
 
 const priorityOrder: Record<Priority, number> = { urgent: 0, high: 1, med: 2, low: 3 };
 
 const priorityBadgeCls: Record<Priority, string> = {
-  urgent: "bg-red-500/15 text-red-600 dark:text-red-400",
-  high:   "bg-orange-500/15 text-orange-600 dark:text-orange-400",
-  med:    "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
-  low:    "bg-slate-500/15 text-slate-500 dark:text-slate-400",
+  urgent: SC.red,
+  high:   SC.orange,
+  med:    SC.yellow,
+  low:    SC.neutral,
 };
 
 const priorityLabel: Record<Priority, string> = {
@@ -106,11 +107,11 @@ const priorityLabel: Record<Priority, string> = {
 };
 
 const quoteStatusMeta: Record<QuoteStatus, { label: string; cls: string }> = {
-  draft:    { label: "Draft",    cls: "bg-slate-500/15 text-slate-500" },
-  sent:     { label: "Sent",     cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
-  viewed:   { label: "Viewed",   cls: "bg-teal-500/15 text-teal-600 dark:text-teal-400" },
-  accepted: { label: "Accepted", cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
-  expired:  { label: "Expired",  cls: "bg-red-500/15 text-red-500 dark:text-red-400" },
+  draft:    { label: "Draft",    cls: SC.neutral },
+  sent:     { label: "Sent",     cls: SC.blue },
+  viewed:   { label: "Viewed",   cls: SC.teal },
+  accepted: { label: "Accepted", cls: SC.green },
+  expired:  { label: "Expired",  cls: SC.red },
 };
 
 const activityIcon: Record<ActivityKind, React.ComponentType<{ className?: string }>> = {

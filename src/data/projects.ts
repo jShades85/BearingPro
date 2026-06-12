@@ -1,3 +1,5 @@
+import { SC } from "@/lib/status-colors";
+
 export type ProjectStatus = "planning" | "quoted" | "scheduled" | "in-progress" | "on-hold" | "completed" | "cancelled";
 export type ProjectType = "project" | "work-order";
 
@@ -24,13 +26,13 @@ export interface ProjectRecord {
 }
 
 export const statusMeta: Record<ProjectStatus, { label: string; cls: string }> = {
-  "planning":    { label: "Planning",    cls: "bg-sky-500/15 text-sky-600 dark:text-sky-400" },
-  "quoted":      { label: "Quoted",      cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
-  "scheduled":   { label: "Scheduled",   cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
-  "in-progress": { label: "In Progress", cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
-  "on-hold":     { label: "On Hold",     cls: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400" },
-  "completed":   { label: "Completed",   cls: "bg-green-500/15 text-green-600 dark:text-green-400" },
-  "cancelled":   { label: "Cancelled",   cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
+  "planning":    { label: "Planning",    cls: SC.sky },
+  "quoted":      { label: "Quoted",      cls: SC.blue },
+  "scheduled":   { label: "Scheduled",   cls: SC.violet },
+  "in-progress": { label: "In Progress", cls: SC.amber },
+  "on-hold":     { label: "On Hold",     cls: SC.yellow },
+  "completed":   { label: "Completed",   cls: SC.green },
+  "cancelled":   { label: "Cancelled",   cls: SC.neutral },
 };
 
 export const STATUS_OPTIONS: Array<{ value: ProjectStatus | "all"; label: string }> = [
