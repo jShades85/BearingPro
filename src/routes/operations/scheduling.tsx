@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ChevronLeft, ChevronRight, ChevronDown, MapPin, Clock } from "lucide-react";
 import { useMeta } from "@/contexts/PageMetaContext";
-import { usePermissions } from "@/contexts/PermissionsContext";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -652,14 +651,12 @@ function ScheduleDrawer({
   editingJob = null,
   teamMembers,
   workOrders,
-  canWrite = true,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onSave: (data: FormData, editingId?: string) => void;
   editingJob?: ScheduledJob | null;
   teamMembers: { id: string; full_name: string }[];
-  canWrite?: boolean;
   workOrders: { id: string; code: string; name: string; site_address: string; customer_name: string; scheduled_date: string | null; assigned_to: string | null }[];
 }) {
   const {
@@ -851,8 +848,7 @@ function ScheduleDrawer({
             </button>
             <button
               type="submit"
-              disabled={!canWrite}
-              className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
             >
               Save
             </button>
@@ -899,8 +895,6 @@ function toScheduledJob(row: any): ScheduledJob {
 
 function SchedulingPage() {
   const { setMeta } = useMeta();
-  const { can } = usePermissions();
-  const canWrite = can("operations", "write");
   const supabase = createClient();
   const qc = useQueryClient();
 
@@ -1241,7 +1235,6 @@ function SchedulingPage() {
         editingJob={editingJob}
         teamMembers={teamMembers}
         workOrders={workOrders}
-        canWrite={canWrite}
       />
     </div>
   );
