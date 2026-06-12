@@ -588,7 +588,8 @@ function KanbanCard({
       onClick={onSelect}
     >
       <div className="relative inline-block">
-        {canWrite ? (
+        {/* Closed stages are locked: show a static label, not the stage-move dropdown. */}
+        {canWrite && !isClosedStage(opp.stage) ? (
           <button
             onClick={onOpenSelector}
             className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium flex items-center gap-1 hover:opacity-80 transition-opacity", stageMeta[opp.stage].badge)}
