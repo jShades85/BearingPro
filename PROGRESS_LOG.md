@@ -7,7 +7,7 @@
 ## Current Status
 
 **Phase:** Backend — All modules live; permissions enforced; seed data connected; design polish in progress
-**Last Updated:** Session 037
+**Last Updated:** Session 038
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -172,7 +172,7 @@ No RLS changes needed — both FKs reference tenant-scoped tables and existing p
 | DB: tenants + user_profiles | ✅ Live | RLS + handle_new_user trigger |
 | Vercel Deployment | ✅ Live | bearingpro.tech, nitro vercel preset |
 | CRM (Contacts/Companies/Lead Inbox) | ✅ Live | Schema + RLS live; all pages wired; Lead Inbox reads/writes `leads` table; Convert button creates Contact + Opportunity atomically |
-| Sales (Opps, Quotes) | ✅ Opps live | Opportunities reads/writes DB; kanban stage moves + new opp modal wired; Quotes still demo |
+| Sales (Opps, Quotes) | ✅ Opps done | Opportunities page complete: reads/writes DB, drag-and-drop kanban (closed stages locked), stage dropdown, new opp modal, quote auto-advance; Quotes still demo |
 | Operations (Projects, Work Orders, Team, Scheduling) | ✅ Projects + WOs + Scheduling live | Schema + RLS live; list + detail pages read/write DB; status persists; Edit drawer live; Convert from Opportunity captures site address + copies quote line items; Scheduling calendar wired to `scheduled_jobs` table (multi-tech dispatch, seed events); New WO modal has project picker (auto-fills company/contact/address); Team still demo |
 | Service (Tickets, Plans) | ✅ Live | Tickets: status + notes + new ticket wired; Service Plans: schema + RLS live; 8 seed plans; all CRUD wired (tier/status inline, notes blur-save, Renew/Cancel, New Plan modal) |
 | Inventory → Catalog | ✅ Live | Schema + RLS live; category landing + item grid wired; tenant-defined categories with trade templates + icon picker; CategorySetupModal on first visit; New Category / New Item context-aware button |
@@ -312,6 +312,34 @@ Use this to manually walk the full app flow end-to-end. Every step is wired to t
 **What this tests:** Lead creation → conversion → opportunity stages → project creation → work order dispatch → invoicing → payment collection. Every write goes to the live DB.
 
 **Note on Quote Builder gap:** In the real flow, step 4 would be: Estimating stage → Create Quote (line items from catalog) → client approves → Closed Won → auto-convert to Project. That step is deferred. For now, manually move the opp to Closed Won and convert directly.
+
+---
+
+## Session 038 — Opportunities Page Done: Quote Auto-Advance + Kanban Drag-and-Drop
+
+**Date:** June 12, 2026
+
+**Completed:**
+
+- **Quote → Opportunity auto-stage-advance — chain complete** (`src/routes/sales/quotes/_shared.tsx`):
+  - `saveQuoteToDb` now advances the linked opp `site-visit → estimating` on first draft save, guarded with `.eq("stage", "site-visit")` (same proven pattern as the Sent → Negotiation advance in `$quoteId.tsx`)
+  - Full pipeline chain is now automatic: draft saved → Estimating · sent → Negotiation · accepted → Closed Won
+  - Closed the last "partial" item in the queued-features list
+
+- **Drag-and-drop kanban** (`src/routes/sales/opportunities.tsx`):
+  - **Native HTML5 DnD — zero new dependencies.** Chosen over `@dnd-kit` deliberately: a pipeline only cares which column a card lands in (not intra-column order), and a new dep couldn't be install-tested here against the live Vercel build. No bundle cost, no lockfile change.
+  - `isClosedStage()` helper added next to `stageMeta`
+  - Cards in the four open stages drag freely between columns; cards in `closed-won`/`closed-lost` have `draggable={false}` — locked in place. Every column (including empty ones) is a drop target, so an open card can be dropped *into* a closed column, just not dragged back out.
+  - Drop reuses the existing `onMove → stageMutation` write path, now made **optimistic with rollback** (`onMutate` patches the `["opportunities"]` cache, `onError` restores, `onSettled` invalidates) so a dropped card snaps to its new column instead of flashing back during the refetch
+  - Visual feedback: hovered column gets a primary ring; dragged card dims to 50%; draggable cards show `cursor-grab`
+
+- **Closed cards fully locked** — the stage-move dropdown is now hidden on `closed-won`/`closed-lost` cards (renders a static `StageBadge` instead). Combined with `draggable={false}`, a closed deal can't be reopened from the kanban at all. Open-stage cards keep both drag and the dropdown.
+
+**Architecture notes:**
+- Kept the stage dropdown alongside DnD as the keyboard/touch-accessible path (native HTML5 DnD has poor touch + a11y support)
+- `stageMutation` was previously invalidate-only; optimistic update was the one functional addition DnD required to feel right
+
+**Opportunities page is now considered done** (Module Status flipped to ✅ Opps done). Quote Builder remains the only deferred Sales piece.
 
 ---
 
