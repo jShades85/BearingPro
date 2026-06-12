@@ -248,7 +248,7 @@ function AppShellContent() {
               <>
                 <div className="flex min-w-0 flex-col leading-tight">
                   <span className="truncate text-[12px] font-medium">{user?.email ?? "—"}</span>
-                  <span className="text-[10px] text-muted-foreground">{roleName ?? "—"} · {tenant?.name ?? "Workspace"}</span>
+                  <span className="text-[10px] text-muted-foreground">{roleName ?? "—"}</span>
                 </div>
                 <div className="ml-auto flex items-center gap-0.5">
                   <button
