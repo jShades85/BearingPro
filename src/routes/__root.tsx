@@ -17,6 +17,7 @@ import { AppShell } from "../components/app-shell";
 import { useTheme } from "../hooks/useTheme";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { PermissionsProvider } from "../contexts/PermissionsContext";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -156,6 +157,7 @@ function RootComponent() {
           ? <Outlet />
           : <PermissionsProvider><ProtectedApp /></PermissionsProvider>}
       </AuthProvider>
+      <Toaster />
     </QueryClientProvider>
   );
 }

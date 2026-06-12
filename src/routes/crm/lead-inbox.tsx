@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { usePermissions } from "@/contexts/PermissionsContext";
 import { Avatar } from "@/components/ui-bits";
@@ -233,6 +234,7 @@ function LeadInbox() {
       qc.invalidateQueries({ queryKey: ["contacts"] });
       setSelectedLead(null);
       setConvertModalLead(null);
+      toast.success("Lead converted to contact");
     },
   });
 

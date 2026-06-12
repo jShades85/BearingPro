@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
@@ -455,6 +456,7 @@ function CollectTab({
       );
       setRecordedAmount(Number(amount));
       setRecorded(true);
+      toast.success("Payment recorded");
     },
   });
 

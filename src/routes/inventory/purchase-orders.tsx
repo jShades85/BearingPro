@@ -29,6 +29,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import type { TablesUpdate } from "@/lib/supabase/types";
 
@@ -1335,8 +1336,10 @@ function PurchaseOrdersPage() {
         }
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ["purchase-orders"] });
+      if (variables.status === "sent") toast.success("PO sent to vendor");
+      else if (variables.status === "received") toast.success("All items marked received");
     },
   });
 
