@@ -8,6 +8,7 @@ import {
   Check, Copy, Link2, Mail, Plus, Trash2, UserCircle2, Users, X,
 } from "lucide-react";
 import { cn, avatarGradient, avatarInitials } from "@/lib/utils";
+import { FormSelect } from "@/components/ui/form-select";
 import {
   StatBar, StatItem, FilterBar, SearchInput, FilterSelect,
 } from "@/components/ui/page-components";
@@ -30,7 +31,6 @@ type Member  = Database["public"]["Tables"]["user_profiles"]["Row"] & {
 
 const inputCls  = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
 const labelCls  = "block text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-1";
-const selectCls = cn(inputCls, "appearance-none");
 
 // ─── Supabase helpers ─────────────────────────────────────────────────────────
 
@@ -179,22 +179,22 @@ function EditPanel({
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
         <div>
           <label className={labelCls}>Role</label>
-          <select value={roleId} onChange={(e) => setRoleId(e.target.value)} className={selectCls}>
+          <FormSelect value={roleId} onChange={(e) => setRoleId(e.target.value)}>
             <option value="">No role</option>
             {roles.map((r) => (
               <option key={r.id} value={r.id}>{r.name}</option>
             ))}
-          </select>
+          </FormSelect>
         </div>
 
         <div>
           <label className={labelCls}>Assigned Vehicle</label>
-          <select value={vehicleId} onChange={(e) => setVehicleId(e.target.value)} className={selectCls}>
+          <FormSelect value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}>
             <option value="">None</option>
             {vehicles.map((v) => (
               <option key={v.id} value={v.id}>{v.name}</option>
             ))}
-          </select>
+          </FormSelect>
           {vehicles.length === 0 && (
             <p className="mt-1 text-[11px] text-muted-foreground">
               No vehicles set up yet. Add them in Inventory → Locations.
@@ -312,15 +312,14 @@ function InvitePanel({
 
         <div>
           <label className={labelCls}>Role</label>
-          <select
+          <FormSelect
             value={roleId}
             onChange={(e) => { setRoleId(e.target.value); setLink(""); }}
-            className={selectCls}
           >
             {roles.map((r) => (
               <option key={r.id} value={r.id}>{r.name}</option>
             ))}
-          </select>
+          </FormSelect>
         </div>
 
         {/* Generated link */}

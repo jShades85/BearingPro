@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormSelect } from "@/components/ui/form-select";
 import { createClient } from "@/lib/supabase/client";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { Avatar } from "@/components/ui-bits";
@@ -484,12 +485,12 @@ function WorkOrderEditDrawer({
 
           <div className="space-y-1.5">
             <label className={labelCls}>Assigned To</label>
-            <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className={fieldCls}>
+            <FormSelect value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className={fieldCls}>
               <option value="">Unassigned</option>
               {teamMembers.map((m) => (
                 <option key={m.id} value={m.id}>{m.full_name ?? "—"}</option>
               ))}
-            </select>
+            </FormSelect>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

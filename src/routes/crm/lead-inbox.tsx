@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { usePermissions } from "@/contexts/PermissionsContext";
 import { Avatar } from "@/components/ui-bits";
 import { PageTabs, PageTab, FilterBar, FilterSelect } from "@/components/ui/page-components";
+import { FormSelect } from "@/components/ui/form-select";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { cn } from "@/lib/utils";
 import { Mail, MapPin, Phone } from "lucide-react";
@@ -673,9 +674,7 @@ function NewLeadModal({
 }) {
   const [saving, setSaving] = useState(false);
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -726,16 +725,16 @@ function NewLeadModal({
         </div>
         <div>
           <label className={labelCls}>Source</label>
-          <select name="source" className={selectCls} defaultValue="Phone">
+          <FormSelect name="source" defaultValue="Phone">
             {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Assign To</label>
-          <select name="assigned_to" className={selectCls}>
+          <FormSelect name="assigned_to">
             <option value="">— Unassigned —</option>
             {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Service Interested In</label>

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { FormSelect } from "@/components/ui/form-select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
@@ -996,12 +997,12 @@ function ItemDrawer({
                   <FormItem>
                     <FormLabel className="text-[11.5px]">Category *</FormLabel>
                     <FormControl>
-                      <select {...field} className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring">
+                      <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring">
                         <option value="">Select category…</option>
                         {categories.map((c) => (
                           <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
-                      </select>
+                      </FormSelect>
                     </FormControl>
                     <FormMessage className="text-[11px]" />
                   </FormItem>

@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormSelect } from "@/components/ui/form-select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar } from "@/components/ui-bits";
 import {
@@ -315,9 +316,7 @@ function AddPhaseModal({
 }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -361,10 +360,10 @@ function AddPhaseModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Assigned Technician</label>
-            <select name="assigned_to" className={selectCls}>
+            <FormSelect name="assigned_to">
               <option value="">— Unassigned —</option>
               {teamMembers.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Scheduled Date</label>
@@ -851,12 +850,12 @@ function ProjectEditDrawer({
 
           <div className="space-y-1.5">
             <label className={labelCls}>Project Manager</label>
-            <select value={pmId} onChange={(e) => setPmId(e.target.value)} className={fieldCls}>
+            <FormSelect value={pmId} onChange={(e) => setPmId(e.target.value)} className={fieldCls}>
               <option value="">Unassigned</option>
               {teamMembers.map((m) => (
                 <option key={m.id} value={m.id}>{m.full_name ?? "—"}</option>
               ))}
-            </select>
+            </FormSelect>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

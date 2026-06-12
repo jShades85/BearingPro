@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Avatar, PriorityDot } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { usePermissions } from "@/contexts/PermissionsContext";
+import { FormSelect } from "@/components/ui/form-select";
 import { currency } from "@/lib/demo-data";
 const fmtValue = (v: number | null) => (v ? currency(v) : "—");
 import type { Priority } from "@/lib/demo-data";
@@ -702,9 +703,7 @@ function OpportunityDrawer({
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -742,32 +741,32 @@ function OpportunityDrawer({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelCls}>Company</label>
-                <select name="company_id" className={selectCls} defaultValue={opp.companyId ?? ""}>
+                <FormSelect name="company_id" defaultValue={opp.companyId ?? ""}>
                   <option value="">— None —</option>
                   {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                </FormSelect>
               </div>
               <div>
                 <label className={labelCls}>Contact</label>
-                <select name="contact_id" className={selectCls} defaultValue={opp.contactId ?? ""}>
+                <FormSelect name="contact_id" defaultValue={opp.contactId ?? ""}>
                   <option value="">— None —</option>
                   {contacts.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-                </select>
+                </FormSelect>
               </div>
               <div>
                 <label className={labelCls}>Stage</label>
-                <select name="stage" className={selectCls} defaultValue={opp.stage}>
+                <FormSelect name="stage" defaultValue={opp.stage}>
                   {stageOrder.map((s) => <option key={s} value={s}>{stageMeta[s].label}</option>)}
-                </select>
+                </FormSelect>
               </div>
               <div>
                 <label className={labelCls}>Priority</label>
-                <select name="priority" className={selectCls} defaultValue={opp.priority}>
+                <FormSelect name="priority" defaultValue={opp.priority}>
                   <option value="urgent">Urgent</option>
                   <option value="high">High</option>
                   <option value="med">Medium</option>
                   <option value="low">Low</option>
-                </select>
+                </FormSelect>
               </div>
               <div>
                 <label className={labelCls}>Close Date</label>
@@ -776,17 +775,17 @@ function OpportunityDrawer({
               </div>
               <div>
                 <label className={labelCls}>Source</label>
-                <select name="source" className={selectCls} defaultValue={opp.source ?? ""}>
+                <FormSelect name="source" defaultValue={opp.source ?? ""}>
                   <option value="">— None —</option>
                   {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                </FormSelect>
               </div>
               <div className="col-span-2">
                 <label className={labelCls}>Assigned To</label>
-                <select name="assigned_to" className={selectCls} defaultValue={opp.repId ?? ""}>
+                <FormSelect name="assigned_to" defaultValue={opp.repId ?? ""}>
                   <option value="">— Unassigned —</option>
                   {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-                </select>
+                </FormSelect>
               </div>
             </div>
           </div>
@@ -1044,9 +1043,7 @@ function NewOpportunityModal({
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -1083,17 +1080,17 @@ function NewOpportunityModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Company</label>
-            <select name="company_id" className={selectCls}>
+            <FormSelect name="company_id">
               <option value="">— None —</option>
               {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Contact</label>
-            <select name="contact_id" className={selectCls}>
+            <FormSelect name="contact_id">
               <option value="">— None —</option>
               {contacts.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Value ($)</label>
@@ -1105,32 +1102,32 @@ function NewOpportunityModal({
           </div>
           <div>
             <label className={labelCls}>Stage</label>
-            <select name="stage" className={selectCls} defaultValue="site-visit">
+            <FormSelect name="stage" defaultValue="site-visit">
               {stageOrder.map((s) => <option key={s} value={s}>{stageMeta[s].label}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Priority</label>
-            <select name="priority" className={selectCls} defaultValue="med">
+            <FormSelect name="priority" defaultValue="med">
               <option value="urgent">Urgent</option>
               <option value="high">High</option>
               <option value="med">Medium</option>
               <option value="low">Low</option>
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Source</label>
-            <select name="source" className={selectCls}>
+            <FormSelect name="source">
               <option value="">— None —</option>
               {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Assigned To</label>
-            <select name="assigned_to" className={selectCls}>
+            <FormSelect name="assigned_to">
               <option value="">— Unassigned —</option>
               {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-            </select>
+            </FormSelect>
           </div>
         </div>
         <div>

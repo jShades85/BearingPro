@@ -7,6 +7,7 @@ import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
+import { FormSelect } from "@/components/ui/form-select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { statusMeta, type ProjectStatus } from "@/data/projects";
 
@@ -250,9 +251,7 @@ function NewWorkOrderModal({
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value;
@@ -303,42 +302,42 @@ function NewWorkOrderModal({
         </div>
         <div>
           <label className={labelCls}>Link to Project</label>
-          <select value={projectId} onChange={handleProjectChange} className={selectCls}>
+          <FormSelect value={projectId} onChange={handleProjectChange}>
             <option value="">— Standalone (no project) —</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
             ))}
-          </select>
+          </FormSelect>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Company</label>
-            <select value={companyId} onChange={(e) => setCompanyId(e.target.value)} className={selectCls}>
+            <FormSelect value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
               <option value="">— None —</option>
               {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Contact</label>
-            <select value={contactId} onChange={(e) => setContactId(e.target.value)} className={selectCls}>
+            <FormSelect value={contactId} onChange={(e) => setContactId(e.target.value)}>
               <option value="">— None —</option>
               {contacts.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Assigned Technician</label>
-            <select name="assigned_to" className={selectCls}>
+            <FormSelect name="assigned_to">
               <option value="">— Unassigned —</option>
               {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Status</label>
-            <select name="status" className={selectCls} defaultValue="scheduled">
+            <FormSelect name="status" defaultValue="scheduled">
               {WO_STATUS_OPTIONS.filter((o) => o.value !== "all").map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Contract Value ($)</label>

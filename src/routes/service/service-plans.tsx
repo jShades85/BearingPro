@@ -6,6 +6,7 @@ import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { FormSelect } from "@/components/ui/form-select";
 import type { TablesUpdate } from "@/lib/supabase/types";
 import { AlertCircle, Clock, DollarSign, MapPin, Phone, RefreshCw, Shield, TrendingUp } from "lucide-react";
 import { StatBar, StatItem, PageTabs, PageTab } from "@/components/ui/page-components";
@@ -378,7 +379,7 @@ function PlanDrawer({
         <div className="grid grid-cols-3 gap-x-4 gap-y-3.5 text-[12.5px]">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Plan Tier</p>
-            <select
+            <FormSelect
               value={plan.tier}
               disabled={isPending}
               onChange={(e) => onUpdate(plan.id, { tier: e.target.value })}
@@ -387,11 +388,11 @@ function PlanDrawer({
               {(["Essential", "Standard", "Professional", "Elite"] as PlanTier[]).map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Status</p>
-            <select
+            <FormSelect
               value={plan.status}
               disabled={isPending}
               onChange={(e) => onUpdate(plan.id, { status: e.target.value })}
@@ -400,7 +401,7 @@ function PlanDrawer({
               {STATUS_ORDER.map((s) => (
                 <option key={s} value={s}>{statusMeta[s].label}</option>
               ))}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">MRR</p>
@@ -612,7 +613,6 @@ function NewPlanModal({
   });
 
   const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
   const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   function toggleSystem(s: string) {
@@ -643,15 +643,15 @@ function NewPlanModal({
         </div>
         <div>
           <label className={labelCls}>Plan Tier</label>
-          <select value={tier} onChange={(e) => setTier(e.target.value as PlanTier)} className={selectCls}>
+          <FormSelect value={tier} onChange={(e) => setTier(e.target.value as PlanTier)}>
             {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Billing Cycle</label>
-          <select value={billingCycle} onChange={(e) => setBillingCycle(e.target.value as typeof billingCycle)} className={selectCls}>
+          <FormSelect value={billingCycle} onChange={(e) => setBillingCycle(e.target.value as typeof billingCycle)}>
             {BILLING_CYCLES.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>MRR ($)</label>
@@ -659,9 +659,9 @@ function NewPlanModal({
         </div>
         <div>
           <label className={labelCls}>SLA Response</label>
-          <select value={slaResponse} onChange={(e) => setSlaResponse(e.target.value)} className={selectCls}>
+          <FormSelect value={slaResponse} onChange={(e) => setSlaResponse(e.target.value)}>
             {SLA_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Visits / Year</label>
@@ -673,12 +673,12 @@ function NewPlanModal({
         </div>
         <div>
           <label className={labelCls}>Account Manager</label>
-          <select value={accountManagerId} onChange={(e) => setAccountManagerId(e.target.value)} className={selectCls}>
+          <FormSelect value={accountManagerId} onChange={(e) => setAccountManagerId(e.target.value)}>
             <option value="">Unassigned</option>
             {teamMembers.map((m) => (
               <option key={m.id} value={m.id}>{m.full_name ?? m.id}</option>
             ))}
-          </select>
+          </FormSelect>
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Site Address</label>

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { FormSelect } from "@/components/ui/form-select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -447,12 +448,12 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
 
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Type</p>
-            <select value={adjType} onChange={(e) => setAdjType(e.target.value as AdjustType)} className={fieldCls}>
+            <FormSelect value={adjType} onChange={(e) => setAdjType(e.target.value as AdjustType)} className={fieldCls}>
               <option value="cycle_count">Cycle Count</option>
               <option value="received">Received</option>
               <option value="consumed">Consumed</option>
               <option value="returned">Returned</option>
-            </select>
+            </FormSelect>
           </div>
 
           <div>
@@ -748,7 +749,7 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                   <label className="block text-[11.5px] text-muted-foreground mb-1.5">
                     Link to Catalog Item <span className="text-muted-foreground/60 text-[10.5px]">(optional)</span>
                   </label>
-                  <select
+                  <FormSelect
                     value={watchedCatalogId ?? ""}
                     onChange={(e) => handleCatalogLink(e.target.value)}
                     className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
@@ -757,7 +758,7 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                     {catalogItems.map((c) => (
                       <option key={c.id} value={c.id}>{c.name} — {c.sku}</option>
                     ))}
-                  </select>
+                  </FormSelect>
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     Linking auto-fills and locks name, SKU, manufacturer, category, and cost.
                   </p>
@@ -826,11 +827,11 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                       <FormItem>
                         <FormLabel className="text-[11.5px]">Category *</FormLabel>
                         <FormControl>
-                          <select {...field} className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring">
+                          <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring">
                             {CATEGORIES.map((c) => (
                               <option key={c} value={c}>{categoryMeta[c].label}</option>
                             ))}
-                          </select>
+                          </FormSelect>
                         </FormControl>
                         <FormMessage className="text-[11px]" />
                       </FormItem>

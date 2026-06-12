@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
+import { FormSelect } from "@/components/ui/form-select";
 import {
   AlertCircle, Check, CheckCircle2, ChevronsUpDown,
   CreditCard, Download, FileText, Pencil, Plus, X,
@@ -761,17 +762,17 @@ function InvoiceDrawer({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Status</label>
-                  <select {...field("status")} className={cn(inputCls, "cursor-pointer")}>
+                  <FormSelect {...field("status")} className={cn(inputCls, "cursor-pointer")}>
                     {(Object.keys(STATUS_META) as InvoiceStatus[]).map((s) => (
                       <option key={s} value={s}>{STATUS_META[s].label}</option>
                     ))}
-                  </select>
+                  </FormSelect>
                 </div>
                 <div>
                   <label className={labelCls}>Payment Terms</label>
-                  <select {...field("paymentTerms")} className={cn(inputCls, "cursor-pointer")}>
+                  <FormSelect {...field("paymentTerms")} className={cn(inputCls, "cursor-pointer")}>
                     {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                  </FormSelect>
                 </div>
               </div>
 
@@ -950,9 +951,9 @@ function NewInvoiceModal({
             </div>
             <div>
               <label className={labelCls}>Payment Terms</label>
-              <select {...field("paymentTerms")} className={cn(inputCls, "cursor-pointer")}>
+              <FormSelect {...field("paymentTerms")} className={cn(inputCls, "cursor-pointer")}>
                 {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
+              </FormSelect>
             </div>
           </div>
           <div>

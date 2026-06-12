@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { usePermissions } from "@/contexts/PermissionsContext";
+import { FormSelect } from "@/components/ui/form-select";
 import { Avatar } from "@/components/ui-bits";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { cn } from "@/lib/utils";
@@ -519,7 +520,6 @@ function NewTicketModal({
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
   const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
   const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -554,17 +554,17 @@ function NewTicketModal({
       <form onSubmit={handleSubmit} className="mt-1 grid grid-cols-2 gap-3">
         <div>
           <label className={labelCls}>Company</label>
-          <select name="company_id" className={selectCls}>
+          <FormSelect name="company_id">
             <option value="">— None —</option>
             {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Contact</label>
-          <select name="contact_id" className={selectCls}>
+          <FormSelect name="contact_id">
             <option value="">— None —</option>
             {contacts.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Customer Name</label>
@@ -598,24 +598,24 @@ function NewTicketModal({
         </div>
         <div>
           <label className={labelCls}>Category</label>
-          <select name="category" className={selectCls}>
+          <FormSelect name="category">
             {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Priority</label>
-          <select name="priority" className={selectCls} defaultValue="medium">
+          <FormSelect name="priority" defaultValue="medium">
             {PRIORITY_OPTIONS.map((p) => (
               <option key={p} value={p}>{priorityMeta[p].label}</option>
             ))}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Assign To</label>
-          <select name="assigned_to" className={selectCls}>
+          <FormSelect name="assigned_to">
             <option value="">— Unassigned —</option>
             {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div className="flex items-center gap-2 pt-4">
           <input id="on_service_plan" name="on_service_plan" type="checkbox" className="h-3.5 w-3.5 rounded border-border" />

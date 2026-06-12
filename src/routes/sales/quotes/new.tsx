@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ChevronDown, Clock, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Clock, FileText, Loader2 } from "lucide-react";
+import { FormSelect } from "@/components/ui/form-select";
 import {
   type BuilderSection, type BuilderLineItem, type EditingCell,
   BUILDER_TEMPLATES, CatalogSearchModal, SectionBlock,
@@ -212,9 +213,7 @@ function NewQuotePage() {
     }
   }
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   return (
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
@@ -236,8 +235,7 @@ function NewQuotePage() {
             {/* Linked Opportunity — full width */}
             <div className="col-span-2">
               <label className={labelCls}>Linked Opportunity *</label>
-              <select
-                className={selectCls}
+              <FormSelect
                 value={linkedOppId}
                 onChange={(e) => {
                   setLinkedOppId(e.target.value);
@@ -252,27 +250,25 @@ function NewQuotePage() {
                 {opportunities.map((o) => (
                   <option key={o.id} value={o.id}>{o.title}</option>
                 ))}
-              </select>
+              </FormSelect>
             </div>
 
             {/* Company */}
             <div>
               <label className={labelCls}>Customer</label>
-              <select
-                className={selectCls}
+              <FormSelect
                 value={companyId}
                 onChange={(e) => { setCompanyId(e.target.value); setContactId(""); }}
               >
                 <option value="">Select company…</option>
                 {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              </FormSelect>
             </div>
 
             {/* Contact */}
             <div>
               <label className={labelCls}>Contact</label>
-              <select
-                className={selectCls}
+              <FormSelect
                 value={contactId}
                 onChange={(e) => setContactId(e.target.value)}
                 disabled={!companyId}
@@ -281,7 +277,7 @@ function NewQuotePage() {
                 {contacts.map((c) => (
                   <option key={c.id} value={c.id}>{c.full_name}</option>
                 ))}
-              </select>
+              </FormSelect>
             </div>
 
             {/* Issue Date */}
@@ -301,19 +297,15 @@ function NewQuotePage() {
             {/* Template */}
             <div className="col-span-2">
               <label className={labelCls}>Template</label>
-              <div className="relative">
-                <select
-                  className={cn(selectCls, "pr-8 appearance-none")}
-                  value={templateId}
-                  onChange={(e) => handleTemplateChange(e.target.value)}
-                >
-                  <option value="">Select a template…</option>
-                  {BUILDER_TEMPLATES.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-2 top-2 h-4 w-4 text-muted-foreground" />
-              </div>
+              <FormSelect
+                value={templateId}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+              >
+                <option value="">Select a template…</option>
+                {BUILDER_TEMPLATES.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </FormSelect>
             </div>
 
             {/* Notes */}

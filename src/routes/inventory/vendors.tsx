@@ -9,6 +9,7 @@ import {
   Pencil, Phone, ShoppingCart, Star, Truck, User, X,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FormSelect } from "@/components/ui/form-select";
 import { StatBar, StatItem, FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
 import { createClient } from "@/lib/supabase/client";
 import type { TablesUpdate } from "@/lib/supabase/types";
@@ -339,17 +340,17 @@ function VendorDrawer({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelCls}>Category</label>
-                    <select {...field("category")} className={inputCls}>
+                    <FormSelect {...field("category")} className={inputCls}>
                       {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    </FormSelect>
                   </div>
                   <div>
                     <label className={labelCls}>Status</label>
-                    <select {...field("status")} className={inputCls}>
+                    <FormSelect {...field("status")} className={inputCls}>
                       <option value="preferred">Preferred</option>
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
-                    </select>
+                    </FormSelect>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -359,9 +360,9 @@ function VendorDrawer({
                   </div>
                   <div>
                     <label className={labelCls}>Payment Terms</label>
-                    <select {...field("payment_terms")} className={inputCls}>
+                    <FormSelect {...field("payment_terms")} className={inputCls}>
                       {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
+                    </FormSelect>
                   </div>
                 </div>
               </fieldset>
@@ -846,17 +847,17 @@ function NewVendorModal({
           </div>
           <div>
             <label className={labelCls}>Category</label>
-            <select {...f("category")} className={inputCls}>
+            <FormSelect {...f("category")} className={inputCls}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Status</label>
-            <select {...f("status")} className={inputCls}>
+            <FormSelect {...f("status")} className={inputCls}>
               <option value="preferred">Preferred</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Account #</label>
@@ -864,9 +865,9 @@ function NewVendorModal({
           </div>
           <div>
             <label className={labelCls}>Payment Terms</label>
-            <select {...f("paymentTerms")} className={inputCls}>
+            <FormSelect {...f("paymentTerms")} className={inputCls}>
               {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div className="col-span-2">
             <label className={labelCls}>Website</label>

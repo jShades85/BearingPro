@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
+import { FormSelect } from "@/components/ui/form-select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -239,9 +240,7 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
     onOpenChange(false);
   });
 
-  const fieldCls = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
-  const selectCls = cn(fieldCls, "appearance-none pr-7 cursor-pointer");
-  const labelCls = "mb-1 block text-[11.5px] font-medium text-foreground";
+  const fieldCls = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";  const labelCls = "mb-1 block text-[11.5px] font-medium text-foreground";
   const errorCls = "mt-0.5 text-[11px] text-destructive";
 
   if (!member) return null;
@@ -278,19 +277,16 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
                   <FormField control={form.control} name="role_id" render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelCls}>Role</FormLabel>
-                      <div className="relative">
-                        <FormControl>
-                          <select
-                            value={field.value ?? ""}
-                            onChange={(e) => field.onChange(e.target.value || null)}
-                            className={selectCls}
-                          >
-                            <option value="">No role</option>
-                            {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                          </select>
-                        </FormControl>
-                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
+                      <FormControl>
+                        <FormSelect
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                          onBlur={field.onBlur}
+                        >
+                          <option value="">No role</option>
+                          {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                        </FormSelect>
+                      </FormControl>
                     </FormItem>
                   )} />
 
@@ -351,15 +347,12 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
                   <FormField control={form.control} name="pay_type" render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelCls}>Pay Type</FormLabel>
-                      <div className="relative">
-                        <FormControl>
-                          <select {...field} className={selectCls}>
-                            <option value="hourly">Hourly</option>
-                            <option value="salary">Salary</option>
-                          </select>
-                        </FormControl>
-                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
+                      <FormControl>
+                        <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur}>
+                          <option value="hourly">Hourly</option>
+                          <option value="salary">Salary</option>
+                        </FormSelect>
+                      </FormControl>
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="pay_rate" render={({ field }) => (
@@ -386,17 +379,14 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
                   <FormField control={form.control} name="availability" render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelCls}>Availability</FormLabel>
-                      <div className="relative">
-                        <FormControl>
-                          <select {...field} className={selectCls}>
-                            <option value="full_time">Full Time</option>
-                            <option value="part_time">Part Time</option>
-                            <option value="on_call">On Call</option>
-                            <option value="inactive">Inactive</option>
-                          </select>
-                        </FormControl>
-                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
+                      <FormControl>
+                        <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur}>
+                          <option value="full_time">Full Time</option>
+                          <option value="part_time">Part Time</option>
+                          <option value="on_call">On Call</option>
+                          <option value="inactive">Inactive</option>
+                        </FormSelect>
+                      </FormControl>
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="start_date" render={({ field }) => (

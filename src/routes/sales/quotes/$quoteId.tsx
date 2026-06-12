@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
+import { FormSelect } from "@/components/ui/form-select";
 import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft, CheckCircle2, Clock, Download, Eye, FileText,
@@ -332,17 +333,14 @@ function QuoteDetailPage() {
               <div className="rounded-lg border border-border bg-card p-5 space-y-4">
                 <p className="text-[12.5px] text-muted-foreground">Apply a template or start blank to build this quote.</p>
                 <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <select
-                      value={selectedTemplateId}
-                      onChange={(e) => setSelectedTemplateId(e.target.value)}
-                      className="h-8 rounded-md border border-border bg-surface pl-3 pr-8 text-[12.5px] appearance-none focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
-                      {BUILDER_TEMPLATES.map((t) => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <FormSelect
+                    value={selectedTemplateId}
+                    onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  >
+                    {BUILDER_TEMPLATES.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </FormSelect>
                   <button
                     type="button"
                     onClick={() => applyTemplate(selectedTemplateId)}

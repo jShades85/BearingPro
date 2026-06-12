@@ -5,6 +5,7 @@ import { useMeta } from "@/contexts/PageMetaContext";
 import { cn } from "@/lib/utils";
 import { Eye, LayoutGrid, List, MapPin } from "lucide-react";
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
+import { FormSelect } from "@/components/ui/form-select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -292,9 +293,7 @@ const initialForm = {
 
 function NewCompanyModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const [form, setForm] = useState(initialForm);
   const [sameAddress, setSameAddress] = useState(false);
@@ -343,17 +342,17 @@ function NewCompanyModal({ onClose }: { onClose: () => void }) {
         </div>
         <div>
           <label className={labelCls}>Industry</label>
-          <select className={selectCls} value={form.industry} onChange={set("industry")}>
+          <FormSelect value={form.industry} onChange={set("industry")}>
             {industryOptions.map((i) => <option key={i} value={i}>{i}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Stage</label>
-          <select className={selectCls} value={form.stage} onChange={set("stage")}>
+          <FormSelect value={form.stage} onChange={set("stage")}>
             <option value="prospect">Prospect</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Phone</label>

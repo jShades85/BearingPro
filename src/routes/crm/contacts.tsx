@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { usePermissions } from "@/contexts/PermissionsContext";
+import { FormSelect } from "@/components/ui/form-select";
 
 export const Route = createFileRoute("/crm/contacts")({
   head: () => ({ meta: [{ title: "Contacts · BearingPro" }] }),
@@ -507,9 +508,7 @@ function ContactEditBody({
   teamMembers: TeamMember[];
 }) {
   const qc = useQueryClient();
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const [form, setForm] = useState({
     full_name:    c.full_name,
@@ -577,10 +576,10 @@ function ContactEditBody({
         {isCommercial && (
           <div>
             <label className={labelCls}>Company</label>
-            <select className={selectCls} value={form.company_id} onChange={set("company_id")}>
+            <FormSelect value={form.company_id} onChange={set("company_id")}>
               <option value="">— None —</option>
               {companyOptions.map((co) => <option key={co.id} value={co.id}>{co.name}</option>)}
-            </select>
+            </FormSelect>
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">
@@ -601,35 +600,35 @@ function ContactEditBody({
           {isCommercial && (
             <div>
               <label className={labelCls}>Contact Type</label>
-              <select className={selectCls} value={form.contact_type} onChange={set("contact_type")}>
+              <FormSelect value={form.contact_type} onChange={set("contact_type")}>
                 <option value="">— None —</option>
                 {typeOptions.map((t) => <option key={t}>{t}</option>)}
-              </select>
+              </FormSelect>
             </div>
           )}
           <div className={isCommercial ? "" : "col-span-2"}>
             <label className={labelCls}>Stage</label>
-            <select className={selectCls} value={form.stage} onChange={set("stage")}>
+            <FormSelect value={form.stage} onChange={set("stage")}>
               <option value="Lead">Lead</option>
               <option value="Customer">Customer</option>
               <option value="Inactive">Inactive</option>
-            </select>
+            </FormSelect>
           </div>
         </div>
         <div>
           <label className={labelCls}>Lead Source</label>
-          <select className={selectCls} value={form.source} onChange={set("source")}>
+          <FormSelect value={form.source} onChange={set("source")}>
             {sourceOptions.map((s) => <option key={s}>{s}</option>)}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Assign To</label>
-          <select className={selectCls} value={form.assigned_to} onChange={set("assigned_to")}>
+          <FormSelect value={form.assigned_to} onChange={set("assigned_to")}>
             <option value="">— Unassigned —</option>
             {teamMembers.map((m) => (
               <option key={m.id} value={m.id}>{m.full_name ?? "—"}</option>
             ))}
-          </select>
+          </FormSelect>
         </div>
         <div>
           <label className={labelCls}>Notes</label>
@@ -676,9 +675,7 @@ const initialForm = {
 
 function NewContactModal({ onClose, teamMembers }: { onClose: () => void; teamMembers: TeamMember[] }) {
   const qc = useQueryClient();
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const [form, setForm] = useState(initialForm);
 
@@ -773,10 +770,10 @@ function NewContactModal({ onClose, teamMembers }: { onClose: () => void; teamMe
         {isCommercial && (
           <div className="col-span-2">
             <label className={labelCls}>Company</label>
-            <select className={selectCls} value={form.company_id} onChange={set("company_id")}>
+            <FormSelect value={form.company_id} onChange={set("company_id")}>
               <option value="">— None —</option>
               {companyOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            </FormSelect>
           </div>
         )}
 
@@ -796,28 +793,28 @@ function NewContactModal({ onClose, teamMembers }: { onClose: () => void; teamMe
         {isCommercial && (
           <div>
             <label className={labelCls}>Contact Type</label>
-            <select className={selectCls} value={form.contact_type} onChange={set("contact_type")}>
+            <FormSelect value={form.contact_type} onChange={set("contact_type")}>
               <option value="">— None —</option>
               {typeOptions.map((t) => <option key={t}>{t}</option>)}
-            </select>
+            </FormSelect>
           </div>
         )}
 
         <div className={isCommercial ? "" : "col-span-2"}>
           <label className={labelCls}>Lead Source</label>
-          <select className={selectCls} value={form.source} onChange={set("source")}>
+          <FormSelect value={form.source} onChange={set("source")}>
             {sourceOptions.map((s) => <option key={s}>{s}</option>)}
-          </select>
+          </FormSelect>
         </div>
 
         <div className="col-span-2">
           <label className={labelCls}>Assign To</label>
-          <select className={selectCls} value={form.assigned_to} onChange={set("assigned_to")}>
+          <FormSelect value={form.assigned_to} onChange={set("assigned_to")}>
             <option value="">— Unassigned —</option>
             {teamMembers.map((m) => (
               <option key={m.id} value={m.id}>{m.full_name ?? "—"}</option>
             ))}
-          </select>
+          </FormSelect>
         </div>
         <div className="col-span-2">
           <label className={labelCls}>Notes</label>

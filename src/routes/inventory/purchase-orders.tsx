@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { FormSelect } from "@/components/ui/form-select";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
@@ -810,11 +811,11 @@ function PODrawer({
                   <FormItem>
                     <FormLabel className="text-[11.5px]">Status *</FormLabel>
                     <FormControl>
-                      <select {...field} className={inputCls}>
+                      <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className={inputCls}>
                         {(Object.keys(STATUS_META) as POStatus[]).map((s) => (
                           <option key={s} value={s}>{STATUS_META[s].label}</option>
                         ))}
-                      </select>
+                      </FormSelect>
                     </FormControl>
                     <FormMessage className="text-[11px]" />
                   </FormItem>
@@ -825,10 +826,10 @@ function PODrawer({
                 <FormItem>
                   <FormLabel className="text-[11.5px]">Vendor *</FormLabel>
                   <FormControl>
-                    <select {...field} className={inputCls}>
+                    <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className={inputCls}>
                       <option value="">Select vendor…</option>
                       {vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
-                    </select>
+                    </FormSelect>
                   </FormControl>
                   <FormMessage className="text-[11px]" />
                 </FormItem>

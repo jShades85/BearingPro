@@ -5,6 +5,7 @@ import { useMeta } from "@/contexts/PageMetaContext";
 import { usePermissions } from "@/contexts/PermissionsContext";
 import { createClient } from "@/lib/supabase/client";
 import { Building2, Clock, Globe, Mail, MapPin, Phone, Percent, FileText } from "lucide-react";
+import { FormSelect } from "@/components/ui/form-select";
 
 export const Route = createFileRoute("/settings/company")({
   component: CompanyProfilePage,
@@ -169,14 +170,14 @@ function CompanyProfilePage() {
               <input value={form.tagline} onChange={(e) => update("tagline", e.target.value)} className={inputCls} placeholder="e.g. AV & Security Systems" />
             </Field>
             <Field label="Trade Type">
-              <select value={form.tradeType} onChange={(e) => update("tradeType", e.target.value)} className={inputCls}>
-                {TRADE_TYPES.map((t) => <option key={t}>{t}</option>)}
-              </select>
+              <FormSelect value={form.tradeType} onChange={(e) => update("tradeType", e.target.value)} className={inputCls}>
+                {TRADE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </FormSelect>
             </Field>
             <Field label="Timezone">
-              <select value={form.timezone} onChange={(e) => update("timezone", e.target.value)} className={inputCls}>
-                {TIMEZONES.map((t) => <option key={t}>{t}</option>)}
-              </select>
+              <FormSelect value={form.timezone} onChange={(e) => update("timezone", e.target.value)} className={inputCls}>
+                {TIMEZONES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </FormSelect>
             </Field>
           </div>
         </Section>
@@ -229,9 +230,9 @@ function CompanyProfilePage() {
         <Section title="Invoice Defaults" icon={FileText}>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Default Payment Terms">
-              <select value={form.paymentTerms} onChange={(e) => update("paymentTerms", e.target.value)} className={inputCls}>
-                {PAYMENT_TERMS.map((t) => <option key={t}>{t}</option>)}
-              </select>
+              <FormSelect value={form.paymentTerms} onChange={(e) => update("paymentTerms", e.target.value)} className={inputCls}>
+                {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
+              </FormSelect>
             </Field>
             <Field label="Default Tax Rate (%)">
               <div className="relative">

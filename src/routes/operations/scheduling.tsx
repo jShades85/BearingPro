@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ChevronLeft, ChevronRight, ChevronDown, MapPin, Clock } from "lucide-react";
+import { FormSelect } from "@/components/ui/form-select";
 import { useMeta } from "@/contexts/PageMetaContext";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -696,6 +697,8 @@ function ScheduleDrawer({
     }
   }, [open, editingJob, reset]);
 
+  const { ref: _catRef, ...categoryReg } = register("category");
+
   const handleJobSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     setValue("jobId", selectedId);
@@ -736,7 +739,7 @@ function ScheduleDrawer({
           {/* Link Work Order */}
           <div>
             <label className={labelCls}>Work Order</label>
-            <select
+            <FormSelect
               className={cn(inputCls, "cursor-pointer")}
               onChange={handleJobSelect}
               defaultValue=""
@@ -747,7 +750,7 @@ function ScheduleDrawer({
                   {r.code} — {r.name}
                 </option>
               ))}
-            </select>
+            </FormSelect>
           </div>
 
           {/* Title */}
@@ -760,12 +763,12 @@ function ScheduleDrawer({
           {/* Category */}
           <div>
             <label className={labelCls}>Category *</label>
-            <select {...register("category")} className={cn(inputCls, "cursor-pointer")}>
+            <FormSelect {...categoryReg} className={cn(inputCls, "cursor-pointer")}>
               <option value="">Select category…</option>
               {(Object.keys(CATEGORY_LABELS) as JobCategory[]).map((cat) => (
                 <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
               ))}
-            </select>
+            </FormSelect>
             {selectedCategory && (
               <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <span className={cn("h-2 w-2 rounded-full", CATEGORY_COLORS[selectedCategory].dot)} />

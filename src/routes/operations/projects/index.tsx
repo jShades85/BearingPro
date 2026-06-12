@@ -8,6 +8,7 @@ import { currency } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 import { Calendar } from "lucide-react";
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
+import { FormSelect } from "@/components/ui/form-select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { STATUS_OPTIONS, statusMeta, type ProjectStatus } from "@/data/projects";
 
@@ -233,9 +234,7 @@ function NewProjectModal({
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const selectCls = "w-full h-8 rounded-md border border-border bg-surface px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";
-  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -272,32 +271,32 @@ function NewProjectModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Company</label>
-            <select name="company_id" className={selectCls}>
+            <FormSelect name="company_id">
               <option value="">— None —</option>
               {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Contact</label>
-            <select name="contact_id" className={selectCls}>
+            <FormSelect name="contact_id">
               <option value="">— None —</option>
               {contacts.map((c) => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Project Manager</label>
-            <select name="pm_id" className={selectCls}>
+            <FormSelect name="pm_id">
               <option value="">— Unassigned —</option>
               {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Status</label>
-            <select name="status" className={selectCls} defaultValue="scheduled">
+            <FormSelect name="status" defaultValue="scheduled">
               {STATUS_OPTIONS.filter((o) => o.value !== "all").map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
-            </select>
+            </FormSelect>
           </div>
           <div>
             <label className={labelCls}>Contract Value ($)</label>
