@@ -274,6 +274,14 @@ export async function saveQuoteToDb(params: {
     if (error) throw new Error(`Quote insert failed: ${error.message}`);
     if (!created) throw new Error("Quote insert returned no data");
     resolvedQuoteId = created.id;
+
+    // First draft saved → advance opp from Site Visit to Estimating (guarded, same
+    // pattern as the Sent → Negotiation advance in $quoteId.tsx)
+    await supabase
+      .from("opportunities")
+      .update({ stage: "estimating" })
+      .eq("id", opportunityId)
+      .eq("stage", "site-visit");
   }
 
   // Delete existing line items and re-insert

@@ -27,7 +27,7 @@
 **Specced items queued for build (in progress log):**
 - Referral partner tracking (lead → contact referral FK trail)
 - Job number / quote number scheme (Q-YYYY-NNN + source_quote_id on project)
-- **Quote → Opportunity auto-stage-advance (partial):** Sent and Accepted already auto-advance the kanban column. Missing: when a quote draft is first saved, auto-advance the opp from `site-visit` → `estimating`. Add to `saveQuoteToDb` in `src/routes/sales/quotes/_shared.tsx` with `.eq("stage", "site-visit")` guard (same pattern as the Sent advance). Full chain when complete: draft saved → Estimating · sent → Negotiation · accepted → Closed Won.
+- **Quote → Opportunity auto-stage-advance:** ✅ Complete (Session 038). Full chain now wired: draft saved → Estimating (guarded `.eq("stage", "site-visit")` in `saveQuoteToDb`) → sent → Negotiation → accepted → Closed Won.
 
 ---
 
