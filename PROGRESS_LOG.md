@@ -6,8 +6,8 @@
 
 ## Current Status
 
-**Phase:** Backend — All modules live; permissions enforced; seed data connected
-**Last Updated:** Session 036
+**Phase:** Backend — All modules live; permissions enforced; seed data connected; design polish in progress
+**Last Updated:** Session 037
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -711,6 +711,41 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - `vendors.tsx` `["purchase-orders"]` full vs `purchase-orders.tsx` `["purchase-orders"]` partial
 - `purchase-orders.tsx` `["vendors"]` partial vs `vendors.tsx` `["vendors"]` full
 - `operations/team.tsx` `["roles"]` partial vs `settings/roles.tsx` `["roles"]` full
+
+---
+
+## Session 037 — Design Polish: Status Colors, Glow Effect, Real Role in Sidebar
+
+**Date:** June 12, 2026
+
+**Completed:**
+
+- **Status color token system** (`src/lib/status-colors.ts`):
+  - Created a single source of truth for all status badge colors — 11 named tokens (`SC.neutral`, `SC.blue`, `SC.sky`, `SC.violet`, `SC.amber`, `SC.yellow`, `SC.orange`, `SC.green`, `SC.red`, `SC.teal`, `SC.emerald`)
+  - Eliminated two competing color systems (one using raw Tailwind strings, one using `bg-X/15 text-X-600 dark:text-X-400` patterns with inconsistent dark mode variants)
+  - Updated all consumers: `src/data/projects.ts`, `src/data/service-tickets.ts`, `src/data/service-plans.ts`, `src/routes/finance/invoices.tsx`, `src/routes/crm/lead-inbox.tsx`, `src/routes/sales/opportunities.tsx`
+  - `tsc --noEmit` clean after all changes
+
+- **Opportunities page crash fixed (React error #185)**:
+  - Root cause: `const { data: dbOpps = [] }` — destructuring default creates a new `[]` reference every render while loading. `useMemo([dbOpps])` recomputed every render → `useEffect([opps])` fired → `setMeta` → context re-render → new `[]` → infinite loop
+  - Fix: removed `= []` default; use `(dbOpps ?? [])` inside `useMemo` instead — `dbOpps` is `undefined` during load, stable reference after
+  - Added `error.message` display to `ErrorComponent` in `__root.tsx` to surface minified React error text during debugging
+  - Same root cause as the `projects/$projectId.tsx` fix in Session 026
+
+- **Glow effect extended** (`qw-glow-effect`):
+  - `shadow-glow` was previously used only on the BP logo badge
+  - Extended to: `Button` component default variant (`src/components/ui/button.tsx`), topbar New button (`app-shell.tsx`), Sign In / Create Account submit buttons (`auth/login.tsx`, `auth/signup.tsx`), 404 "Go home" and error "Try again" buttons (`__root.tsx`)
+  - Intentionally excluded: view-toggle buttons that use `bg-primary` for active state — those are 28px icon toggles, not CTAs
+
+- **Double `+ +` prefix removed** (`qw-double-plus`):
+  - Topbar New button already renders a Plus icon; pages that set `newLabel: "+ New X"` produced "++ New X"
+  - Fixed in: `finance/invoices.tsx`, `crm/companies/index.tsx`, `inventory/vendors.tsx`, `sales/quotes/index.tsx`
+
+- **Live role name in sidebar** (`qw-real-role`):
+  - Sidebar user panel was hardcoded to "Admin · Workspace" for every user
+  - Extended `PermissionsContext`'s existing `user_profiles` query to also fetch `roles!role_id(name)` — no extra network request
+  - `PermissionsContextValue` now exposes `roleName: string | null`; `{ permissions, roleName }` wrapped in `useMemo` on the `roles` reference for stability
+  - `app-shell.tsx` destructures `roleName` from `usePermissions()` and renders `{roleName ?? "—"} · {tenant?.name ?? "Workspace"}` — uses the already-loaded `["tenant"]` cache for the company name
 
 ---
 
