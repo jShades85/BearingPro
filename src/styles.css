@@ -247,10 +247,3 @@
   }
 }
 
-/* Sonner toast — unlayered so it outranks sonner's own CSS */
-[data-sonner-toaster] {
-  --normal-bg: var(--elevated);
-  --normal-border: var(--hairline);
-  --normal-text: var(--foreground);
-  font-family: var(--font-sans);
-}

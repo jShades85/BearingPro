@@ -7,6 +7,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       position="bottom-right"
       className="toaster group"
+      style={{
+        "--normal-bg": "var(--elevated)",
+        "--normal-border": "var(--hairline)",
+        "--normal-text": "var(--foreground)",
+      } as React.CSSProperties}
       toastOptions={{
         classNames: {
           actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
