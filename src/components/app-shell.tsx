@@ -332,7 +332,7 @@ function AppShellContent() {
             {meta.onNew && (permsLoading || !moduleFromPath(pathname) || can(moduleFromPath(pathname)!, "write")) && (
               <button
                 onClick={meta.onNew}
-                className="flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground hover:opacity-90"
+                className="flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground shadow-glow hover:opacity-90"
               >
                 <Plus className="h-3.5 w-3.5" />
                 {meta.newLabel ?? "New"}
