@@ -7,7 +7,9 @@ export const getRouter = () => {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
       onError: (error) => {
-        toast.error(error instanceof Error ? error.message : "Something went wrong");
+        const message =
+          (error as { message?: string }).message ?? "Something went wrong";
+        toast.error(message);
       },
     }),
   });
