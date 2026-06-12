@@ -93,6 +93,10 @@ const stageMeta: Record<OpportunityStage, { label: string; badge: string; dim?: 
   "closed-lost":   { label: "Closed Lost",   badge: SC.red,   dim: true },
 };
 
+// Cards in a closed stage are locked in place — they can't be dragged back out.
+// (The stage dropdown stays available as a deliberate reopen path.)
+const isClosedStage = (s: OpportunityStage) => s === "closed-won" || s === "closed-lost";
+
 const priorityOrder: Record<Priority, number> = { urgent: 0, high: 1, med: 2, low: 3 };
 
 const priorityBadgeCls: Record<Priority, string> = {
@@ -336,7 +340,20 @@ function Opportunities() {
 
   const stageMutation = useMutation({
     mutationFn: ({ id, stage }: { id: string; stage: OpportunityStage }) => updateStage(id, stage),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
+    // Optimistic: snap the card to its new column immediately so a drop doesn't flash
+    // back to the old column while the round-trip + refetch lands.
+    onMutate: async ({ id, stage }) => {
+      await qc.cancelQueries({ queryKey: ["opportunities"] });
+      const prev = qc.getQueryData<DbOpportunity[]>(["opportunities"]);
+      qc.setQueryData<DbOpportunity[]>(["opportunities"], (old) =>
+        old?.map((o) => (o.id === id ? { ...o, stage } : o)),
+      );
+      return { prev };
+    },
+    onError: (_e, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["opportunities"], ctx.prev);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["opportunities"] }),
   });
 
   const saveMutation = useMutation({
@@ -471,6 +488,17 @@ function KanbanView({
   canWrite: boolean;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [overStage, setOverStage] = useState<OpportunityStage | null>(null);
+
+  const endDrag = () => { setDraggingId(null); setOverStage(null); };
+  const handleDrop = (stage: OpportunityStage) => {
+    if (draggingId) {
+      const dragged = opps.find((o) => o.id === draggingId);
+      if (dragged && dragged.stage !== stage) onMove(draggingId, stage);
+    }
+    endDrag();
+  };
 
   return (
     <div style={{ flex: 1, overflowX: "auto", overflowY: "hidden", paddingRight: "24px" }}>
@@ -480,12 +508,16 @@ function KanbanView({
           const items = opps.filter((o) => o.stage === stage);
           const total = items.reduce((s, o) => s + (o.value ?? 0), 0);
           const { dim } = stageMeta[stage];
+          const isDropTarget = draggingId !== null && overStage === stage;
           return (
             <div
               key={stage}
+              onDragOver={(e) => { if (draggingId) { e.preventDefault(); setOverStage(stage); } }}
+              onDrop={(e) => { e.preventDefault(); handleDrop(stage); }}
               className={cn(
-                "flex h-full w-[272px] min-w-[260px] shrink-0 flex-col rounded-lg border border-border",
+                "flex h-full w-[272px] min-w-[260px] shrink-0 flex-col rounded-lg border transition-colors",
                 dim ? "bg-muted/30 opacity-80" : "bg-surface/40",
+                isDropTarget ? "border-primary ring-1 ring-primary/40" : "border-border",
               )}
             >
               <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
@@ -505,6 +537,15 @@ function KanbanView({
                     onMove={(s) => { onMove(opp.id, s); setOpenId(null); }}
                     onSelect={() => onSelect(opp)}
                     canWrite={canWrite}
+                    draggable={canWrite && !isClosedStage(opp.stage)}
+                    isDragging={draggingId === opp.id}
+                    onDragStart={(e) => {
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", opp.id);
+                      setDraggingId(opp.id);
+                      setOpenId(null);
+                    }}
+                    onDragEnd={endDrag}
                   />
                 ))}
                 {items.length === 0 && (
@@ -521,6 +562,7 @@ function KanbanView({
 
 function KanbanCard({
   opp, selectorOpen, onOpenSelector, onMove, onSelect, canWrite,
+  draggable, isDragging, onDragStart, onDragEnd,
 }: {
   opp: Opportunity;
   selectorOpen: boolean;
@@ -528,10 +570,21 @@ function KanbanCard({
   onMove: (stage: OpportunityStage) => void;
   onSelect: () => void;
   canWrite: boolean;
+  draggable: boolean;
+  isDragging: boolean;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
 }) {
   return (
     <div
-      className="rounded-md border border-border bg-card p-3 hover:border-primary/30 transition-colors cursor-pointer"
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className={cn(
+        "rounded-md border border-border bg-card p-3 hover:border-primary/30 transition-colors",
+        draggable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
+        isDragging && "opacity-50",
+      )}
       onClick={onSelect}
     >
       <div className="relative inline-block">
