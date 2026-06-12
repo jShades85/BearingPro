@@ -7,7 +7,7 @@
 ## Current Status
 
 **Phase:** Backend — All modules live; permissions enforced; seed data connected
-**Last Updated:** Session 035
+**Last Updated:** Session 036
 **Live URL:** https://bearingpro.tech (Vercel + Cloudflare DNS)
 **Supabase Project:** `erdtfwelbdlvammfdtgz`
 
@@ -251,6 +251,7 @@ No RLS changes needed — both FKs reference tenant-scoped tables and existing p
 - **`.npmrc`** — `legacy-peer-deps=true` required for Vercel installs
 - **`stat bar → tabs → filter bar`** — locked layout order on every list page
 - **View-before-edit** — row click = view panel, hover Edit = shortcut to edit form
+- **FormSelect over native select** — always use `<FormSelect>` from `@/components/ui/form-select` for any dropdown in a form or drawer; use `<FilterSelect>` from `page-components` for filter bar dropdowns only. Native `<select>` is banned — breaks the visual design system.
 
 ---
 
@@ -710,3 +711,35 @@ Session 017: Reports page — 27-report catalog across 6 categories + custom rep
 - `vendors.tsx` `["purchase-orders"]` full vs `purchase-orders.tsx` `["purchase-orders"]` partial
 - `purchase-orders.tsx` `["vendors"]` partial vs `vendors.tsx` `["vendors"]` full
 - `operations/team.tsx` `["roles"]` partial vs `settings/roles.tsx` `["roles"]` full
+
+---
+
+## Session 036 — FormSelect: Replace All Native Dropdowns
+
+**Date:** June 12, 2026
+
+**Completed:**
+
+- **New component: `src/components/ui/form-select.tsx`** — Radix-based drop-in replacement for native `<select>` that accepts `<option>` children identically to a native select. Handles:
+  - Controlled (`value`/`onChange`) and uncontrolled (`defaultValue`/`name`) modes
+  - Empty-value sentinel (`__none__`) — Radix `SelectItem` doesn't allow `value=""`; options with `value=""` are mapped through a sentinel and back transparently
+  - FormData compat — renders a `<input type="hidden" name={name} value={current} />` so `new FormData(form)` still works
+  - RHF compat — `onBlur` typed as `(...args: any[]) => void` to accept RHF's `ChangeHandler` from `register()` spreads
+  - `className` prop forwarded to `SelectTrigger` via `cn()` (tailwind-merge) so per-site size/color overrides work
+
+- **Replaced all 80 native `<select>` elements across 22 route files** — zero native selects remain in `src/routes/`:
+  - CRM: contacts, companies/index, companies/$companyId, lead-inbox
+  - Sales: opportunities, quotes/new, quotes/$quoteId
+  - Operations: projects/index, projects/$projectId, work-orders/index, work-orders/$workOrderId, scheduling, team
+  - Service: service-tickets, service-plans
+  - Inventory: catalog, stock, purchase-orders, vendors
+  - Finance: invoices
+  - Settings: company, team-members
+
+- **Fixed pre-existing CRM typo** — previous session introduced `<FormSelectvalue=` (missing space) across 12 instances in contacts.tsx, companies/index.tsx, and companies/$companyId.tsx; all fixed.
+
+**Patterns established:**
+- `{...field("key")}` custom helpers (vendors, invoices) are safe to spread directly onto FormSelect — no `ref`
+- `{...field}` RHF spreads must use explicit props: `value={field.value} onChange={field.onChange} onBlur={field.onBlur}` — avoids passing `ref` which FormSelect doesn't accept
+- `register("field")` spreads: destructure `ref` out first — `const { ref: _r, ...reg } = register("field")`
+- Options without a `value` prop (e.g. `<option key={t}>{t}</option>`) must add an explicit `value={t}` — FormSelect reads from `el.props.value`, not from children text
