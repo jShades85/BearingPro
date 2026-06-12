@@ -21,6 +21,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 export const Route = createFileRoute("/sales/opportunities")({
   head: () => ({ meta: [{ title: "Opportunities · BearingPro" }] }),
+  validateSearch: (search: Record<string, unknown>): { opp?: string } => ({
+    opp: typeof search.opp === "string" ? search.opp : undefined,
+  }),
   component: Opportunities,
 });
 
@@ -337,6 +340,22 @@ function Opportunities() {
   // dbOpps must NOT use a `= []` default — a new [] on every render makes useMemo recompute
   // every render, which fires the setMeta effect, which re-renders, causing React error #185.
   const opps = useMemo(() => (dbOpps ?? []).map(toUiOpp), [dbOpps]);
+
+  // Deep-link: ?opp=<id> (e.g. from a company page) opens that opportunity's panel once
+  // the board has loaded, then strips the param so it doesn't re-open on refresh/back.
+  // Ref guard ensures it fires exactly once — a refetch (new `opps` ref) won't re-trigger it.
+  const { opp: oppParam } = Route.useSearch();
+  const navigate = useNavigate();
+  const deepLinkedRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkedRef.current || !oppParam || opps.length === 0) return;
+    const found = opps.find((o) => o.id === oppParam);
+    if (found) {
+      deepLinkedRef.current = true;
+      setSelected(found);
+      navigate({ to: "/sales/opportunities", replace: true });
+    }
+  }, [oppParam, opps, navigate]);
 
   const stageMutation = useMutation({
     mutationFn: ({ id, stage }: { id: string; stage: OpportunityStage }) => updateStage(id, stage),

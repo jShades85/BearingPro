@@ -347,7 +347,7 @@ Use this to manually walk the full app flow end-to-end. Every step is wired to t
   - **Active Projects**: `["company-projects", companyId]` — `projects` where `company_id = thisCompany` and `status NOT IN (completed, cancelled)`; rows deep-link to `/operations/projects/$projectId`, show code + status badge + contract value
   - Automatic via existing `company_id` FKs — no new schema, no backfill; new deals appear the moment they're created against the company
   - **Referrals panel deliberately deferred** — that's the `referred_by_company_id` relationship (builder *refers* a homeowner vs. builder *is* the customer). Additive later, reads a different column, zero rework to these panels. Decision: trade-service referrals matter, but capture-then-display can wait; customer panels are the day-one value.
-  - Known minor gap: opportunity rows link to the kanban list, not the specific opp (opportunities have no `$id` detail route — they open in a drawer). Could add `?opp=<id>` search-param deep-linking later.
+  - **Opportunity deep-linking wired** — opportunity rows now pass `?opp=<id>` to `/sales/opportunities`; the page's `validateSearch` parses it and a guarded once-only effect opens that opp's drawer after the board loads, then strips the param (so it doesn't re-open on refresh/back). Ref guard prevents a refetch from re-triggering it (React #185 safety). Projects already deep-link to `/operations/projects/$projectId`. So both company-page panels now click through to the exact record.
 
 ---
 

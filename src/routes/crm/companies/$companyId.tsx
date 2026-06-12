@@ -379,6 +379,7 @@ function CompanyDetailPage() {
                   <Link
                     key={opp.id}
                     to="/sales/opportunities"
+                    search={{ opp: opp.id }}
                     className="flex items-center gap-3 rounded-md border border-border bg-surface/40 px-3 py-2.5 text-[12px] hover:border-primary/30 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
