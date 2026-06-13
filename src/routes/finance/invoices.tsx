@@ -999,7 +999,7 @@ function InvoicesPage() {
   const [search, setSearch] = useState("");
   const [customerFilter, setCustomerFilter] = useState("all");
   const [newOpen, setNewOpen] = useState(false);
-  useNewIntent(() => setNewOpen(true));
+  useNewIntent(Route.useSearch().create, () => setNewOpen(true));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawerMode, setDrawerMode] = useState<DrawerMode>("view");
 

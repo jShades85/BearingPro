@@ -18,6 +18,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 export const Route = createFileRoute("/crm/lead-inbox")({
   head: () => ({ meta: [{ title: "Lead Inbox · BearingPro" }] }),
+  validateSearch: (search: Record<string, unknown>): { create?: string } => ({
+    create: typeof search.create === "string" ? search.create : undefined,
+  }),
   component: LeadInbox,
 });
 
@@ -214,7 +217,7 @@ function LeadInbox() {
   const qc = useQueryClient();
   const [selectedLead, setSelectedLead] = useState<DbLead | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
-  useNewIntent(() => setNewLeadOpen(true));
+  useNewIntent(Route.useSearch().create, () => setNewLeadOpen(true));
   const [convertModalLead, setConvertModalLead] = useState<DbLead | null>(null);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");

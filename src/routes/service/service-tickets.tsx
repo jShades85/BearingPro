@@ -171,7 +171,7 @@ function ServiceTicketsPage() {
   const qc = useQueryClient();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
-  useNewIntent(() => setNewOpen(true));
+  useNewIntent(Route.useSearch().create, () => setNewOpen(true));
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<TicketCategory | "all">("all");

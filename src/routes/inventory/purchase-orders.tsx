@@ -38,6 +38,9 @@ import type { TablesUpdate } from "@/lib/supabase/types";
 
 export const Route = createFileRoute("/inventory/purchase-orders")({
   head: () => ({ meta: [{ title: "Purchase Orders · BearingPro" }] }),
+  validateSearch: (search: Record<string, unknown>): { create?: string } => ({
+    create: typeof search.create === "string" ? search.create : undefined,
+  }),
   component: PurchaseOrdersPage,
 });
 
@@ -1381,7 +1384,7 @@ function PurchaseOrdersPage() {
     setDrawerMode("new");
     setDrawerOpen(true);
   }, []);
-  useNewIntent(openNew);
+  useNewIntent(Route.useSearch().create, openNew);
 
   function handleView(po: PO) { setDrawerPO(po); setDrawerMode("view"); setDrawerOpen(true); }
   function handleEdit(po: PO) { setDrawerPO(po); setDrawerMode("edit"); setDrawerOpen(true); }

@@ -15,6 +15,9 @@ import { STATUS_OPTIONS, statusMeta, type ProjectStatus } from "@/data/projects"
 
 export const Route = createFileRoute("/operations/projects/")({
   head: () => ({ meta: [{ title: "Projects · BearingPro" }] }),
+  validateSearch: (search: Record<string, unknown>): { create?: string } => ({
+    create: typeof search.create === "string" ? search.create : undefined,
+  }),
   component: ProjectsListPage,
 });
 
@@ -104,7 +107,7 @@ function ProjectsListPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [newOpen, setNewOpen] = useState(false);
-  useNewIntent(() => setNewOpen(true));
+  useNewIntent(Route.useSearch().create, () => setNewOpen(true));
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("all");
 

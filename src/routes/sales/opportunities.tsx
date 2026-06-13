@@ -336,7 +336,7 @@ function Opportunities() {
   const [assignedFilter, setAssignedFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Opportunity | null>(null);
   const [newOpen, setNewOpen] = useState(false);
-  useNewIntent(() => setNewOpen(true));
+  useNewIntent(Route.useSearch().create, () => setNewOpen(true));
 
   const { data: dbOpps } = useQuery({ queryKey: ["opportunities"], queryFn: fetchOpportunities });
   const { data: team = [] } = useQuery({ queryKey: ["team-members"], queryFn: fetchTeamMembers });
