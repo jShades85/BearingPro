@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -25,6 +25,9 @@ import {
 
 export const Route = createFileRoute("/service/service-tickets")({
   head: () => ({ meta: [{ title: "Service Tickets · BearingPro" }] }),
+  validateSearch: (search: Record<string, unknown>): { ticket?: string } => ({
+    ticket: typeof search.ticket === "string" ? search.ticket : undefined,
+  }),
   component: ServiceTicketsPage,
 });
 
@@ -178,6 +181,16 @@ function ServiceTicketsPage() {
     () => tickets.filter((t) => t.status === "open" || t.status === "assigned").length,
     [tickets],
   );
+
+  // Deep-link: ?ticket=<id> (e.g. from the command palette) opens that ticket's
+  // drawer, then strips the param so it doesn't re-open.
+  const navigate = useNavigate();
+  const { ticket: ticketParam } = Route.useSearch();
+  useEffect(() => {
+    if (!ticketParam || !tickets.some((t) => t.id === ticketParam)) return;
+    setSelectedId(ticketParam);
+    navigate({ to: "/service/service-tickets", replace: true });
+  }, [ticketParam, tickets, navigate]);
 
   useEffect(() => {
     setMeta({

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
@@ -18,6 +18,9 @@ import type { VendorStatus, VendorCategory } from "@/data/vendors";
 
 export const Route = createFileRoute("/inventory/vendors")({
   head: () => ({ meta: [{ title: "Vendors · BearingPro" }] }),
+  validateSearch: (search: Record<string, unknown>): { vendor?: string } => ({
+    vendor: typeof search.vendor === "string" ? search.vendor : undefined,
+  }),
   component: VendorsPage,
 });
 
@@ -578,6 +581,17 @@ function VendorsPage() {
   const activePOCount  = useMemo(() => vendors.reduce((s, v) => s + v.activePOs, 0), [vendors]);
   const preferredCount = useMemo(() => vendors.filter((v) => v.status === "preferred").length, [vendors]);
   const selected       = useMemo(() => vendors.find((v) => v.id === selectedId) ?? null, [vendors, selectedId]);
+
+  // Deep-link: ?vendor=<id> (e.g. from the command palette) opens that vendor's
+  // drawer, then strips the param so it doesn't re-open.
+  const navigate = useNavigate();
+  const { vendor: vendorParam } = Route.useSearch();
+  useEffect(() => {
+    if (!vendorParam || !vendors.some((v) => v.id === vendorParam)) return;
+    setSelectedId(vendorParam);
+    setDrawerMode("view");
+    navigate({ to: "/inventory/vendors", replace: true });
+  }, [vendorParam, vendors, navigate]);
 
   useEffect(() => {
     setMeta({

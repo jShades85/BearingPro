@@ -15,6 +15,11 @@ import { createClient } from "@/lib/supabase/client";
 interface PaletteCompany { id: string; name: string; industry: string | null }
 interface PaletteProject { id: string; code: string; name: string; companies: { name: string } | null }
 interface PaletteContact { id: string; full_name: string; title: string | null; companies: { name: string } | null }
+interface PaletteOpp { id: string; title: string; companies: { name: string } | null }
+interface PaletteWorkOrder { id: string; code: string; name: string }
+interface PaletteInvoice { id: string; invoice_number: string; company_name: string }
+interface PaletteTicket { id: string; code: string; issue: string }
+interface PaletteVendor { id: string; name: string; category: string }
 
 // ─── Nav entries ──────────────────────────────────────────────────────────────
 
@@ -103,11 +108,61 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       return (data ?? []) as unknown as PaletteContact[];
     },
   });
+  const { data: opportunities = [] } = useQuery({
+    queryKey: ["palette-opportunities"],
+    enabled: open,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data } = await supabase.from("opportunities").select("id, title, companies(name)").order("title");
+      return (data ?? []) as unknown as PaletteOpp[];
+    },
+  });
+  const { data: workOrders = [] } = useQuery({
+    queryKey: ["palette-work-orders"],
+    enabled: open,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data } = await supabase.from("work_orders").select("id, code, name").order("code", { ascending: false });
+      return (data ?? []) as PaletteWorkOrder[];
+    },
+  });
+  const { data: invoices = [] } = useQuery({
+    queryKey: ["palette-invoices"],
+    enabled: open,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data } = await supabase.from("invoices").select("id, invoice_number, company_name").order("invoice_number", { ascending: false });
+      return (data ?? []) as PaletteInvoice[];
+    },
+  });
+  const { data: tickets = [] } = useQuery({
+    queryKey: ["palette-tickets"],
+    enabled: open,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data } = await supabase.from("service_tickets").select("id, code, issue").order("code", { ascending: false });
+      return (data ?? []) as PaletteTicket[];
+    },
+  });
+  const { data: vendors = [] } = useQuery({
+    queryKey: ["palette-vendors"],
+    enabled: open,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data } = await supabase.from("vendors").select("id, name, category").order("name");
+      return (data ?? []) as PaletteVendor[];
+    },
+  });
+
+  const goOpp = (id: string) => { onOpenChange(false); navigate({ to: "/sales/opportunities", search: { opp: id } }); };
+  const goInvoice = (id: string) => { onOpenChange(false); navigate({ to: "/finance/invoices", search: { invoice: id } }); };
+  const goTicket = (id: string) => { onOpenChange(false); navigate({ to: "/service/service-tickets", search: { ticket: id } }); };
+  const goVendor = (id: string) => { onOpenChange(false); navigate({ to: "/inventory/vendors", search: { vendor: id } }); };
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <Command>
-        <CommandInput placeholder="Search pages, companies, projects, contacts…" />
+        <CommandInput autoFocus placeholder="Search pages, records, actions…" />
         <CommandList>
           <CommandEmpty>No results.</CommandEmpty>
 
@@ -181,6 +236,91 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 <Users className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                 <span>{c.full_name}</span>
                 {c.companies?.name && <span className="ml-auto text-2xs text-muted-foreground">{c.companies.name}</span>}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          {/* Opportunities */}
+          <CommandGroup heading="Opportunities">
+            {opportunities.map((o) => (
+              <CommandItem
+                key={o.id}
+                value={`${o.title} ${o.companies?.name ?? ""}`}
+                onSelect={() => goOpp(o.id)}
+              >
+                <Target className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                <span className="truncate">{o.title}</span>
+                {o.companies?.name && <span className="ml-auto shrink-0 text-2xs text-muted-foreground">{o.companies.name}</span>}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          {/* Work Orders */}
+          <CommandGroup heading="Work Orders">
+            {workOrders.map((w) => (
+              <CommandItem
+                key={w.id}
+                value={`${w.name} ${w.code}`}
+                onSelect={() => go(`/operations/work-orders/${w.id}`)}
+              >
+                <ClipboardList className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                <span className="truncate">{w.name}</span>
+                <span className="ml-auto shrink-0 text-2xs text-muted-foreground">{w.code}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          {/* Invoices */}
+          <CommandGroup heading="Invoices">
+            {invoices.map((i) => (
+              <CommandItem
+                key={i.id}
+                value={`${i.invoice_number} ${i.company_name}`}
+                onSelect={() => goInvoice(i.id)}
+              >
+                <Receipt className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                <span>{i.invoice_number}</span>
+                {i.company_name && <span className="ml-auto shrink-0 text-2xs text-muted-foreground">{i.company_name}</span>}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          {/* Service Tickets */}
+          <CommandGroup heading="Service Tickets">
+            {tickets.map((t) => (
+              <CommandItem
+                key={t.id}
+                value={`${t.code} ${t.issue}`}
+                onSelect={() => goTicket(t.id)}
+              >
+                <Headphones className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                <span className="truncate">{t.issue}</span>
+                <span className="ml-auto shrink-0 text-2xs text-muted-foreground">{t.code}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          {/* Vendors */}
+          <CommandGroup heading="Vendors">
+            {vendors.map((v) => (
+              <CommandItem
+                key={v.id}
+                value={`${v.name} ${v.category}`}
+                onSelect={() => goVendor(v.id)}
+              >
+                <Truck className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                <span>{v.name}</span>
+                {v.category && <span className="ml-auto shrink-0 text-2xs text-muted-foreground">{v.category}</span>}
               </CommandItem>
             ))}
           </CommandGroup>

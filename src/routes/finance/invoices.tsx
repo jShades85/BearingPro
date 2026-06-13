@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMeta } from "@/contexts/PageMetaContext";
@@ -25,6 +25,9 @@ import { SC } from "@/lib/status-colors";
 
 export const Route = createFileRoute("/finance/invoices")({
   head: () => ({ meta: [{ title: "Invoices · BearingPro" }] }),
+  validateSearch: (search: Record<string, unknown>): { invoice?: string } => ({
+    invoice: typeof search.invoice === "string" ? search.invoice : undefined,
+  }),
   component: InvoicesPage,
 });
 
@@ -1143,6 +1146,17 @@ function InvoicesPage() {
   const customers = useMemo(() => Array.from(new Set(invoices.map((i) => i.companyName))).sort(), [invoices]);
 
   const selected = useMemo(() => invoices.find((i) => i.id === selectedId) ?? null, [invoices, selectedId]);
+
+  // Deep-link: ?invoice=<id> (e.g. from the command palette) opens that invoice's
+  // drawer, then strips the param so it doesn't re-open.
+  const navigate = useNavigate();
+  const { invoice: invoiceParam } = Route.useSearch();
+  useEffect(() => {
+    if (!invoiceParam || !invoices.some((i) => i.id === invoiceParam)) return;
+    setSelectedId(invoiceParam);
+    setDrawerMode("view");
+    navigate({ to: "/finance/invoices", replace: true });
+  }, [invoiceParam, invoices, navigate]);
 
   useEffect(() => {
     setMeta({
