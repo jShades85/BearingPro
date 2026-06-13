@@ -136,6 +136,19 @@ Do not hardcode demo data inside route files — import from `src/data/`.
 
 ---
 
+## Codacy Guardrails
+
+This project has the Codacy MCP server configured in `.mcp.json` (auth via the
+`CODACY_ACCOUNT_TOKEN` env var — never commit the token). When the `codacy` MCP
+is connected, treat its findings like build errors:
+
+- **After editing or creating any file**, run the Codacy analysis tool (`codacy_cli_analyze`) on the changed file(s) and fix what it reports before considering the work done.
+- **After adding/updating a dependency** (`bun add`, `package.json` change), run a Codacy/Trivy scan to catch known-vulnerable packages.
+- Resolve findings in the same turn — don't defer.
+- If the `codacy` MCP isn't connected, skip silently (don't block work on it).
+
+---
+
 ## Git
 
 ```bash
