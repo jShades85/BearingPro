@@ -360,7 +360,7 @@ function ContactDrawer({
   const isResidential = c.customer_type === "residential";
 
   return (
-    <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
+    <SheetContent hideClose className="sm:max-w-[460px] flex flex-col p-0 gap-0">
       <DrawerHeader
         leading={<Avatar initials={getInitials(c.full_name)} className="!h-11 !w-11 !text-md !rounded-xl" />}
         title={c.full_name}
