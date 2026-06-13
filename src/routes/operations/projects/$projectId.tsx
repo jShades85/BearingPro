@@ -316,7 +316,7 @@ function AddPhaseModal({
 }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -376,7 +376,7 @@ function AddPhaseModal({
         </div>
         <div>
           <label className={labelCls}>Notes</label>
-          <textarea name="notes" rows={2} className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Any additional context…" />
+          <textarea name="notes" rows={2} className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary" placeholder="Any additional context…" />
         </div>
         {saveError && (
           <p className="rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-sm text-destructive">{saveError}</p>
@@ -816,7 +816,7 @@ function ProjectEditDrawer({
     }
   }, [open, dbProject]);
 
-  const fieldCls = "w-full rounded-md border border-input bg-background px-3 py-1.5 text-base focus:outline-none focus:ring-1 focus:ring-ring";
+  const fieldCls = "w-full rounded-md border border-input bg-background px-3 py-1.5 text-base focus:outline-none focus-visible:ring-1 focus-visible:ring-ring";
   const labelCls = "text-sm font-medium text-muted-foreground";
 
   return (

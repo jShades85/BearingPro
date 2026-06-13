@@ -260,7 +260,7 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
                   value={iconSearch}
                   onChange={(e) => setIconSearch(e.target.value)}
                   placeholder="Search icons…"
-                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </div>
               <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
@@ -300,7 +300,7 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
                 onChange={(e) => setCustomInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustom())}
                 placeholder="e.g. Fire Suppression"
-                className="h-8 flex-1 rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+                className="h-8 flex-1 rounded-md border border-input bg-background px-3 text-base focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
               <button
                 type="button"
@@ -431,7 +431,7 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && name.trim() && updateMutation.mutate()}
-              className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
 
@@ -467,7 +467,7 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
                   value={iconSearch}
                   onChange={(e) => setIconSearch(e.target.value)}
                   placeholder="Search icons…"
-                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </div>
               <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
@@ -997,7 +997,7 @@ function ItemDrawer({
                   <FormItem>
                     <FormLabel className="text-xs">Category *</FormLabel>
                     <FormControl>
-                      <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring">
+                      <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                         <option value="">Select category…</option>
                         {categories.map((c) => (
                           <option key={c.id} value={c.id}>{c.name}</option>
@@ -1277,7 +1277,7 @@ function NewCategoryDialog({ open, onClose, currentCount }: NewCategoryDialogPro
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && name.trim() && mutation.mutate()}
               placeholder="e.g. Fire Suppression"
-              className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
 
@@ -1315,7 +1315,7 @@ function NewCategoryDialog({ open, onClose, currentCount }: NewCategoryDialogPro
                   value={iconSearch}
                   onChange={(e) => setIconSearch(e.target.value)}
                   placeholder="Search icons…"
-                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </div>
               <div className="max-h-36 overflow-y-auto space-y-2 pr-1">

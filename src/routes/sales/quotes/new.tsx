@@ -213,7 +213,7 @@ function NewQuotePage() {
     }
   }
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   return (
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
@@ -313,7 +313,7 @@ function NewQuotePage() {
               <label className={labelCls}>Notes</label>
               <textarea
                 rows={3}
-                className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                 placeholder="Add notes…"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}

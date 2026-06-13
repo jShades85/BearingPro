@@ -85,7 +85,7 @@ export function SearchInput({ value, onChange, placeholder = "Search…", classN
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-7 w-full rounded-md border border-border bg-surface pl-7 pr-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+        className="h-7 w-full rounded-md border border-border bg-surface pl-7 pr-2.5 text-sm text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50"
       />
     </div>
   );
@@ -114,7 +114,7 @@ export function FilterSelect({ value, onChange, children, className }: FilterSel
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger
         className={cn(
-          "h-7 w-auto min-w-27.5 gap-1.5 rounded-md border bg-surface px-2.5 text-xs focus:ring-1 focus:ring-primary",
+          "h-7 w-auto min-w-27.5 gap-1.5 rounded-md border bg-surface px-2.5 text-xs focus-visible:ring-1 focus-visible:ring-primary",
           isActive
             ? "border-primary/50 text-primary"
             : "border-border text-foreground",

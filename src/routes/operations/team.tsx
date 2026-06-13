@@ -165,7 +165,7 @@ function TagInput({ value, onChange, suggestions, placeholder }: {
         onFocus={() => setShowSugg(true)}
         onBlur={() => setTimeout(() => setShowSugg(false), 150)}
         placeholder={placeholder ?? "Type to add…"}
-        className="h-7 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+        className="h-7 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
       />
       {showSugg && filtered.length > 0 && (
         <div className="flex flex-wrap gap-1">
@@ -240,7 +240,7 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
     onOpenChange(false);
   });
 
-  const fieldCls = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";  const labelCls = "mb-1 block text-xs font-medium text-foreground";
+  const fieldCls = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary";  const labelCls = "mb-1 block text-xs font-medium text-foreground";
   const errorCls = "mt-0.5 text-xs text-destructive";
 
   if (!member) return null;

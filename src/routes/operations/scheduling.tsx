@@ -641,7 +641,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const inputCls =
-  "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";
 const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 const errorCls = "mt-0.5 text-2xs text-red-500";
 

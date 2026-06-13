@@ -310,7 +310,7 @@ function QuoteDetailPage() {
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
             <div className="col-span-2">
@@ -319,7 +319,7 @@ function QuoteDetailPage() {
                 rows={2}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                 placeholder="Add notes…"
               />
             </div>

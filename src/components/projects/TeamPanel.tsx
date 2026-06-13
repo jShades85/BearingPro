@@ -186,12 +186,12 @@ function AddMemberRow({
           if (e.key === "Enter") onCommit();
           if (e.key === "Escape") onCancel();
         }}
-        className="h-7 min-w-[160px] flex-1 rounded-md border border-border bg-surface px-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+        className="h-7 min-w-[160px] flex-1 rounded-md border border-border bg-surface px-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
       />
       <select
         value={draft.role}
         onChange={(e) => onChange({ ...draft, role: e.target.value as ProjectRole })}
-        className="h-7 rounded-md border border-border bg-surface px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        className="h-7 rounded-md border border-border bg-surface px-2 text-xs text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
       >
         {ROLE_OPTIONS.map((r) => (
           <option key={r} value={r}>{roleMeta[r].label}</option>

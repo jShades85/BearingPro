@@ -190,7 +190,7 @@ function VendorDrawer({
     };
   }
 
-  const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";
   const labelCls = "block text-2xs font-medium text-muted-foreground mb-1";
 
   return (
@@ -419,7 +419,7 @@ function VendorDrawer({
                   {...field("notes")}
                   rows={3}
                   placeholder="Internal notes about this vendor…"
-                  className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+                  className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50"
                 />
               </fieldset>
             </div>
@@ -825,7 +825,7 @@ function NewVendorModal({
     };
   }
 
-  const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";
   const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   return (
@@ -907,7 +907,7 @@ function NewVendorModal({
           <div className="col-span-2">
             <label className={labelCls}>Notes</label>
             <textarea {...f("notes")} rows={3} placeholder="Internal notes…"
-              className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" />
+              className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
           </div>
         </div>
         <div className="flex justify-end gap-2 px-5 py-4 border-t border-border">

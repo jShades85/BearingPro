@@ -789,7 +789,7 @@ function PODrawer({
 
   // ── Edit / New mode ──────────────────────────────────────────────────────────
 
-  const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-base focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";
 
   function renderEdit() {
     return (
@@ -907,21 +907,21 @@ function PODrawer({
                             value={li.description}
                             onChange={(e) => updateLineItem(li.id, "description", e.target.value)}
                             placeholder="Description"
-                            className="h-7 w-full rounded border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                            className="h-7 w-full rounded border border-border bg-background px-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                           />
                           <div className="grid grid-cols-3 gap-1.5">
                             <input
                               value={li.sku}
                               onChange={(e) => updateLineItem(li.id, "sku", e.target.value)}
                               placeholder="SKU"
-                              className="h-7 rounded border border-border bg-background px-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                              className="h-7 rounded border border-border bg-background px-2 text-sm font-mono focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                             />
                             <div className="relative">
                               <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">Qty</span>
                               <input
                                 type="number" min="0" value={li.qtyOrdered}
                                 onChange={(e) => updateLineItem(li.id, "qtyOrdered", parseInt(e.target.value, 10) || 0)}
-                                className="h-7 w-full rounded border border-border bg-background pl-7 pr-2 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="h-7 w-full rounded border border-border bg-background pl-7 pr-2 text-sm tabular-nums focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                               />
                             </div>
                             <div className="relative">
@@ -929,7 +929,7 @@ function PODrawer({
                               <input
                                 type="number" min="0" step="0.01" value={li.unitCost}
                                 onChange={(e) => updateLineItem(li.id, "unitCost", parseFloat(e.target.value) || 0)}
-                                className="h-7 w-full rounded border border-border bg-background pl-5 pr-2 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="h-7 w-full rounded border border-border bg-background pl-5 pr-2 text-sm tabular-nums focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                               />
                             </div>
                           </div>
@@ -960,21 +960,21 @@ function PODrawer({
                     value={customItem.description}
                     onChange={(e) => setCustomItem((v) => ({ ...v, description: e.target.value }))}
                     placeholder="Description *"
-                    className="h-7 w-full rounded border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="h-7 w-full rounded border border-border bg-background px-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                   />
                   <div className="grid grid-cols-3 gap-1.5">
                     <input
                       value={customItem.sku}
                       onChange={(e) => setCustomItem((v) => ({ ...v, sku: e.target.value }))}
                       placeholder="SKU"
-                      className="h-7 rounded border border-border bg-background px-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="h-7 rounded border border-border bg-background px-2 text-sm font-mono focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                     />
                     <div className="relative">
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">Qty</span>
                       <input
                         type="number" min="1" value={customItem.qtyOrdered}
                         onChange={(e) => setCustomItem((v) => ({ ...v, qtyOrdered: parseInt(e.target.value, 10) || 1 }))}
-                        className="h-7 w-full rounded border border-border bg-background pl-7 pr-2 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="h-7 w-full rounded border border-border bg-background pl-7 pr-2 text-sm tabular-nums focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                       />
                     </div>
                     <div className="relative">
@@ -982,7 +982,7 @@ function PODrawer({
                       <input
                         type="number" min="0" step="0.01" value={customItem.unitCost}
                         onChange={(e) => setCustomItem((v) => ({ ...v, unitCost: parseFloat(e.target.value) || 0 }))}
-                        className="h-7 w-full rounded border border-border bg-background pl-5 pr-2 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="h-7 w-full rounded border border-border bg-background pl-5 pr-2 text-sm tabular-nums focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                       />
                     </div>
                   </div>

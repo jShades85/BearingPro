@@ -107,7 +107,7 @@ const METHOD_META: Record<string, { label: string; cls: string }> = {
 };
 
 const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1";
-const inputCls = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+const inputCls = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -360,7 +360,7 @@ export function ActivityPanel({ projectId }: ActivityPanelProps) {
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
         />
         <div className="flex items-center justify-between">
           <span className="text-2xs text-muted-foreground/50">⌘ + Enter to submit</span>

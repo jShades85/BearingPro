@@ -383,7 +383,7 @@ function PlanDrawer({
               value={plan.tier}
               disabled={isPending}
               onChange={(e) => onUpdate(plan.id, { tier: e.target.value })}
-              className="h-7 w-full rounded-md border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-7 w-full rounded-md border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
             >
               {(["Essential", "Standard", "Professional", "Elite"] as PlanTier[]).map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -396,7 +396,7 @@ function PlanDrawer({
               value={plan.status}
               disabled={isPending}
               onChange={(e) => onUpdate(plan.id, { status: e.target.value })}
-              className="h-7 w-full rounded-md border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-7 w-full rounded-md border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
             >
               {STATUS_ORDER.map((s) => (
                 <option key={s} value={s}>{statusMeta[s].label}</option>
@@ -497,7 +497,7 @@ function PlanDrawer({
             onBlur={() => { if (notes !== plan.notes) onUpdate(plan.id, { notes }); }}
             placeholder="Add notes…"
             rows={3}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
           />
         </div>
 
@@ -612,7 +612,7 @@ function NewPlanModal({
     onSuccess: onCreated,
   });
 
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";
   const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   function toggleSystem(s: string) {
@@ -711,7 +711,7 @@ function NewPlanModal({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any special instructions or notes…"
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
           />
         </div>
       </div>

@@ -274,7 +274,7 @@ function CompanyProfilePage() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
+const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary";
 
 function Section({ title, icon: Icon, children }: { title: string; icon: typeof Building2; children: React.ReactNode }) {
   return (

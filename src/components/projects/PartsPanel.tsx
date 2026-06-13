@@ -297,7 +297,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
   })).filter((x) => x.count > 0);
 
   const selectCls = "bg-transparent text-xs outline-none cursor-pointer border border-border/60 rounded px-1.5 py-0.5 hover:border-primary/50 focus:border-primary transition-colors";
-  const draftInputCls = "h-7 w-full rounded border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/40";
+  const draftInputCls = "h-7 w-full rounded border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/40";
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">Loading…</div>;
@@ -546,7 +546,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                   <td className="py-2 px-3">
                     <select value={draft.phase}
                       onChange={(e) => setDraft((d) => ({ ...d, phase: e.target.value }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary">
                       <option value="">— None —</option>
                       {PHASE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
@@ -588,7 +588,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                   <td className="py-2 px-3">
                     <select value={draft.source}
                       onChange={(e) => setDraft((d) => ({ ...d, source: e.target.value as PartSource }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary">
                       {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{sourceMeta[s].label}</option>)}
                     </select>
                   </td>
@@ -597,7 +597,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                   <td className="py-2 px-3">
                     <select value={draft.status}
                       onChange={(e) => setDraft((d) => ({ ...d, status: e.target.value as PartStatus }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary">
                       {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{statusMeta[s].label}</option>)}
                     </select>
                   </td>

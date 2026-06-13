@@ -767,7 +767,7 @@ export function PhasesPanel({ projectId, projectType }: PhasesPanelProps) {
             e.target.value = "none";
             applyTemplate(val);
           }}
-          className="h-6 rounded border border-border bg-surface px-2 text-xs text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+          className="h-6 rounded border border-border bg-surface px-2 text-xs text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer"
         >
           <option value="none" disabled>Apply Template</option>
           {TEMPLATES.map((t) => (

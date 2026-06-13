@@ -510,7 +510,7 @@ function LeadDrawer({
             readOnly={!canWrite}
             placeholder={canWrite ? "Add notes…" : ""}
             rows={3}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary read-only:cursor-default read-only:opacity-70"
           />
         </div>
 
@@ -588,7 +588,7 @@ function ConvertModal({
           <input
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSelected("new"); }}
-            className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+            className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50"
             placeholder="Search by name…"
           />
         </div>
@@ -675,7 +675,7 @@ function NewLeadModal({
 }) {
   const [saving, setSaving] = useState(false);
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

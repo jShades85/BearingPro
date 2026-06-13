@@ -80,7 +80,7 @@ export function FormSelect({
           aria-describedby={ariaDescribedBy}
           aria-invalid={ariaInvalid}
           className={cn(
-            "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm focus:ring-1 focus:ring-primary",
+            "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm focus-visible:ring-1 focus-visible:ring-primary",
             className,
           )}
         >

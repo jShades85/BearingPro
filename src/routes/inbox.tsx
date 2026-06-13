@@ -167,7 +167,7 @@ function RequestsPanel() {
                   onChange={(e) => update(req.id, { flagNote: e.target.value })}
                   placeholder="Describe the issue…"
                   rows={2}
-                  className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                  className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary resize-none"
                 />
                 <div className="flex justify-end gap-2">
                   <button

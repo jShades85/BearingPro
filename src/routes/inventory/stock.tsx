@@ -386,7 +386,7 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
   }
 
   const delta = newQty - item.qtyOnHand;
-  const fieldCls = "h-7 w-full rounded-md border border-border bg-surface px-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary";
+  const fieldCls = "h-7 w-full rounded-md border border-border bg-surface px-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary";
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -428,7 +428,7 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
                 min="0"
                 value={newQty}
                 onChange={(e) => setNewQty(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                className="h-7 w-14 rounded-md border border-border bg-surface text-center text-base tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                className="h-7 w-14 rounded-md border border-border bg-surface text-center text-base tabular-nums focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
               />
               <button
                 type="button"
@@ -752,7 +752,7 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                   <FormSelect
                     value={watchedCatalogId ?? ""}
                     onChange={(e) => handleCatalogLink(e.target.value)}
-                    className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
                     <option value="">Select catalog item…</option>
                     {catalogItems.map((c) => (
@@ -827,7 +827,7 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                       <FormItem>
                         <FormLabel className="text-xs">Category *</FormLabel>
                         <FormControl>
-                          <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring">
+                          <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                             {CATEGORIES.map((c) => (
                               <option key={c} value={c}>{categoryMeta[c].label}</option>
                             ))}

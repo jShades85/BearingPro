@@ -29,7 +29,7 @@ type Member  = Database["public"]["Tables"]["user_profiles"]["Row"] & {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const inputCls  = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+const inputCls  = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";
 const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1";
 
 // ─── Supabase helpers ─────────────────────────────────────────────────────────

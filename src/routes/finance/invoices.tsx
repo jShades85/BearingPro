@@ -151,7 +151,7 @@ const METHOD_LABELS: Record<string, string> = {
 
 const PAYMENT_TERMS = ["Due on Receipt", "Net 15", "Net 30", "Net 45", "Net 60"];
 
-const inputCls = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+const inputCls = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50";
 const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -604,7 +604,7 @@ function InvoiceDrawer({
                               value={newItem.description}
                               onChange={(e) => setNewItem((n) => ({ ...n, description: e.target.value }))}
                               placeholder="Description"
-                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                             />
                           </td>
                           <td className="py-1.5 px-2 w-16">
@@ -613,7 +613,7 @@ function InvoiceDrawer({
                               min="1"
                               value={newItem.qty}
                               onChange={(e) => setNewItem((n) => ({ ...n, qty: e.target.value }))}
-                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-right focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                             />
                           </td>
                           <td className="py-1.5 px-2 w-24">
@@ -624,7 +624,7 @@ function InvoiceDrawer({
                               value={newItem.unit_price}
                               onChange={(e) => setNewItem((n) => ({ ...n, unit_price: e.target.value }))}
                               placeholder="0.00"
-                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-right focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                             />
                           </td>
                           <td className="py-1.5 px-3 text-right tabular-nums text-muted-foreground text-xs">
@@ -845,7 +845,7 @@ function InvoiceDrawer({
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   rows={3}
                   placeholder="Internal notes…"
-                  className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+                  className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50"
                 />
               </div>
             </div>
@@ -963,7 +963,7 @@ function NewInvoiceModal({
               {...field("notes")}
               rows={2}
               placeholder="Internal notes…"
-              className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+              className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary placeholder:text-muted-foreground/50"
             />
           </div>
           <p className="text-2xs text-muted-foreground">Invoice is created as a draft. Add line items after creating.</p>
