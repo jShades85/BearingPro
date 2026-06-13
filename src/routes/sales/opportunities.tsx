@@ -600,8 +600,10 @@ function KanbanCard({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className={cn(
-        "rounded-md border border-border bg-card p-3 hover:border-primary/30 transition-colors",
-        draggable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
+        "rounded-md border border-border bg-card p-3 hover:border-primary/30 transition-all duration-150",
+        draggable
+          ? "cursor-grab active:cursor-grabbing hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/20"
+          : "cursor-pointer",
         isDragging && "opacity-50",
       )}
       onClick={onSelect}
