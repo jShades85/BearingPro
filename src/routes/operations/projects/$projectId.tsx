@@ -822,7 +822,7 @@ function ProjectEditDrawer({
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
-        <SheetHeader className="border-b border-border px-5 py-4">
+        <SheetHeader className="border-b border-border px-5 py-4 pr-12">
           <SheetTitle className="text-md font-semibold">Edit Project</SheetTitle>
         </SheetHeader>
 

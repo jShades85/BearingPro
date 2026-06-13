@@ -731,7 +731,7 @@ function ScheduleDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full max-w-md overflow-y-auto p-0">
-        <SheetHeader className="border-b border-border px-5 py-4">
+        <SheetHeader className="border-b border-border px-5 py-4 pr-12">
           <SheetTitle className="text-md">{editingJob ? "Edit Schedule" : "Dispatch Work Order"}</SheetTitle>
         </SheetHeader>
 

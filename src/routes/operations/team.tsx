@@ -248,7 +248,7 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-[480px] flex flex-col p-0 gap-0">
-        <SheetHeader className="border-b border-border px-5 py-4">
+        <SheetHeader className="border-b border-border px-5 py-4 pr-12">
           <div className="flex items-center gap-3">
             <TeamAvatar name={member.full_name ?? "?"} className="h-10 w-10 text-md" />
             <div>

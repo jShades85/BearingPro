@@ -1017,7 +1017,7 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="right" className="w-130 flex flex-col p-0 gap-0">
-        <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
+        <SheetHeader className="px-5 pt-5 pb-4 pr-12 border-b border-border shrink-0">
           <SheetTitle className="text-md pr-8">
             {mode === "view" && item ? item.name : item ? "Edit Stock Item" : "New Stock Item"}
           </SheetTitle>

@@ -828,7 +828,7 @@ function OpportunityDrawer({
   if (mode === "edit") {
     return (
       <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
-        <SheetHeader className="border-b border-border px-5 py-4">
+        <SheetHeader className="border-b border-border px-5 py-4 pr-12">
           <SheetTitle className="text-md font-semibold">Edit Opportunity</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
@@ -905,7 +905,7 @@ function OpportunityDrawer({
 
   return (
     <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
-      <SheetHeader className="border-b border-border px-5 py-4">
+      <SheetHeader className="border-b border-border px-5 py-4 pr-12">
         <SheetTitle className="text-md font-semibold leading-tight">{opp.title}</SheetTitle>
         <p className="text-sm text-muted-foreground">{opp.company} · {opp.contact}</p>
         <div className="flex flex-wrap items-center gap-1.5 mt-2">

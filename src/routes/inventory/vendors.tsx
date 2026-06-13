@@ -196,7 +196,7 @@ function VendorDrawer({
   return (
     <Sheet open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
       <SheetContent side="right" className="w-full sm:max-w-120 flex flex-col p-0 gap-0">
-        <SheetHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
+        <SheetHeader className="px-5 pt-5 pb-3 pr-12 border-b border-border shrink-0">
           <div className="flex items-start gap-3 pr-6">
             {vendor && <VendorAvatar name={vendor.name} />}
             <div className="min-w-0 flex-1">

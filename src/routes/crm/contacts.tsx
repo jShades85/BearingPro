@@ -360,7 +360,7 @@ function ContactDrawer({
 
   return (
     <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
-      <SheetHeader className="border-b border-border px-5 py-4">
+      <SheetHeader className="border-b border-border px-5 py-4 pr-12">
         <div className="flex items-center gap-3">
           <Avatar initials={getInitials(c.full_name)} className="!h-11 !w-11 !text-md !rounded-xl" />
           <div className="flex-1 min-w-0">

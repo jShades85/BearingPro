@@ -449,7 +449,7 @@ function LeadDrawer({
 
   return (
     <SheetContent className="sm:max-w-[440px] flex flex-col p-0 gap-0">
-      <SheetHeader className="border-b border-border px-5 py-4">
+      <SheetHeader className="border-b border-border px-5 py-4 pr-12">
         <SheetTitle className="text-md font-semibold">{fullName(lead)}</SheetTitle>
         <p className="text-sm text-muted-foreground -mt-1">{lead.company_name ?? "—"}</p>
       </SheetHeader>

@@ -386,7 +386,7 @@ function TicketDrawer({
 
   return (
     <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
-      <SheetHeader className="border-b border-border px-5 py-4">
+      <SheetHeader className="border-b border-border px-5 py-4 pr-12">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-mono text-xs text-muted-foreground">{ticket.code ?? "—"}</span>
           {ticket.on_service_plan && (
