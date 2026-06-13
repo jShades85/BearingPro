@@ -579,6 +579,15 @@ function KanbanView({
   );
 }
 
+// Left-edge accent rail color by deal priority — lets urgent/high cards
+// pop when scanning a column without adding another text label.
+const priorityBar: Record<Priority, string> = {
+  urgent: "bg-priority-urgent",
+  high: "bg-priority-high",
+  med: "bg-priority-med",
+  low: "bg-priority-low",
+};
+
 function KanbanCard({
   opp, selectorOpen, onOpenSelector, onMove, onSelect, canWrite,
   draggable, isDragging, onDragStart, onDragEnd,
@@ -594,60 +603,72 @@ function KanbanCard({
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
 }) {
+  const showMove = canWrite && !isClosedStage(opp.stage);
+  const flagged = opp.priority === "urgent" || opp.priority === "high";
   return (
     <div
       draggable={draggable}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
+      onClick={onSelect}
       className={cn(
-        "rounded-md border border-border bg-card p-3 hover:border-primary/30 transition-all duration-150",
+        "group relative rounded-md border border-border bg-card p-3 pl-3.5 transition-all duration-150 hover:border-primary/30",
         draggable
           ? "cursor-grab active:cursor-grabbing hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/20"
           : "cursor-pointer",
         isDragging && "opacity-50",
       )}
-      onClick={onSelect}
     >
-      <div className="relative inline-block">
-        {/* Closed stages are locked: show a static label, not the stage-move dropdown. */}
-        {canWrite && !isClosedStage(opp.stage) ? (
-          <button
-            onClick={onOpenSelector}
-            className={cn("rounded px-1.5 py-0.5 text-2xs font-medium flex items-center gap-1 hover:opacity-80 transition-opacity", stageMeta[opp.stage].badge)}
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            {stageMeta[opp.stage].label}
-            <ChevronsUpDown className="h-2.5 w-2.5 opacity-60" />
-          </button>
-        ) : (
-          <StageBadge stage={opp.stage} />
-        )}
-        {canWrite && selectorOpen && (
-          <div className="absolute left-0 top-full z-20 mt-1 w-44 rounded-md border border-border bg-popover py-1 shadow-lg">
-            {stageOrder.map((s) => (
+      {/* priority accent rail */}
+      <span
+        aria-hidden
+        className={cn("absolute bottom-2 left-0 top-2 w-0.75 rounded-r-full", priorityBar[opp.priority])}
+      />
+
+      {/* header: priority flag (urgent/high) + hover-reveal stage-move control */}
+      {(flagged || showMove) && (
+        <div className="mb-1 flex items-start gap-2">
+          {flagged && <PriorityDot p={opp.priority} />}
+          {showMove && (
+            <div className="relative ml-auto">
               <button
-                key={s}
-                onClick={(e) => { e.stopPropagation(); onMove(s); }}
-                className={cn("flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-accent", s === opp.stage && "bg-accent/60")}
+                onClick={onOpenSelector}
+                aria-label="Move to stage"
+                className="-mr-1 -mt-1 shrink-0 rounded p-1 text-muted-foreground/50 opacity-0 transition hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
               >
-                <StageBadge stage={s} />
+                <ChevronsUpDown className="h-3.5 w-3.5" />
               </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="mt-1.5 text-sm font-semibold leading-snug truncate">{opp.title}</div>
-      <div className="text-xs text-muted-foreground truncate">{opp.company} · {opp.contact}</div>
-      <div className="mt-2.5 flex items-center justify-between">
-        <span className="font-mono tabular-nums text-sm font-semibold">{fmtValue(opp.value)}</span>
-        <PriorityDot p={opp.priority} />
-      </div>
-      <div className="mt-2 flex items-center justify-between text-2xs text-muted-foreground">
-        <span>{opp.closeDate}</span>
-        <div className="flex items-center gap-1.5">
-          <Avatar initials={opp.repInitials} />
-          <span>{opp.rep.split(" ")[0]}</span>
+              {selectorOpen && (
+                <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-md border border-border bg-popover py-1 shadow-lg">
+                  {stageOrder.map((s) => (
+                    <button
+                      key={s}
+                      onClick={(e) => { e.stopPropagation(); onMove(s); }}
+                      className={cn("flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-accent", s === opp.stage && "bg-accent/60")}
+                    >
+                      <StageBadge stage={s} />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
+      )}
+
+      {/* deal name + parties */}
+      <div className="text-sm font-semibold leading-snug line-clamp-2">{opp.title}</div>
+      <div className="mt-1 truncate text-xs text-muted-foreground">{opp.company} · {opp.contact}</div>
+
+      {/* footer: value (hero) + owner */}
+      <div className="mt-3 flex items-end justify-between gap-2 border-t border-border/50 pt-2.5">
+        <div className="min-w-0">
+          <div className="font-mono text-md font-bold tabular-nums leading-none text-foreground">{fmtValue(opp.value)}</div>
+          <div className="mt-1.5 text-2xs text-muted-foreground">{opp.closeDate}</div>
+        </div>
+        <span title={opp.rep} className="shrink-0">
+          <Avatar initials={opp.repInitials} />
+        </span>
       </div>
     </div>
   );
