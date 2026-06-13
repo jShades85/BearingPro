@@ -22,7 +22,8 @@
 3. **Planner/Gantt backend** — phases + team assignments; deferred until Scheduling is confirmed stable
 
 **Tooling / setup:**
-- Set up Codacy Guardrails MCP — free for public repos; ~5 min setup (API token → MCP config); adds real-time security scanning to Claude Code. Docs: https://docs.codacy.com/codacy-guardrails/codacy-guardrails-getting-started/
+- ✅ **Codacy Guardrails MCP wired (Session 039)** — `.mcp.json` runs `@codacy/codacy-mcp`, auth via `CODACY_ACCOUNT_TOKEN` env var (never committed). Guardrail rule added to `CLAUDE.md`: run `codacy_cli_analyze` on edited files + dependency CVE scans, fix findings before finishing. **Per-machine finish step:** generate a Codacy *account* API token → `setx CODACY_ACCOUNT_TOKEN "<token>"` → fully restart VS Code → approve the `codacy` MCP. (If it errors on CLI version, add `CODACY_CLI_VERSION`.) Docs: https://docs.codacy.com/codacy-guardrails/codacy-guardrails-getting-started/
+- **Codacy already scanning the repo** (added via dashboard); it flagged some findings — pull them via the MCP once connected and fix with the analysis loop. Pre-launch security hardening noted in the Session 039 security review: bump `minimum_password_length` 6→8, gate/remove `Test1234!` seed users from real tenants, re-enable email confirmation (`mailer_autoconfirm`) for prod.
 
 **Specced items queued for build (in progress log):**
 - Referral partner tracking (lead → contact referral FK trail)
