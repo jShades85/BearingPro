@@ -214,7 +214,7 @@ function todayISO(): string {
 // ─── Member Avatar ─────────────────────────────────────────────────────────────
 
 function MemberAvatar({ member, size = "sm" }: { member: PlannerMember; size?: "sm" | "xs" }) {
-  const dim = size === "sm" ? "h-6 w-6 text-[9px]" : "h-5 w-5 text-[8px]";
+  const dim = size === "sm" ? "h-6 w-6 text-2xs" : "h-5 w-5 text-2xs";
   return (
     <div
       title={member.name}
@@ -257,13 +257,13 @@ function MemberMultiSelect({
         type="button"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors",
+          "flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors",
           selected.length > 0 && "border-primary/50 text-foreground",
         )}
       >
         Team Member
         {selected.length > 0 && (
-          <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-medium text-primary">
+          <span className="rounded-full bg-primary/15 px-1.5 text-2xs font-medium text-primary">
             {selected.length}
           </span>
         )}
@@ -274,7 +274,7 @@ function MemberMultiSelect({
           {MEMBERS.map((m) => (
             <label
               key={m.id}
-              className="flex cursor-pointer items-center gap-2.5 px-3 py-1.5 text-[12px] hover:bg-accent/40"
+              className="flex cursor-pointer items-center gap-2.5 px-3 py-1.5 text-sm hover:bg-accent/40"
             >
               <input
                 type="checkbox"
@@ -290,7 +290,7 @@ function MemberMultiSelect({
             <button
               type="button"
               onClick={() => onChange([])}
-              className="w-full border-t border-border px-3 py-1.5 text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full border-t border-border px-3 py-1.5 text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               Clear filter
             </button>
@@ -309,7 +309,7 @@ function GanttLegend() {
       {(Object.entries(PHASE_META) as [PhaseStatus, typeof PHASE_META[PhaseStatus]][]).map(([status, meta]) => (
         <div key={status} className="flex items-center gap-1.5">
           <div className={cn("h-2.5 w-2.5 rounded-sm", meta.bar)} />
-          <span className="text-[10.5px] text-muted-foreground">{meta.label}</span>
+          <span className="text-2xs text-muted-foreground">{meta.label}</span>
         </div>
       ))}
     </div>
@@ -419,7 +419,7 @@ function GanttTab() {
         <button
           type="button"
           onClick={goToday}
-          className="h-7 rounded-md border border-border bg-surface px-3 text-[11.5px] font-medium hover:bg-accent/40 transition-colors"
+          className="h-7 rounded-md border border-border bg-surface px-3 text-xs font-medium hover:bg-accent/40 transition-colors"
         >
           Today
         </button>
@@ -439,7 +439,7 @@ function GanttTab() {
             <ChevronRight className="h-3.5 w-3.5" />
           </button>
         </div>
-        <span className="flex-1 text-center text-[13px] font-medium">{rangeLabel}</span>
+        <span className="flex-1 text-center text-base font-medium">{rangeLabel}</span>
         <div className="flex overflow-hidden rounded-md border border-border">
           {(["week", "month"] as const).map((s) => (
             <button
@@ -447,7 +447,7 @@ function GanttTab() {
               type="button"
               onClick={() => switchScale(s)}
               className={cn(
-                "px-3 py-1 text-[11.5px] font-medium transition-colors",
+                "px-3 py-1 text-xs font-medium transition-colors",
                 scale === s
                   ? "bg-primary text-primary-foreground"
                   : "bg-surface text-muted-foreground hover:bg-accent/40",
@@ -479,7 +479,7 @@ function GanttTab() {
               >
                 <div
                   className={cn(
-                    "text-[10px] uppercase tracking-wide text-muted-foreground",
+                    "text-2xs uppercase tracking-wide text-muted-foreground",
                     h.iso === today && "text-primary font-semibold",
                   )}
                 >
@@ -487,7 +487,7 @@ function GanttTab() {
                 </div>
                 <div
                   className={cn(
-                    "text-[12px] font-semibold leading-snug",
+                    "text-sm font-semibold leading-snug",
                     h.iso === today ? "text-primary" : "text-foreground",
                   )}
                 >
@@ -509,10 +509,10 @@ function GanttTab() {
                   className="shrink-0 border-r border-border px-3 py-2"
                   style={{ width: SIDEBAR_W }}
                 >
-                  <div className="truncate text-[12.5px] font-medium leading-snug">
+                  <div className="truncate text-sm font-medium leading-snug">
                     {project.name}
                   </div>
-                  <span className={cn("mt-0.5 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium", sm.cls)}>
+                  <span className={cn("mt-0.5 inline-block rounded px-1.5 py-0.5 text-2xs font-medium", sm.cls)}>
                     {sm.label}
                   </span>
                 </div>
@@ -567,7 +567,7 @@ function GanttTab() {
                         >
                           <span
                             className={cn(
-                              "truncate select-none text-[9.5px] font-medium",
+                              "truncate select-none text-2xs font-medium",
                               meta.text,
                             )}
                           >
@@ -662,7 +662,7 @@ function ResourceTab() {
       <div className="flex items-center gap-2 border-b border-border px-3 py-2">
         <MemberMultiSelect selected={memberFilter} onChange={setMemberFilter} />
         {memberFilter.length > 0 && (
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Highlighting rows with selected members
           </span>
         )}
@@ -680,7 +680,7 @@ function ResourceTab() {
                 return (
                   <span
                     key={mk.iso}
-                    className="absolute text-[10px] font-medium text-muted-foreground"
+                    className="absolute text-2xs font-medium text-muted-foreground"
                     style={{ left: `${pct}%`, transform: "translateX(-25%)" }}
                   >
                     {mk.label}
@@ -699,12 +699,12 @@ function ResourceTab() {
               className="shrink-0 border-r border-border px-3 py-1.5"
               style={{ width: SIDEBAR_W + 20 }}
             >
-              <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Project
               </span>
             </div>
             <div className="flex-1 px-3 py-1.5">
-              <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Timeline · May – Jul 2026
               </span>
             </div>
@@ -730,10 +730,10 @@ function ResourceTab() {
                   className="shrink-0 border-r border-border px-3 py-3"
                   style={{ width: SIDEBAR_W + 20 }}
                 >
-                  <div className="truncate text-[12.5px] font-medium leading-snug">
+                  <div className="truncate text-sm font-medium leading-snug">
                     {project.name}
                   </div>
-                  <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                  <div className="mt-0.5 truncate text-xs text-muted-foreground">
                     {project.customer}
                   </div>
                 </div>
@@ -764,11 +764,11 @@ function ResourceTab() {
                           ))}
                         </div>
                       ) : (
-                        <span className="whitespace-nowrap text-[9.5px] font-medium text-red-500/80">
+                        <span className="whitespace-nowrap text-2xs font-medium text-red-500/80">
                           Unassigned
                         </span>
                       )}
-                      <span className="truncate text-[9.5px] text-foreground/60">
+                      <span className="truncate text-2xs text-foreground/60">
                         {fmtShort(project.start)} – {fmtShort(project.end)}
                       </span>
                     </div>
@@ -784,7 +784,7 @@ function ResourceTab() {
               className="shrink-0 border-r border-border px-3 py-2.5"
               style={{ width: SIDEBAR_W + 20 }}
             >
-              <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Team Load
               </span>
             </div>
@@ -792,8 +792,8 @@ function ResourceTab() {
               {MEMBERS.map((m) => (
                 <div key={m.id} className="flex items-center gap-1.5">
                   <MemberAvatar member={m} size="sm" />
-                  <span className="text-[11.5px] font-medium">{m.name.split(" ")[0]}</span>
-                  <span className="rounded-full bg-primary/10 px-1.5 py-px text-[9.5px] font-medium text-primary">
+                  <span className="text-xs font-medium">{m.name.split(" ")[0]}</span>
+                  <span className="rounded-full bg-primary/10 px-1.5 py-px text-2xs font-medium text-primary">
                     {memberProjectCount[m.id]} project{memberProjectCount[m.id] !== 1 ? "s" : ""}
                   </span>
                 </div>
@@ -822,13 +822,13 @@ function CapacityTab() {
             className="shrink-0 border-r border-border px-3 py-2"
             style={{ width: SIDEBAR_W + 40 }}
           >
-            <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
               Team Member
             </span>
           </div>
           {CAPACITY_WEEKS.map((w) => (
             <div key={w} className="flex-1 border-r border-border px-3 py-2 text-center">
-              <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {fromISO(w).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </span>
             </div>
@@ -850,12 +850,12 @@ function CapacityTab() {
                 <div className="flex items-center gap-2">
                   <MemberAvatar member={member} />
                   <div>
-                    <div className="text-[12.5px] font-medium leading-snug">{member.name}</div>
+                    <div className="text-sm font-medium leading-snug">{member.name}</div>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[11px] text-muted-foreground">{member.role}</span>
+                      <span className="text-xs text-muted-foreground">{member.role}</span>
                       <span
                         className={cn(
-                          "rounded px-1.5 py-px text-[9.5px] font-medium",
+                          "rounded px-1.5 py-px text-2xs font-medium",
                           member.availability === "full_time"
                             ? "bg-green-500/15 text-green-600 dark:text-green-400"
                             : "bg-blue-500/15 text-blue-600 dark:text-blue-400",
@@ -884,13 +884,13 @@ function CapacityTab() {
                     <div className="mb-1.5 flex items-baseline justify-between">
                       <span
                         className={cn(
-                          "text-[12.5px] font-semibold",
+                          "text-sm font-semibold",
                           isOver ? "text-red-500" : rawPct >= 80 ? "text-amber-600 dark:text-amber-400" : "text-foreground",
                         )}
                       >
                         {h}h
                       </span>
-                      <span className="text-[10px] text-muted-foreground">/ {capacity}h</span>
+                      <span className="text-2xs text-muted-foreground">/ {capacity}h</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
                       <div
@@ -899,7 +899,7 @@ function CapacityTab() {
                       />
                     </div>
                     {isOver && (
-                      <p className="mt-1 text-[9.5px] font-medium text-red-500">
+                      <p className="mt-1 text-2xs font-medium text-red-500">
                         +{h - capacity}h over
                       </p>
                     )}
@@ -916,13 +916,13 @@ function CapacityTab() {
             className="shrink-0 border-r border-border px-3 py-2.5"
             style={{ width: SIDEBAR_W + 40 }}
           >
-            <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
               Total Scheduled
             </span>
           </div>
           {CAPACITY_WEEKS.map((w, wi) => (
             <div key={w} className="flex-1 border-r border-border px-3 py-2.5 text-center">
-              <span className="text-[13px] font-semibold">{weekTotals[wi]}h</span>
+              <span className="text-base font-semibold">{weekTotals[wi]}h</span>
             </div>
           ))}
         </div>
@@ -960,7 +960,7 @@ function PlannerPage() {
             type="button"
             onClick={() => setTab(t.id)}
             className={cn(
-              "relative flex h-9 items-center gap-1.5 rounded-md px-2.5 text-[12.5px] transition-colors",
+              "relative flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors",
               tab === t.id
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground",

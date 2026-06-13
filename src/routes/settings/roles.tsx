@@ -48,8 +48,8 @@ const PRESET_COLORS = [
   "#ec4899", "#94a3b8",
 ];
 
-const inputCls = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-const labelCls = "block text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-1";
+const inputCls = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -193,7 +193,7 @@ function ModuleButton({
       title={disabled ? undefined : state === "none" ? "No access — click to grant Read" : state === "read" ? "Read only — click to grant Read & Write" : "Read & Write — click to remove access"}
     >
       <Icon className="h-4 w-4" />
-      <span className="text-[11px] font-medium leading-tight">{label}</span>
+      <span className="text-xs font-medium leading-tight">{label}</span>
       {AccessIcon && (
         <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-current">
           <AccessIcon className="h-2.5 w-2.5 text-white" />
@@ -216,7 +216,7 @@ function PermissionEditor({
 }) {
   return (
     <div className="mt-3 rounded-lg border border-border/60 bg-muted/20 p-4">
-      <p className="mb-3 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <p className="mb-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
         Module Access — click to cycle: No Access → Read → Read & Write
       </p>
       <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
@@ -230,7 +230,7 @@ function PermissionEditor({
           />
         ))}
       </div>
-      <div className="mt-3 flex items-center gap-4 text-[11px] text-muted-foreground">
+      <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-sky-500/60" /> Read
         </span>
@@ -304,15 +304,15 @@ function RoleRow({
           onChange={canWrite ? (e) => setName(e.target.value) : undefined}
           onBlur={canWrite ? handleNameBlur : undefined}
           onKeyDown={canWrite ? (e) => { if (e.key === "Enter") e.currentTarget.blur(); } : undefined}
-          className="w-36 shrink-0 bg-transparent text-[13px] font-medium text-foreground focus:outline-none border-b border-transparent hover:border-border focus:border-primary transition-colors pb-0.5 read-only:cursor-default read-only:hover:border-transparent read-only:focus:border-transparent"
+          className="w-36 shrink-0 bg-transparent text-base font-medium text-foreground focus:outline-none border-b border-transparent hover:border-border focus:border-primary transition-colors pb-0.5 read-only:cursor-default read-only:hover:border-transparent read-only:focus:border-transparent"
         />
 
         {/* Module access summary */}
         <div className="flex flex-1 flex-wrap items-center gap-1 min-w-0">
           {accessedModules.length === 0 ? (
-            <span className="text-[11px] text-muted-foreground/50 italic">No module access</span>
+            <span className="text-xs text-muted-foreground/50 italic">No module access</span>
           ) : accessedModules.length === MODULE_ORDER.length ? (
-            <span className="rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-violet-500/15 text-violet-600 dark:text-violet-400">
+            <span className="rounded px-1.5 py-0.5 text-2xs font-medium bg-violet-500/15 text-violet-600 dark:text-violet-400">
               All modules
             </span>
           ) : (
@@ -322,7 +322,7 @@ function RoleRow({
                 <span
                   key={mod}
                   className={cn(
-                    "rounded px-1.5 py-0.5 text-[10.5px] font-medium",
+                    "rounded px-1.5 py-0.5 text-2xs font-medium",
                     state === "write"
                       ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                       : "bg-sky-500/15 text-sky-600 dark:text-sky-400",
@@ -350,16 +350,16 @@ function RoleRow({
 
           {canWrite && (confirming ? (
             <div className="flex items-center gap-2 ml-1">
-              <span className="text-[11.5px] text-muted-foreground">Delete?</span>
+              <span className="text-xs text-muted-foreground">Delete?</span>
               <button
                 onClick={() => onDelete(role.id)}
-                className="rounded px-2 py-0.5 text-[11.5px] font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                className="rounded px-2 py-0.5 text-xs font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
               >
                 Yes
               </button>
               <button
                 onClick={() => setConfirming(false)}
-                className="rounded px-2 py-0.5 text-[11.5px] text-muted-foreground hover:text-foreground transition-colors"
+                className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
@@ -426,7 +426,7 @@ function AddRoleRow({
       <button
         type="button"
         onClick={handleOpen}
-        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-[12.5px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
       >
         <Plus className="h-3.5 w-3.5" />
         Add role
@@ -436,7 +436,7 @@ function AddRoleRow({
 
   return (
     <div className="rounded-lg border border-primary/30 bg-card px-4 py-4 space-y-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">New Role</p>
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">New Role</p>
       <div className="flex items-end gap-3">
         <div>
           <label className={labelCls}>Color</label>
@@ -459,7 +459,7 @@ function AddRoleRow({
           />
         </div>
       </div>
-      <p className="text-[11.5px] text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         Module permissions can be configured after adding the role.
       </p>
       <div className="flex items-center gap-2">
@@ -467,14 +467,14 @@ function AddRoleRow({
           type="button"
           onClick={handleAdd}
           disabled={!name.trim()}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40"
+          className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40"
         >
           Add Role
         </button>
         <button
           type="button"
           onClick={() => { setName(""); setOpen(false); }}
-          className="h-8 rounded-md border border-border px-4 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="h-8 rounded-md border border-border px-4 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           Cancel
         </button>
@@ -557,7 +557,7 @@ function RolesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24 text-[12.5px] text-muted-foreground">
+      <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
         Loading roles…
       </div>
     );
@@ -565,7 +565,7 @@ function RolesPage() {
 
   if (error) {
     return (
-      <div className="px-8 py-8 text-[12.5px] text-destructive">
+      <div className="px-8 py-8 text-sm text-destructive">
         Failed to load roles. Please refresh.
       </div>
     );
@@ -574,8 +574,8 @@ function RolesPage() {
   return (
     <div className="px-8 py-8 max-w-3xl">
       <div className="mb-6">
-        <h1 className="text-[15px] font-semibold">Roles</h1>
-        <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+        <h1 className="text-md font-semibold">Roles</h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">
           Define roles for your team and control which modules they can access.
           Click a role's arrow to configure its module permissions.
         </p>

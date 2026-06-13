@@ -73,11 +73,11 @@ function SignupPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-[17px] font-semibold text-foreground">Check your inbox</h1>
-          <p className="mt-2 text-[13px] text-muted-foreground">
+          <h1 className="text-lg font-semibold text-foreground">Check your inbox</h1>
+          <p className="mt-2 text-base text-muted-foreground">
             We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click it to activate your account.
           </p>
-          <p className="mt-5 text-[12px] text-muted-foreground">
+          <p className="mt-5 text-sm text-muted-foreground">
             Already confirmed?{" "}
             <Link to="/auth/login" className="text-primary hover:underline">
               Sign in
@@ -90,10 +90,10 @@ function SignupPage() {
 
   return (
     <AuthShell>
-      <h1 className="text-[18px] font-semibold tracking-tight text-foreground">
+      <h1 className="text-lg font-semibold tracking-tight text-foreground">
         {isInvite ? "Join your team" : "Create your account"}
       </h1>
-      <p className="mt-1 text-[13px] text-muted-foreground">
+      <p className="mt-1 text-base text-muted-foreground">
         {isInvite
           ? roleName ? `You've been invited as ${roleName}` : "You've been invited to join BearingPro"
           : "Get started with BearingPro"}
@@ -102,45 +102,45 @@ function SignupPage() {
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         {!isInvite && (
           <div className="space-y-1.5">
-            <label className="text-[12px] font-medium text-foreground">Company name</label>
+            <label className="text-sm font-medium text-foreground">Company name</label>
             <input
               type="text"
               required
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               placeholder="Acme AV & Security"
             />
           </div>
         )}
 
         <div className="space-y-1.5">
-          <label className="text-[12px] font-medium text-foreground">Your name</label>
+          <label className="text-sm font-medium text-foreground">Your name</label>
           <input
             type="text"
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             placeholder="Jane Smith"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[12px] font-medium text-foreground">Email</label>
+          <label className="text-sm font-medium text-foreground">Email</label>
           <input
             type="email"
             autoComplete="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             placeholder="you@company.com"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[12px] font-medium text-foreground">Password</label>
+          <label className="text-sm font-medium text-foreground">Password</label>
           <input
             type="password"
             autoComplete="new-password"
@@ -148,25 +148,25 @@ function SignupPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             placeholder="8+ characters"
           />
         </div>
 
         {error && (
-          <p className="rounded-md bg-red-500/10 px-3 py-2 text-[12px] text-red-500">{error}</p>
+          <p className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-500">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-primary px-4 py-2 text-[13px] font-medium text-primary-foreground shadow-glow transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="w-full rounded-md bg-primary px-4 py-2 text-base font-medium text-primary-foreground shadow-glow transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "Creating account…" : "Create account"}
         </button>
       </form>
 
-      <p className="mt-5 text-center text-[12px] text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link to="/auth/login" className="text-primary hover:underline">
           Sign in
@@ -184,10 +184,10 @@ function AuthShell({ children }: { children: React.ReactNode }) {
       </div>
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-chart-2 text-[11px] font-bold text-primary-foreground shadow-glow">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-chart-2 text-xs font-bold text-primary-foreground shadow-glow">
             BP
           </div>
-          <span className="text-[14px] font-semibold tracking-tight">BearingPro</span>
+          <span className="text-md font-semibold tracking-tight">BearingPro</span>
         </div>
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           {children}

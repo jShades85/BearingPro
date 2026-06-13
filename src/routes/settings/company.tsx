@@ -137,8 +137,8 @@ function CompanyProfilePage() {
   return (
     <div className="mx-auto max-w-2xl px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-[15px] font-semibold">Company Profile</h1>
-        <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+        <h1 className="text-md font-semibold">Company Profile</h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">
           Basic information about your business — shown on invoices, quotes, and client-facing documents.
         </p>
       </div>
@@ -148,14 +148,14 @@ function CompanyProfilePage() {
         {/* Logo */}
         <Section title="Logo" icon={Building2}>
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted text-[10px] font-bold text-muted-foreground">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted text-2xs font-bold text-muted-foreground">
               {form.name ? form.name.split(" ").map(w => w[0]).join("").slice(0, 4).toUpperCase() : "BP"}
             </div>
             <div>
-              <button className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+              <button className="h-8 rounded-md border border-border bg-surface px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
                 Upload logo
               </button>
-              <p className="mt-1 text-[11px] text-muted-foreground">PNG or SVG, max 2 MB. Shown on invoices and quotes.</p>
+              <p className="mt-1 text-xs text-muted-foreground">PNG or SVG, max 2 MB. Shown on invoices and quotes.</p>
             </div>
           </div>
         </Section>
@@ -254,15 +254,15 @@ function CompanyProfilePage() {
       {canWrite && (
         <div className="mt-8 flex items-center justify-end gap-3 border-t border-border pt-5">
           {mutation.isSuccess && (
-            <span className="text-[12px] text-green-600 dark:text-green-400">Changes saved</span>
+            <span className="text-sm text-green-600 dark:text-green-400">Changes saved</span>
           )}
           {mutation.isError && (
-            <span className="text-[12px] text-red-500">Failed to save — try again</span>
+            <span className="text-sm text-red-500">Failed to save — try again</span>
           )}
           <button
             onClick={handleSave}
             disabled={mutation.isPending}
-            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {mutation.isPending ? "Saving…" : "Save changes"}
           </button>
@@ -274,14 +274,14 @@ function CompanyProfilePage() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-[12.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
+const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
 
 function Section({ title, icon: Icon, children }: { title: string; icon: typeof Building2; children: React.ReactNode }) {
   return (
     <div>
       <div className="mb-3 flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-        <h2 className="text-[13px] font-semibold">{title}</h2>
+        <h2 className="text-base font-semibold">{title}</h2>
       </div>
       <div className="rounded-lg border border-border bg-card p-5">{children}</div>
     </div>
@@ -291,7 +291,7 @@ function Section({ title, icon: Icon, children }: { title: string; icon: typeof 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={className}>
-      <label className="mb-1 block text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium">
+      <label className="mb-1 block text-2xs uppercase tracking-wider text-muted-foreground font-medium">
         {label}
       </label>
       {children}

@@ -119,7 +119,7 @@ function nameToInitials(name: string): string {
 function RoleBadge({ role }: { role: ProjectRole }) {
   const { label, cls } = roleMeta[role];
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap", cls)}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
       {label}
     </span>
   );
@@ -134,13 +134,13 @@ function MemberRow({
 }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 group">
-      <Avatar initials={member.initials} className="!h-8 !w-8 !text-[11px] shrink-0" />
+      <Avatar initials={member.initials} className="!h-8 !w-8 !text-xs shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[13px] font-medium leading-snug">{member.name}</span>
+          <span className="text-base font-medium leading-snug">{member.name}</span>
           <RoleBadge role={member.role} />
         </div>
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-[11.5px] text-muted-foreground">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Phone className="h-3 w-3 shrink-0" />
             {member.phone}
@@ -186,12 +186,12 @@ function AddMemberRow({
           if (e.key === "Enter") onCommit();
           if (e.key === "Escape") onCancel();
         }}
-        className="h-7 min-w-[160px] flex-1 rounded-md border border-border bg-surface px-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+        className="h-7 min-w-[160px] flex-1 rounded-md border border-border bg-surface px-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
       />
       <select
         value={draft.role}
         onChange={(e) => onChange({ ...draft, role: e.target.value as ProjectRole })}
-        className="h-7 rounded-md border border-border bg-surface px-2 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        className="h-7 rounded-md border border-border bg-surface px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
       >
         {ROLE_OPTIONS.map((r) => (
           <option key={r} value={r}>{roleMeta[r].label}</option>
@@ -201,7 +201,7 @@ function AddMemberRow({
         type="button"
         onClick={onCommit}
         disabled={!draft.name.trim()}
-        className="h-7 rounded-md bg-primary px-3 text-[12px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-opacity"
+        className="h-7 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-opacity"
       >
         Add
       </button>
@@ -256,7 +256,7 @@ export function TeamPanel({ projectId }: TeamPanelProps) {
   return (
     <div className="px-5 py-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground">
           Team Members
           {members.length > 0 && (
             <span className="ml-2 font-mono text-muted-foreground/60">{members.length}</span>
@@ -281,8 +281,8 @@ export function TeamPanel({ projectId }: TeamPanelProps) {
         {members.length === 0 && !addingMember && (
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <Users className="h-7 w-7 text-muted-foreground/30 mb-2.5" />
-            <p className="text-[12.5px] font-medium">No team members yet</p>
-            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+            <p className="text-sm font-medium">No team members yet</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Add people to this project below.
             </p>
           </div>
@@ -293,7 +293,7 @@ export function TeamPanel({ projectId }: TeamPanelProps) {
         <button
           type="button"
           onClick={() => { setDraft({ ...DEFAULT_DRAFT }); setAddingMember(true); }}
-          className="mt-2 flex items-center gap-1.5 rounded-md px-3 py-2 text-[12px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          className="mt-2 flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
           Add Team Member

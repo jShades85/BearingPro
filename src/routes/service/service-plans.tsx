@@ -118,7 +118,7 @@ const SLA_OPTIONS = ["2 hours", "4 hours", "8 hours", "Next business day"];
 function StatusBadge({ status }: { status: PlanStatus }) {
   const { label, cls } = statusMeta[status];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -127,7 +127,7 @@ function StatusBadge({ status }: { status: PlanStatus }) {
 
 function TierBadge({ tier }: { tier: PlanTier }) {
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium", tierMeta[tier].cls)}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium", tierMeta[tier].cls)}>
       {tier}
     </span>
   );
@@ -144,7 +144,7 @@ function VisitsBar({ used, total }: { used: number; total: number }) {
           style={{ width: `${pct * 100}%` }}
         />
       </div>
-      <span className="text-[11px] font-mono text-muted-foreground tabular-nums">{used}/{total}</span>
+      <span className="text-xs font-mono text-muted-foreground tabular-nums">{used}/{total}</span>
     </div>
   );
 }
@@ -262,13 +262,13 @@ function ServicePlansPage() {
                 <TierBadge tier={plan.tier} />
                 <StatusBadge status={plan.status} />
               </div>
-              <div className="text-[13.5px] font-semibold leading-snug">{plan.customerName}</div>
-              <div className="text-[11.5px] text-muted-foreground mt-0.5">{plan.contactName}</div>
+              <div className="text-base font-semibold leading-snug">{plan.customerName}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{plan.contactName}</div>
             </div>
 
             <div className="flex flex-wrap gap-1">
               {plan.coveredSystems.map((s) => (
-                <span key={s} className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground">
+                <span key={s} className="rounded px-1.5 py-0.5 text-2xs font-medium bg-muted text-muted-foreground">
                   {s}
                 </span>
               ))}
@@ -276,28 +276,28 @@ function ServicePlansPage() {
 
             <div className="grid grid-cols-3 gap-2 border-t border-border pt-3">
               <div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">MRR</div>
-                <div className="text-[12.5px] font-semibold tabular-nums">{currency(plan.mrr)}</div>
+                <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">MRR</div>
+                <div className="text-sm font-semibold tabular-nums">{currency(plan.mrr)}</div>
               </div>
               <div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">SLA</div>
-                <div className="text-[12px] text-foreground">{plan.slaResponse}</div>
+                <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">SLA</div>
+                <div className="text-sm text-foreground">{plan.slaResponse}</div>
               </div>
               <div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Renewal</div>
-                <div className="text-[11.5px] font-mono text-muted-foreground">{plan.renewalDate ?? "—"}</div>
+                <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">Renewal</div>
+                <div className="text-xs font-mono text-muted-foreground">{plan.renewalDate ?? "—"}</div>
               </div>
             </div>
 
             <div className="flex items-center justify-between border-t border-border pt-3">
               <div className="flex flex-col gap-0.5">
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Visits</div>
+                <div className="text-2xs text-muted-foreground uppercase tracking-wider">Visits</div>
                 <VisitsBar used={plan.visitsUsed} total={plan.visitsPerYear} />
               </div>
               {plan.accountManagerName && (
                 <div className="flex items-center gap-1.5">
                   <Avatar initials={plan.accountManagerName.split(" ").map((w) => w[0]).join("").slice(0, 2)} />
-                  <span className="text-[11.5px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {plan.accountManagerName.split(" ")[0]}
                   </span>
                 </div>
@@ -306,7 +306,7 @@ function ServicePlansPage() {
           </div>
         ))}
         {filtered.length === 0 && !isLoading && (
-          <div className="col-span-3 py-12 text-center text-[12.5px] text-muted-foreground">
+          <div className="col-span-3 py-12 text-center text-sm text-muted-foreground">
             No plans match the current filter.
           </div>
         )}
@@ -366,8 +366,8 @@ function PlanDrawer({
   return (
     <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4 pr-12">
-        <p className="font-mono text-[11px] text-muted-foreground mb-1">{plan.code}</p>
-        <SheetTitle className="text-[15px] font-semibold">{plan.customerName}</SheetTitle>
+        <p className="font-mono text-xs text-muted-foreground mb-1">{plan.code}</p>
+        <SheetTitle className="text-md font-semibold">{plan.customerName}</SheetTitle>
         <div className="flex items-center gap-2 mt-1">
           <TierBadge tier={plan.tier} />
           <StatusBadge status={plan.status} />
@@ -376,14 +376,14 @@ function PlanDrawer({
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
         {/* Key metrics */}
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3.5 text-[12.5px]">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-3.5 text-sm">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Plan Tier</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Plan Tier</p>
             <FormSelect
               value={plan.tier}
               disabled={isPending}
               onChange={(e) => onUpdate(plan.id, { tier: e.target.value })}
-              className="h-7 w-full rounded-md border border-border bg-surface px-2 text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-7 w-full rounded-md border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {(["Essential", "Standard", "Professional", "Elite"] as PlanTier[]).map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -391,12 +391,12 @@ function PlanDrawer({
             </FormSelect>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Status</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Status</p>
             <FormSelect
               value={plan.status}
               disabled={isPending}
               onChange={(e) => onUpdate(plan.id, { status: e.target.value })}
-              className="h-7 w-full rounded-md border border-border bg-surface px-2 text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-7 w-full rounded-md border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {STATUS_ORDER.map((s) => (
                 <option key={s} value={s}>{statusMeta[s].label}</option>
@@ -404,50 +404,50 @@ function PlanDrawer({
             </FormSelect>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">MRR</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">MRR</p>
             <span className="font-semibold tabular-nums">{currency(plan.mrr)}</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Billing</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Billing</p>
             <span>{plan.billingCycle}</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">SLA Response</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">SLA Response</p>
             <span>{plan.slaResponse}</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Account Mgr</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Account Mgr</p>
             {plan.accountManagerName ? (
               <div className="flex items-center gap-1.5">
                 <Avatar initials={plan.accountManagerName.split(" ").map((w) => w[0]).join("").slice(0, 2)} />
-                <span className="text-[12px]">{plan.accountManagerName.split(" ")[0]}</span>
+                <span className="text-sm">{plan.accountManagerName.split(" ")[0]}</span>
               </div>
             ) : (
               <span className="text-muted-foreground">—</span>
             )}
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Start Date</p>
-            <span className="font-mono text-[12px]">{plan.startDate ?? "—"}</span>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Start Date</p>
+            <span className="font-mono text-sm">{plan.startDate ?? "—"}</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Renewal Date</p>
-            <span className="font-mono text-[12px]">{plan.renewalDate ?? "—"}</span>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Renewal Date</p>
+            <span className="font-mono text-sm">{plan.renewalDate ?? "—"}</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Annual</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Annual</p>
             <span className="font-semibold tabular-nums">{currency(plan.mrr * 12)}</span>
           </div>
         </div>
 
         {/* Visits */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">
             Visits This Year
           </p>
           <div className="flex items-center gap-3">
             <VisitsBar used={plan.visitsUsed} total={plan.visitsPerYear} />
-            <span className="text-[12.5px] text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               {plan.visitsUsed} of {plan.visitsPerYear} used
               {plan.visitsPerYear - plan.visitsUsed > 0 && (
                 <span className="text-foreground font-medium">
@@ -460,10 +460,10 @@ function PlanDrawer({
 
         {/* Covered systems */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Covered Systems</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">Covered Systems</p>
           <div className="flex flex-wrap gap-1.5">
             {plan.coveredSystems.map((s) => (
-              <span key={s} className="rounded-md px-2 py-1 text-[11.5px] font-medium bg-muted text-foreground">
+              <span key={s} className="rounded-md px-2 py-1 text-xs font-medium bg-muted text-foreground">
                 {s}
               </span>
             ))}
@@ -471,9 +471,9 @@ function PlanDrawer({
         </div>
 
         {/* Contact / Site */}
-        <div className="space-y-2.5 text-[12.5px]">
+        <div className="space-y-2.5 text-sm">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Contact</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Contact</p>
             <div className="flex flex-col gap-1 text-muted-foreground">
               <span className="text-foreground font-medium">{plan.contactName}</span>
               <span className="flex items-center gap-1.5">
@@ -490,24 +490,24 @@ function PlanDrawer({
 
         {/* Notes */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             onBlur={() => { if (notes !== plan.notes) onUpdate(plan.id, { notes }); }}
             placeholder="Add notes…"
             rows={3}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
         {/* Activity */}
         {plan.activity.length > 0 && (
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Activity</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">Activity</p>
             <ul className="space-y-3">
               {plan.activity.map((a, i) => (
-                <li key={i} className="flex gap-2.5 text-[12px]">
+                <li key={i} className="flex gap-2.5 text-sm">
                   <Clock className="h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground/50" />
                   <div>
                     <div>
@@ -515,7 +515,7 @@ function PlanDrawer({
                       {" — "}
                       {a.text}
                     </div>
-                    <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.time}</div>
+                    <div className="mt-0.5 font-mono text-2xs text-muted-foreground">{a.time}</div>
                   </div>
                 </li>
               ))}
@@ -528,7 +528,7 @@ function PlanDrawer({
         <button
           onClick={() => onUpdate(plan.id, { status: "active" })}
           disabled={plan.status === "active" || isPending}
-          className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity flex items-center justify-center gap-1.5"
+          className="w-full h-8 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity flex items-center justify-center gap-1.5"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Renew Plan
@@ -536,7 +536,7 @@ function PlanDrawer({
         <button
           onClick={() => onUpdate(plan.id, { status: "cancelled" })}
           disabled={plan.status === "cancelled" || isPending}
-          className="w-full h-8 rounded-md border border-border text-muted-foreground text-[12.5px] font-medium hover:text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-default transition-colors"
+          className="w-full h-8 rounded-md border border-border text-muted-foreground text-sm font-medium hover:text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-default transition-colors"
         >
           Cancel Plan
         </button>
@@ -612,8 +612,8 @@ function NewPlanModal({
     onSuccess: onCreated,
   });
 
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   function toggleSystem(s: string) {
     setCoveredSystems((prev) =>
@@ -693,7 +693,7 @@ function NewPlanModal({
                 type="button"
                 onClick={() => toggleSystem(s)}
                 className={cn(
-                  "rounded px-2 py-1 text-[11px] font-medium border transition-colors",
+                  "rounded px-2 py-1 text-xs font-medium border transition-colors",
                   coveredSystems.includes(s)
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-surface text-muted-foreground border-border hover:text-foreground",
@@ -711,21 +711,21 @@ function NewPlanModal({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any special instructions or notes…"
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
       </div>
       <div className="mt-3 flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={() => createMutation.mutate()}
           disabled={!canSubmit || createMutation.isPending}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
           {createMutation.isPending ? "Creating…" : "Create Plan"}
         </button>

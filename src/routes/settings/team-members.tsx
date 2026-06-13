@@ -29,8 +29,8 @@ type Member  = Database["public"]["Tables"]["user_profiles"]["Row"] & {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const inputCls  = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-const labelCls  = "block text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-1";
+const inputCls  = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1";
 
 // ─── Supabase helpers ─────────────────────────────────────────────────────────
 
@@ -107,7 +107,7 @@ async function reactivateMember(id: string) {
 function Avatar({ name }: { name: string }) {
   return (
     <div
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
       style={{ background: avatarGradient(name) }}
     >
       {avatarInitials(name)}
@@ -118,10 +118,10 @@ function Avatar({ name }: { name: string }) {
 // ─── RoleBadge ────────────────────────────────────────────────────────────────
 
 function RoleBadge({ role }: { role: Pick<Role, "name" | "color"> | null }) {
-  if (!role) return <span className="text-[11px] text-muted-foreground/50 italic">No role</span>;
+  if (!role) return <span className="text-xs text-muted-foreground/50 italic">No role</span>;
   return (
     <span
-      className="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium text-white"
+      className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium text-white"
       style={{ backgroundColor: role.color + "cc" }}
     >
       {role.name}
@@ -162,8 +162,8 @@ function EditPanel({
         <div className="flex items-center gap-3">
           <Avatar name={member.full_name ?? "?"} />
           <div>
-            <p className="text-[13px] font-medium">{member.full_name ?? "Unknown"}</p>
-            <p className="text-[11.5px] text-muted-foreground">{member.email ?? ""}</p>
+            <p className="text-base font-medium">{member.full_name ?? "Unknown"}</p>
+            <p className="text-xs text-muted-foreground">{member.email ?? ""}</p>
           </div>
         </div>
         <button
@@ -196,7 +196,7 @@ function EditPanel({
             ))}
           </FormSelect>
           {vehicles.length === 0 && (
-            <p className="mt-1 text-[11px] text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               No vehicles set up yet. Add them in Inventory → Locations.
             </p>
           )}
@@ -208,14 +208,14 @@ function EditPanel({
         <button
           type="button"
           onClick={handleSave}
-          className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+          className="flex-1 h-8 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
         >
           Save
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="h-8 rounded-md border border-border px-4 text-[12.5px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          className="h-8 rounded-md border border-border px-4 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
           Cancel
         </button>
@@ -274,7 +274,7 @@ function InvitePanel({
     <div className="absolute inset-y-0 right-0 z-20 flex w-80 flex-col border-l border-border bg-card shadow-xl">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
-        <p className="text-[13px] font-semibold">Invite Team Member</p>
+        <p className="text-base font-semibold">Invite Team Member</p>
         <button
           type="button"
           onClick={onClose}
@@ -305,7 +305,7 @@ function InvitePanel({
             placeholder="jane@company.com"
             className={inputCls}
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             Pre-fills their signup form.
           </p>
         </div>
@@ -325,12 +325,12 @@ function InvitePanel({
         {/* Generated link */}
         {link && (
           <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
-            <p className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">Invite Link</p>
-            <p className="font-mono text-[10.5px] text-muted-foreground break-all leading-relaxed">{link}</p>
+            <p className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">Invite Link</p>
+            <p className="font-mono text-2xs text-muted-foreground break-all leading-relaxed">{link}</p>
           </div>
         )}
 
-        <p className="text-[11.5px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Send this link to your team member. They'll create their own password and join your account.
         </p>
       </div>
@@ -341,7 +341,7 @@ function InvitePanel({
           <button
             type="button"
             onClick={generateLink}
-            className="w-full h-8 flex items-center justify-center gap-2 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            className="w-full h-8 flex items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
           >
             <Link2 className="h-3.5 w-3.5" /> Generate Invite Link
           </button>
@@ -349,7 +349,7 @@ function InvitePanel({
           <button
             type="button"
             onClick={handleCopy}
-            className="w-full h-8 flex items-center justify-center gap-2 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            className="w-full h-8 flex items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
           >
             {copied
               ? <><Check className="h-3.5 w-3.5" /> Copied!</>
@@ -360,7 +360,7 @@ function InvitePanel({
         <button
           type="button"
           disabled
-          className="w-full h-8 flex items-center justify-center gap-2 rounded-md border border-border text-[12.5px] text-muted-foreground opacity-50 cursor-not-allowed"
+          className="w-full h-8 flex items-center justify-center gap-2 rounded-md border border-border text-sm text-muted-foreground opacity-50 cursor-not-allowed"
         >
           <Mail className="h-3.5 w-3.5" /> Send via Email (coming soon)
         </button>
@@ -460,7 +460,7 @@ function TeamMembersPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24 text-[12.5px] text-muted-foreground">
+      <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
         Loading team…
       </div>
     );
@@ -493,7 +493,7 @@ function TeamMembersPage() {
             <button
               type="button"
               onClick={() => { setInviteOpen(true); setEditId(null); }}
-              className="h-8 flex items-center gap-1.5 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="h-8 flex items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
             >
               <Plus className="h-3.5 w-3.5" /> Invite Member
             </button>
@@ -503,8 +503,8 @@ function TeamMembersPage() {
 
       {/* Member table */}
       <div className="flex-1 overflow-x-auto">
-        <table className="w-full text-[12.5px]">
-          <thead className="border-b border-border bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <table className="w-full text-sm">
+          <thead className="border-b border-border bg-muted/40 text-2xs uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="text-left px-4 py-2.5 font-medium">Member</th>
               <th className="text-left px-4 py-2.5 font-medium">Email</th>
@@ -544,16 +544,16 @@ function TeamMembersPage() {
                 <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                   {canWrite && (confirmId === member.id ? (
                     <div className="flex items-center justify-end gap-2">
-                      <span className="text-[11.5px] text-muted-foreground">Remove?</span>
+                      <span className="text-xs text-muted-foreground">Remove?</span>
                       <button
                         onClick={() => { removeMutation.mutate(member.id); setConfirmId(null); }}
-                        className="rounded px-2 py-0.5 text-[11.5px] font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                        className="rounded px-2 py-0.5 text-xs font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
                       >
                         Yes
                       </button>
                       <button
                         onClick={() => setConfirmId(null)}
-                        className="rounded px-2 py-0.5 text-[11.5px] text-muted-foreground hover:text-foreground transition-colors"
+                        className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
                         Cancel
                       </button>
@@ -571,7 +571,7 @@ function TeamMembersPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-16 text-center text-[12.5px] text-muted-foreground">
+                <td colSpan={6} className="px-4 py-16 text-center text-sm text-muted-foreground">
                   {search || roleFilter !== "all" ? "No members match your filters" : "No team members yet"}
                 </td>
               </tr>
@@ -583,27 +583,27 @@ function TeamMembersPage() {
       {/* Deactivated members */}
       {inactiveMembers.length > 0 && (
         <div className="border-t border-border px-4 py-4">
-          <p className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-3">
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-3">
             Deactivated Members
             <span className="ml-1.5 text-foreground font-mono">{inactiveMembers.length}</span>
           </p>
           <div className="space-y-1">
             {inactiveMembers.map((m) => (
-              <div key={m.id} className="flex items-center gap-3 rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-[12.5px]">
+              <div key={m.id} className="flex items-center gap-3 rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-sm">
                 <div
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white/70 bg-muted-foreground/30"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white/70 bg-muted-foreground/30"
                 >
                   {(m.full_name ?? "?").split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-muted-foreground truncate">{m.full_name ?? "—"}</p>
-                  <p className="text-[11px] text-muted-foreground/60">{m.email ?? ""}</p>
+                  <p className="text-xs text-muted-foreground/60">{m.email ?? ""}</p>
                 </div>
                 {canWrite && (
                   <button
                     onClick={() => reactivateMutation.mutate(m.id)}
                     disabled={reactivateMutation.isPending}
-                    className="shrink-0 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+                    className="shrink-0 rounded-md border border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
                   >
                     Reactivate
                   </button>

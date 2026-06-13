@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
 });
 
 const CARD = "rounded-lg border border-border bg-card p-4";
-const LABEL = "text-[11px] uppercase tracking-wide text-muted-foreground";
+const LABEL = "text-xs uppercase tracking-wide text-muted-foreground";
 const SPARKLINE_DATA = [55, 63, 70, 61, 74, 100];
 
 type ActivityIcon = typeof Briefcase;
@@ -67,32 +67,32 @@ function Dashboard() {
 
           <div className={CARD}>
             <div className={LABEL}>Pipeline Value</div>
-            <div className="mt-1 text-[22px] font-semibold tracking-tight">{currency(pipeline)}</div>
-            <div className="mt-0.5 text-[11px] text-status-won">+12.4%</div>
+            <div className="mt-1 text-display font-semibold tracking-tight">{currency(pipeline)}</div>
+            <div className="mt-0.5 text-xs text-status-won">+12.4%</div>
           </div>
 
           <div className={CARD}>
             <div className={LABEL}>Active Projects</div>
-            <div className="mt-1 text-[22px] font-semibold tracking-tight">{String(activeProjects)}</div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">+2 this month</div>
+            <div className="mt-1 text-display font-semibold tracking-tight">{String(activeProjects)}</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">+2 this month</div>
           </div>
 
           <div className={CARD}>
             <div className={LABEL}>Quotes Out</div>
-            <div className="mt-1 text-[22px] font-semibold tracking-tight">{currency(quotesTotal)}</div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">{quotes.length} open</div>
+            <div className="mt-1 text-display font-semibold tracking-tight">{currency(quotesTotal)}</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">{quotes.length} open</div>
           </div>
 
           <div className={CARD}>
             <div className={LABEL}>Outstanding</div>
-            <div className="mt-1 text-[22px] font-semibold tracking-tight">{currency(outstandingTotal)}</div>
-            <div className="mt-0.5 text-[11px] text-destructive">{outstandingInvoices.length} invoices</div>
+            <div className="mt-1 text-display font-semibold tracking-tight">{currency(outstandingTotal)}</div>
+            <div className="mt-0.5 text-xs text-destructive">{outstandingInvoices.length} invoices</div>
           </div>
 
           <div className={CARD}>
             <div className={LABEL}>Revenue MTD</div>
-            <div className="mt-1 text-[22px] font-semibold tracking-tight">{currency(wonMTD)}</div>
-            <div className="mt-0.5 text-[11px] text-status-won">+8.2% vs last mo</div>
+            <div className="mt-1 text-display font-semibold tracking-tight">{currency(wonMTD)}</div>
+            <div className="mt-0.5 text-xs text-status-won">+8.2% vs last mo</div>
             <div className="mt-2 flex h-7 items-end gap-[3px]">
               {SPARKLINE_DATA.map((pct, i) => (
                 <div
@@ -131,8 +131,8 @@ function Dashboard() {
                       <Icon className="h-3.5 w-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[13px] font-medium">{item.label}</div>
-                      <div className="mt-0.5 text-[11.5px] text-muted-foreground">{item.sub}</div>
+                      <div className="text-base font-medium">{item.label}</div>
+                      <div className="mt-0.5 text-xs text-muted-foreground">{item.sub}</div>
                     </div>
                   </li>
                 );
@@ -147,7 +147,7 @@ function Dashboard() {
             <div className={CARD}>
               <div className={cn(LABEL, "mb-1")}>Closing Soon</div>
               {closingSoon.length === 0 ? (
-                <div className="py-3 text-[12.5px] text-muted-foreground">No deals closing soon</div>
+                <div className="py-3 text-sm text-muted-foreground">No deals closing soon</div>
               ) : (
                 <ul>
                   {closingSoon.map((d, i) => {
@@ -162,10 +162,10 @@ function Dashboard() {
                         )}
                       >
                         <div className="mr-2 min-w-0">
-                          <div className="truncate text-[13px] font-medium">{d.title}</div>
-                          <div className="text-[11.5px] text-muted-foreground">{d.company}</div>
+                          <div className="truncate text-base font-medium">{d.title}</div>
+                          <div className="text-xs text-muted-foreground">{d.company}</div>
                           <div className={cn(
-                            "mt-0.5 flex items-center gap-1 text-[11px]",
+                            "mt-0.5 flex items-center gap-1 text-xs",
                             soon ? "text-destructive" : "text-muted-foreground",
                           )}>
                             <Calendar className="h-2.5 w-2.5" />
@@ -173,7 +173,7 @@ function Dashboard() {
                           </div>
                         </div>
                         <div className="flex shrink-0 flex-col items-end">
-                          <span className="text-[13px] font-medium tabular-nums">{currency(d.value)}</span>
+                          <span className="text-base font-medium tabular-nums">{currency(d.value)}</span>
                           <div className="mt-1"><StageChip stage={d.stage} /></div>
                         </div>
                       </li>
@@ -187,7 +187,7 @@ function Dashboard() {
             <div className={CARD}>
               <div className={cn(LABEL, "mb-1")}>At-Risk Projects</div>
               {atRisk.length === 0 ? (
-                <div className="py-3 flex items-center gap-1.5 text-[12.5px] text-status-won">
+                <div className="py-3 flex items-center gap-1.5 text-sm text-status-won">
                   <span>✓</span>
                   <span className="text-muted-foreground">All projects on track</span>
                 </div>
@@ -206,22 +206,22 @@ function Dashboard() {
                         )}
                       >
                         <div className="mr-2 min-w-0">
-                          <div className="truncate text-[13px] font-medium">{p.name}</div>
-                          <div className="text-[11.5px] text-muted-foreground">{p.company}</div>
+                          <div className="truncate text-base font-medium">{p.name}</div>
+                          <div className="text-xs text-muted-foreground">{p.company}</div>
                           <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5">
                             {overBudget && (
-                              <span className="flex items-center gap-1 text-[11px] text-destructive">
+                              <span className="flex items-center gap-1 text-xs text-destructive">
                                 <AlertTriangle className="h-2.5 w-2.5" /> Over budget
                               </span>
                             )}
                             {pastDue && (
-                              <span className="flex items-center gap-1 text-[11px] text-priority-high">
+                              <span className="flex items-center gap-1 text-xs text-priority-high">
                                 <Clock className="h-2.5 w-2.5" /> Past due
                               </span>
                             )}
                           </div>
                         </div>
-                        <span className="shrink-0 text-[13px] font-medium tabular-nums">
+                        <span className="shrink-0 text-base font-medium tabular-nums">
                           {currency(p.budget)}
                         </span>
                       </li>

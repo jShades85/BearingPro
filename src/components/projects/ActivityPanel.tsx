@@ -291,23 +291,23 @@ function ActivityItemRow({ item }: { item: ActivityItem }) {
       <div className="flex-1 min-w-0">
         {item.type === "note" ? (
           <>
-            <p className="text-[12.5px]">
+            <p className="text-sm">
               <span className="font-medium">{item.actor}</span>
               <span className="text-muted-foreground"> added a note</span>
             </p>
-            <blockquote className="mt-1.5 rounded-md border-l-2 border-blue-400/50 bg-blue-500/5 py-2 pl-3 pr-2 text-[12px] text-foreground/80 leading-relaxed">
+            <blockquote className="mt-1.5 rounded-md border-l-2 border-blue-400/50 bg-blue-500/5 py-2 pl-3 pr-2 text-sm text-foreground/80 leading-relaxed">
               {item.text}
             </blockquote>
           </>
         ) : (
-          <p className="text-[12.5px]">
+          <p className="text-sm">
             <span className="font-medium">{item.actor}</span>
             {" "}
             <span className="text-muted-foreground">{item.text}</span>
           </p>
         )}
-        <p className="mt-1 flex items-center gap-1.5 text-[10.5px] font-mono text-muted-foreground/60">
-          <Avatar initials={initials} className="!h-3.5 !w-3.5 !text-[7px] shrink-0" />
+        <p className="mt-1 flex items-center gap-1.5 text-2xs font-mono text-muted-foreground/60">
+          <Avatar initials={initials} className="!h-3.5 !w-3.5 !text-2xs shrink-0" />
           {item.timestamp}
         </p>
       </div>
@@ -360,15 +360,15 @@ export function ActivityPanel({ projectId }: ActivityPanelProps) {
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-[12.5px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary"
         />
         <div className="flex items-center justify-between">
-          <span className="text-[10.5px] text-muted-foreground/50">⌘ + Enter to submit</span>
+          <span className="text-2xs text-muted-foreground/50">⌘ + Enter to submit</span>
           <button
             type="button"
             onClick={submitNote}
             disabled={!noteText.trim()}
-            className="h-7 rounded-md bg-primary px-3.5 text-[12px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-opacity"
+            className="h-7 rounded-md bg-primary px-3.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-opacity"
           >
             Add Note
           </button>
@@ -377,7 +377,7 @@ export function ActivityPanel({ projectId }: ActivityPanelProps) {
 
       {/* Activity feed */}
       <div>
-        <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="mb-2 text-2xs uppercase tracking-wider text-muted-foreground">
           Activity
           <span className="ml-2 font-mono text-muted-foreground/60">{activities.length}</span>
         </p>
@@ -393,7 +393,7 @@ export function ActivityPanel({ projectId }: ActivityPanelProps) {
         <button
           type="button"
           onClick={() => { /* stub */ }}
-          className="text-[11.5px] text-muted-foreground hover:text-foreground hover:underline transition-colors"
+          className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors"
         >
           Load earlier activity
         </button>

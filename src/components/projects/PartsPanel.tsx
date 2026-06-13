@@ -120,7 +120,7 @@ async function fetchCatalogOptions(): Promise<CatalogOption[]> {
 function SourceBadge({ source }: { source: PartSource }) {
   const { label, cls } = sourceMeta[source];
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
       {label}
     </span>
   );
@@ -129,7 +129,7 @@ function SourceBadge({ source }: { source: PartSource }) {
 function StatusBadge({ status }: { status: PartStatus }) {
   const { label, cls } = statusMeta[status];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -138,7 +138,7 @@ function StatusBadge({ status }: { status: PartStatus }) {
 
 // ─── Cell helpers ─────────────────────────────────────────────────────────────
 
-const inputCls = "w-full bg-transparent text-[12px] outline-none border-b border-primary/60 focus:border-primary py-px";
+const inputCls = "w-full bg-transparent text-sm outline-none border-b border-primary/60 focus:border-primary py-px";
 const cellClickCls = "cursor-text select-none";
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -296,11 +296,11 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
     count: parts.filter((p) => p.status === s).length,
   })).filter((x) => x.count > 0);
 
-  const selectCls = "bg-transparent text-[11.5px] outline-none cursor-pointer border border-border/60 rounded px-1.5 py-0.5 hover:border-primary/50 focus:border-primary transition-colors";
-  const draftInputCls = "h-7 w-full rounded border border-border bg-surface px-2 text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/40";
+  const selectCls = "bg-transparent text-xs outline-none cursor-pointer border border-border/60 rounded px-1.5 py-0.5 hover:border-primary/50 focus:border-primary transition-colors";
+  const draftInputCls = "h-7 w-full rounded border border-border bg-surface px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/40";
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-16 text-[12.5px] text-muted-foreground">Loading…</div>;
+    return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">Loading…</div>;
   }
 
   return (
@@ -308,19 +308,19 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
       {/* Summary bar */}
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-b border-border px-5 py-2.5">
         <div className="flex items-baseline gap-2">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Parts Cost</span>
-          <span className="text-[15px] font-semibold tabular-nums">{currency(totalCost)}</span>
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground">Total Parts Cost</span>
+          <span className="text-md font-semibold tabular-nums">{currency(totalCost)}</span>
         </div>
         {totalLaborHrs > 0 && (
           <div className="flex items-baseline gap-2">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Budgeted Labor</span>
-            <span className="text-[15px] font-semibold tabular-nums">{totalLaborHrs.toFixed(1)} hrs</span>
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground">Budgeted Labor</span>
+            <span className="text-md font-semibold tabular-nums">{totalLaborHrs.toFixed(1)} hrs</span>
           </div>
         )}
         {statusCounts.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {statusCounts.map(({ status, count }) => (
-              <span key={status} className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium", statusMeta[status].cls)}>
+              <span key={status} className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", statusMeta[status].cls)}>
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
                 {count} {statusMeta[status].label}
               </span>
@@ -328,16 +328,16 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
           </div>
         )}
         {parts.length === 0 && (
-          <span className="text-[12px] text-muted-foreground">No parts yet.</span>
+          <span className="text-sm text-muted-foreground">No parts yet.</span>
         )}
       </div>
 
       {/* Scrollable table */}
       <div className="overflow-x-auto">
         <div className="min-w-260">
-          <table className="w-full text-[12px]">
+          <table className="w-full text-sm">
             <thead className="bg-surface/50 border-b border-border">
-              <tr className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <tr className="text-2xs uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 px-4 text-left font-medium w-55">Item Name</th>
                 <th className="py-2 px-3 text-left font-medium w-30">Phase</th>
                 <th className="py-2 px-3 text-right font-medium w-14.5">Qty</th>
@@ -528,10 +528,10 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                               key={item.id}
                               type="button"
                               onMouseDown={() => selectCatalogItem(item)}
-                              className="flex w-full items-center justify-between px-3 py-2 text-left text-[12px] hover:bg-accent transition-colors"
+                              className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
                             >
                               <span className="font-medium truncate">{item.name}</span>
-                              <span className="ml-3 shrink-0 text-[11px] text-muted-foreground tabular-nums">
+                              <span className="ml-3 shrink-0 text-xs text-muted-foreground tabular-nums">
                                 {item.cost != null ? currency(item.cost) : ""}
                                 {item.labor_hours != null ? ` · ${item.labor_hours}h` : ""}
                               </span>
@@ -546,7 +546,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                   <td className="py-2 px-3">
                     <select value={draft.phase}
                       onChange={(e) => setDraft((d) => ({ ...d, phase: e.target.value }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
                       <option value="">— None —</option>
                       {PHASE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
@@ -570,7 +570,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
 
                   {/* Total */}
                   <td className="py-2 px-3 text-right">
-                    <span className="tabular-nums font-mono text-muted-foreground/60 text-[11.5px]">
+                    <span className="tabular-nums font-mono text-muted-foreground/60 text-xs">
                       {currency((parseFloat(draft.qty) || 1) * (parseFloat(draft.unitCost) || 0))}
                     </span>
                   </td>
@@ -588,7 +588,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                   <td className="py-2 px-3">
                     <select value={draft.source}
                       onChange={(e) => setDraft((d) => ({ ...d, source: e.target.value as PartSource }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
                       {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{sourceMeta[s].label}</option>)}
                     </select>
                   </td>
@@ -597,7 +597,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
                   <td className="py-2 px-3">
                     <select value={draft.status}
                       onChange={(e) => setDraft((d) => ({ ...d, status: e.target.value as PartStatus }))}
-                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-[11.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                      className="h-7 w-full rounded border border-border bg-surface px-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
                       {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{statusMeta[s].label}</option>)}
                     </select>
                   </td>
@@ -628,7 +628,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
               {/* Empty state */}
               {parts.length === 0 && !addingPart && (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-[12.5px] text-muted-foreground">
+                  <td colSpan={10} className="py-12 text-center text-sm text-muted-foreground">
                     No parts added yet.
                   </td>
                 </tr>
@@ -642,7 +642,7 @@ export function PartsPanel({ projectId }: PartsPanelProps) {
       {!addingPart && (
         <div className="border-t border-border/60 px-4 py-2">
           <button type="button" onClick={openAddRow}
-            className="flex items-center gap-1.5 rounded-md px-3 py-2 text-[12px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+            className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Plus className="h-3.5 w-3.5" />
             Add Part
           </button>

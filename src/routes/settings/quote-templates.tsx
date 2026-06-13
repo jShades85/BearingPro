@@ -163,7 +163,7 @@ function TemplateForm({ template, existingDefaultId, onSave, onCancel }: Templat
     <div className="rounded-lg border-2 border-primary/25 bg-card shadow-sm">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <FileText className="h-3.5 w-3.5 text-primary/70 shrink-0" />
-        <span className="text-[13px] font-semibold">
+        <span className="text-base font-semibold">
           {template ? "Edit Template" : "New Template"}
         </span>
       </div>
@@ -177,16 +177,16 @@ function TemplateForm({ template, existingDefaultId, onSave, onCancel }: Templat
               name="name"
               render={({ field }) => (
                 <FormItem className="flex-1">
-                  <FormLabel className="text-[11.5px] font-medium">Template Name</FormLabel>
+                  <FormLabel className="text-xs font-medium">Template Name</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="e.g. Commercial Install"
-                      className="h-8 text-[13px]"
+                      className="h-8 text-base"
                       autoFocus
                     />
                   </FormControl>
-                  <FormMessage className="text-[11px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -206,7 +206,7 @@ function TemplateForm({ template, existingDefaultId, onSave, onCancel }: Templat
                       }
                     />
                   </FormControl>
-                  <FormLabel className="text-[12px] font-normal text-muted-foreground cursor-pointer">
+                  <FormLabel className="text-sm font-normal text-muted-foreground cursor-pointer">
                     Default template
                   </FormLabel>
                 </FormItem>
@@ -217,8 +217,8 @@ function TemplateForm({ template, existingDefaultId, onSave, onCancel }: Templat
           {/* Sections */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-[11.5px] font-medium text-foreground">Sections</span>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs font-medium text-foreground">Sections</span>
+              <span className="text-xs text-muted-foreground">
                 {fields.length} {fields.length === 1 ? "section" : "sections"}
               </span>
             </div>
@@ -236,10 +236,10 @@ function TemplateForm({ template, existingDefaultId, onSave, onCancel }: Templat
                           <Input
                             {...f}
                             placeholder={`Section ${idx + 1}`}
-                            className="h-7 text-[12.5px]"
+                            className="h-7 text-sm"
                           />
                         </FormControl>
-                        <FormMessage className="text-[10.5px]" />
+                        <FormMessage className="text-2xs" />
                       </FormItem>
                     )}
                   />
@@ -262,13 +262,13 @@ function TemplateForm({ template, existingDefaultId, onSave, onCancel }: Templat
             </div>
 
             {sectionsError && (
-              <p className="mt-1 text-[11px] text-destructive">{sectionsError}</p>
+              <p className="mt-1 text-xs text-destructive">{sectionsError}</p>
             )}
 
             <button
               type="button"
               onClick={() => append({ name: "" })}
-              className="mt-2.5 flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+              className="mt-2.5 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               Add section
@@ -280,13 +280,13 @@ function TemplateForm({ template, existingDefaultId, onSave, onCancel }: Templat
             <button
               type="button"
               onClick={onCancel}
-              className="h-7 rounded-md border border-border bg-surface px-3 text-[12px] hover:bg-surface-2 transition-colors"
+              className="h-7 rounded-md border border-border bg-surface px-3 text-sm hover:bg-surface-2 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="h-7 rounded-md bg-primary px-3 text-[12px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="h-7 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
             >
               Save Template
             </button>
@@ -316,14 +316,14 @@ function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
     <div className="group flex items-start gap-3 rounded-lg border border-border bg-card px-4 py-3.5 hover:border-border/80 transition-colors">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold leading-none">{template.name}</span>
+          <span className="text-base font-semibold leading-none">{template.name}</span>
           {template.isDefault && (
-            <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-primary/10 text-primary">
+            <span className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium bg-primary/10 text-primary">
               Default
             </span>
           )}
         </div>
-        <p className="mt-1 text-[11.5px] text-muted-foreground truncate">
+        <p className="mt-1 text-xs text-muted-foreground truncate">
           <span className="font-medium text-foreground/60">
             {template.sections.length}{" "}
             {template.sections.length === 1 ? "section" : "sections"}
@@ -337,7 +337,7 @@ function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
         <button
           type="button"
           onClick={onEdit}
-          className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground transition-colors"
+          className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <Pencil className="h-3 w-3" />
           Edit
@@ -435,8 +435,8 @@ function QuoteTemplatesPage() {
         {templates.length === 0 && editingId !== "new" && (
           <div className="flex flex-col items-center py-16 text-center">
             <FileText className="h-8 w-8 text-muted-foreground/25 mb-3" />
-            <p className="text-[13px] font-medium">No templates yet</p>
-            <p className="mt-1 text-[12px] text-muted-foreground">
+            <p className="text-base font-medium">No templates yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
               Create a template to reuse section structures across quotes.
             </p>
           </div>

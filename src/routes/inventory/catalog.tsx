@@ -188,8 +188,8 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
     <Dialog open={open}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
-          <DialogTitle className="text-[16px]">Set up your product catalog</DialogTitle>
-          <p className="text-[12.5px] text-muted-foreground mt-1">
+          <DialogTitle className="text-lg">Set up your product catalog</DialogTitle>
+          <p className="text-sm text-muted-foreground mt-1">
             Choose the trades your business covers. You can select multiple — categories will be merged and deduplicated.
           </p>
         </DialogHeader>
@@ -219,22 +219,22 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
                     </div>
                   )}
                   <FirstCatIcon className={cn("h-5 w-5 mb-2.5", isSelected ? "text-primary" : "text-muted-foreground")} />
-                  <p className={cn("text-[13px] font-semibold", isSelected ? "text-primary" : "text-foreground")}>
+                  <p className={cn("text-base font-semibold", isSelected ? "text-primary" : "text-foreground")}>
                     {tpl.name}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{tpl.description}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{tpl.description}</p>
                   <div className="mt-3 flex flex-wrap gap-1">
                     {tpl.categories.slice(0, 4).map((c) => {
                       const CatIcon = ICON_MAP[c.icon] ?? Package2;
                       return (
-                        <span key={c.name} className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground">
+                        <span key={c.name} className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs bg-muted text-muted-foreground">
                           <CatIcon className="h-2.5 w-2.5" />
                           {c.name}
                         </span>
                       );
                     })}
                     {tpl.categories.length > 4 && (
-                      <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground">
+                      <span className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs bg-muted text-muted-foreground">
                         +{tpl.categories.length - 4} more
                       </span>
                     )}
@@ -246,7 +246,7 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
 
           {/* Custom categories */}
           <div className="space-y-3">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
               Add custom categories
             </p>
 
@@ -260,13 +260,13 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
                   value={iconSearch}
                   onChange={(e) => setIconSearch(e.target.value)}
                   placeholder="Search icons…"
-                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-[12px] focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
               <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
                 {filteredIconGroups.map((group) => (
                   <div key={group.label}>
-                    <p className="text-[9.5px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">{group.label}</p>
+                    <p className="text-2xs uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">{group.label}</p>
                     <div className="flex flex-wrap gap-1">
                       {group.icons.map((iconName) => {
                         const Icon = ICON_MAP[iconName] ?? Package2;
@@ -300,12 +300,12 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
                 onChange={(e) => setCustomInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustom())}
                 placeholder="e.g. Fire Suppression"
-                className="h-8 flex-1 rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+                className="h-8 flex-1 rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring"
               />
               <button
                 type="button"
                 onClick={addCustom}
-                className="h-8 flex items-center gap-1 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors"
+                className="h-8 flex items-center gap-1 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Add
@@ -317,7 +317,7 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
                 {customList.map((cat) => {
                   const Icon = ICON_MAP[cat.icon] ?? Package2;
                   return (
-                    <span key={cat.name} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[12px]">
+                    <span key={cat.name} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-sm">
                       <Icon className="h-3 w-3 text-muted-foreground" />
                       {cat.name}
                       <button type="button" onClick={() => removeCustom(cat.name)} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -332,14 +332,14 @@ function CategorySetupModal({ open, onDone }: CategorySetupModalProps) {
         </div>
 
         <div className="flex items-center justify-between px-6 py-4 border-t border-border">
-          <p className="text-[12px] text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {totalCats > 0 ? `${totalCats} categor${totalCats === 1 ? "y" : "ies"} will be created` : "Select at least one trade or add a custom category"}
           </p>
           <button
             type="button"
             onClick={handleConfirm}
             disabled={totalCats === 0 || mutation.isPending}
-            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {mutation.isPending ? "Setting up…" : "Set Up Catalog"}
           </button>
@@ -420,23 +420,23 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-sm p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-border">
-          <DialogTitle className="text-[15px]">Edit Category</DialogTitle>
+          <DialogTitle className="text-md">Edit Category</DialogTitle>
         </DialogHeader>
 
         <div className="px-5 py-4 space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[11.5px] font-medium">Name</label>
+            <label className="text-xs font-medium">Name</label>
             <input
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && name.trim() && updateMutation.mutate()}
-              className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11.5px] font-medium">Color</label>
+            <label className="text-xs font-medium">Color</label>
             <div className="flex flex-wrap gap-2">
               {COLOR_PALETTE.map((c) => (
                 <button
@@ -454,7 +454,7 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11.5px] font-medium">Icon</label>
+            <label className="text-xs font-medium">Icon</label>
             <div className="rounded-lg border border-border bg-surface/40 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <div
@@ -467,13 +467,13 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
                   value={iconSearch}
                   onChange={(e) => setIconSearch(e.target.value)}
                   placeholder="Search icons…"
-                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-[12px] focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
               <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
                 {filteredGroups.map((group) => (
                   <div key={group.label}>
-                    <p className="text-[9.5px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">{group.label}</p>
+                    <p className="text-2xs uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">{group.label}</p>
                     <div className="flex flex-wrap gap-1">
                       {group.icons.map((iconName) => {
                         const Icon = ICON_MAP[iconName] ?? Package2;
@@ -507,7 +507,7 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
           {/* Delete */}
           {confirmDelete ? (
             <div className="flex items-center gap-2">
-              <span className="text-[11.5px] text-destructive">
+              <span className="text-xs text-destructive">
                 {itemCount > 0 ? `Move ${itemCount} item${itemCount !== 1 ? "s" : ""} first` : "Delete this category?"}
               </span>
               {itemCount === 0 && (
@@ -515,7 +515,7 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
                   type="button"
                   onClick={() => deleteMutation.mutate()}
                   disabled={deleteMutation.isPending}
-                  className="h-7 rounded px-2.5 text-[12px] font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  className="h-7 rounded px-2.5 text-sm font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
                 >
                   {deleteMutation.isPending ? "Deleting…" : "Confirm"}
                 </button>
@@ -523,7 +523,7 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
-                className="h-7 rounded px-2.5 text-[12px] border border-border hover:bg-accent transition-colors"
+                className="h-7 rounded px-2.5 text-sm border border-border hover:bg-accent transition-colors"
               >
                 Cancel
               </button>
@@ -532,7 +532,7 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
-              className="h-7 rounded px-2.5 text-[12px] text-destructive border border-destructive/30 hover:bg-destructive/10 transition-colors"
+              className="h-7 rounded px-2.5 text-sm text-destructive border border-destructive/30 hover:bg-destructive/10 transition-colors"
             >
               Delete
             </button>
@@ -541,14 +541,14 @@ function EditCategoryDialog({ open, category, itemCount, onClose }: EditCategory
           {/* Save */}
           <div className="flex items-center gap-2">
             <button type="button" onClick={onClose}
-              className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+              className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
               Cancel
             </button>
             <button
               type="button"
               onClick={() => updateMutation.mutate()}
               disabled={!name.trim() || updateMutation.isPending}
-              className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+              className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
               {updateMutation.isPending ? "Saving…" : "Save"}
             </button>
@@ -590,7 +590,7 @@ function CategoryCard({ category, itemCount, onClick, onEdit }: CategoryCardProp
         <button
           type="button"
           onClick={onEdit}
-          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 flex items-center gap-1 h-6 rounded-md bg-background/90 border border-border px-2 text-[11px] text-foreground shadow-sm transition-opacity"
+          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 flex items-center gap-1 h-6 rounded-md bg-background/90 border border-border px-2 text-xs text-foreground shadow-sm transition-opacity"
         >
           <Pencil className="h-3 w-3" />
           Edit
@@ -604,9 +604,9 @@ function CategoryCard({ category, itemCount, onClick, onEdit }: CategoryCardProp
             className="inline-block h-2 w-2 rounded-full shrink-0"
             style={{ backgroundColor: category.color }}
           />
-          <p className="text-[13px] font-semibold truncate">{category.name}</p>
+          <p className="text-base font-semibold truncate">{category.name}</p>
         </div>
-        <p className="text-[11.5px] text-muted-foreground mt-0.5 pl-4">
+        <p className="text-xs text-muted-foreground mt-0.5 pl-4">
           {itemCount} item{itemCount !== 1 ? "s" : ""}
         </p>
       </div>
@@ -653,7 +653,7 @@ function ItemCard({ item, onView, onEdit }: ItemCardProps) {
 
         {/* Manufacturer badge */}
         <div
-          className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-md text-[10px] font-bold tracking-tight"
+          className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-md text-2xs font-bold tracking-tight"
           style={{ backgroundColor: `${color}20`, color }}
         >
           {mfrInitials}
@@ -662,7 +662,7 @@ function ItemCard({ item, onView, onEdit }: ItemCardProps) {
         {/* Inactive overlay */}
         {!item.is_active && (
           <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
-            <span className="text-[10px] font-semibold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full">
+            <span className="text-2xs font-semibold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full">
               Inactive
             </span>
           </div>
@@ -672,7 +672,7 @@ function ItemCard({ item, onView, onEdit }: ItemCardProps) {
         <button
           type="button"
           onClick={onEdit}
-          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 flex items-center gap-1 h-6 rounded-md bg-background/90 border border-border px-2 text-[11px] text-foreground shadow-sm transition-opacity"
+          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 flex items-center gap-1 h-6 rounded-md bg-background/90 border border-border px-2 text-xs text-foreground shadow-sm transition-opacity"
         >
           <Pencil className="h-3 w-3" />
           Edit
@@ -683,26 +683,26 @@ function ItemCard({ item, onView, onEdit }: ItemCardProps) {
       <div className="flex flex-col p-3 gap-1.5 flex-1">
         <div className="flex items-center justify-between gap-1">
           <span
-            className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+            className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium"
             style={{ backgroundColor: `${color}18`, color }}
           >
             {item.categories?.name ?? "Uncategorized"}
           </span>
           {item.has_labor && (
-            <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-slate-500/10 text-slate-500 dark:text-slate-400">
+            <span className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium bg-slate-500/10 text-slate-500 dark:text-slate-400">
               + Labor
             </span>
           )}
         </div>
 
-        <p className="text-[13px] font-semibold leading-snug line-clamp-2 mt-0.5">{item.name}</p>
-        <p className="text-[11px] font-mono text-muted-foreground/70">{item.sku || "—"}</p>
+        <p className="text-base font-semibold leading-snug line-clamp-2 mt-0.5">{item.name}</p>
+        <p className="text-xs font-mono text-muted-foreground/70">{item.sku || "—"}</p>
 
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
-          <span className="text-[11px] text-muted-foreground truncate max-w-[55%]">
+          <span className="text-xs text-muted-foreground truncate max-w-[55%]">
             {item.manufacturer || "—"}
           </span>
-          <span className="text-[13px] font-semibold tabular-nums">{currency(item.msrp)}</span>
+          <span className="text-base font-semibold tabular-nums">{currency(item.msrp)}</span>
         </div>
       </div>
     </div>
@@ -723,27 +723,27 @@ function ItemsTable({ items, showCategory = true, onView, onEdit }: ItemsTablePr
     return (
       <div className="flex flex-col items-center py-16 text-center">
         <ImagePlus className="h-8 w-8 text-muted-foreground/25 mb-3" />
-        <p className="text-[13px] font-medium">No items</p>
-        <p className="mt-1 text-[12px] text-muted-foreground">Add items to populate this view.</p>
+        <p className="text-base font-medium">No items</p>
+        <p className="mt-1 text-sm text-muted-foreground">Add items to populate this view.</p>
       </div>
     );
   }
 
   return (
     <div className="rounded-lg border border-border overflow-hidden">
-      <table className="w-full text-[12.5px]">
+      <table className="w-full text-sm">
         <thead className="border-b border-border bg-surface/50">
           <tr>
-            <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2 px-3">Name</th>
+            <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2 px-3">Name</th>
             {showCategory && (
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Category</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Category</th>
             )}
-            <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Manufacturer</th>
-            <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">SKU</th>
-            <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Cost</th>
-            <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">MSRP</th>
-            <th className="text-center text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">UoM</th>
-            <th className="text-center text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Status</th>
+            <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Manufacturer</th>
+            <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">SKU</th>
+            <th className="text-right text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Cost</th>
+            <th className="text-right text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">MSRP</th>
+            <th className="text-center text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">UoM</th>
+            <th className="text-center text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Status</th>
             <th className="py-2 pr-3 w-8" />
           </tr>
         </thead>
@@ -759,13 +759,13 @@ function ItemsTable({ items, showCategory = true, onView, onEdit }: ItemsTablePr
                 <td className="py-2.5 px-3">
                   <p className="font-medium leading-snug">{item.name}</p>
                   {item.description && (
-                    <p className="text-[10.5px] text-muted-foreground truncate max-w-55">{item.description}</p>
+                    <p className="text-2xs text-muted-foreground truncate max-w-55">{item.description}</p>
                   )}
                 </td>
                 {showCategory && (
                   <td className="py-2.5 pr-3">
                     <span
-                      className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+                      className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium"
                       style={{ backgroundColor: `${color}18`, color }}
                     >
                       {item.categories?.name ?? "—"}
@@ -773,13 +773,13 @@ function ItemsTable({ items, showCategory = true, onView, onEdit }: ItemsTablePr
                   </td>
                 )}
                 <td className="py-2.5 pr-3 text-muted-foreground whitespace-nowrap">{item.manufacturer || "—"}</td>
-                <td className="py-2.5 pr-3 font-mono text-[11px] text-muted-foreground">{item.sku || "—"}</td>
+                <td className="py-2.5 pr-3 font-mono text-xs text-muted-foreground">{item.sku || "—"}</td>
                 <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-muted-foreground">{currency(item.cost)}</td>
                 <td className="py-2.5 pr-3 text-right font-mono tabular-nums">{currency(item.msrp)}</td>
                 <td className="py-2.5 pr-3 text-center text-muted-foreground">{item.unit_of_measure}</td>
                 <td className="py-2.5 pr-3 text-center">
                   <span className={cn(
-                    "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium",
+                    "inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium",
                     item.is_active ? "bg-status-won/15 text-status-won" : "bg-muted text-muted-foreground",
                   )}>
                     {item.is_active ? "Active" : "Inactive"}
@@ -789,7 +789,7 @@ function ItemsTable({ items, showCategory = true, onView, onEdit }: ItemsTablePr
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onEdit(item); }}
-                    className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-[11px] text-muted-foreground hover:text-foreground transition-all"
+                    className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-xs text-muted-foreground hover:text-foreground transition-all"
                   >
                     <Pencil className="h-3 w-3" />
                     Edit
@@ -887,20 +887,20 @@ function ItemDrawer({
           {/* Manufacturer + badges */}
           <div className="flex items-center gap-2 flex-wrap">
             <div
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-[11px] font-bold"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-xs font-bold"
               style={{ backgroundColor: `${color}20`, color }}
             >
               {(item.manufacturer ?? "?").slice(0, 2).toUpperCase()}
             </div>
-            <span className="text-[12.5px] text-muted-foreground">{item.manufacturer || "—"}</span>
+            <span className="text-sm text-muted-foreground">{item.manufacturer || "—"}</span>
             <span
-              className="ml-auto inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+              className="ml-auto inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium"
               style={{ backgroundColor: `${color}18`, color }}
             >
               {item.categories?.name ?? "Uncategorized"}
             </span>
             <span className={cn(
-              "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium",
+              "inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium",
               item.is_active ? "bg-status-won/15 text-status-won" : "bg-muted text-muted-foreground",
             )}>
               {item.is_active ? "Active" : "Inactive"}
@@ -908,25 +908,25 @@ function ItemDrawer({
           </div>
 
           {item.description && (
-            <p className="text-[12.5px] text-muted-foreground leading-relaxed">{item.description}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
           )}
 
           <fieldset className="space-y-0">
-            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Details</legend>
+            <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Details</legend>
             <div className="rounded-lg border border-border bg-surface/30 px-3 py-1">
               <div className="flex items-center justify-between py-1.5 border-b border-border/50">
-                <span className="text-[11.5px] text-muted-foreground">SKU</span>
-                <span className="text-[12.5px] font-medium font-mono">{item.sku || "—"}</span>
+                <span className="text-xs text-muted-foreground">SKU</span>
+                <span className="text-sm font-medium font-mono">{item.sku || "—"}</span>
               </div>
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-[11.5px] text-muted-foreground">Unit of Measure</span>
-                <span className="text-[12.5px] font-medium">{item.unit_of_measure}</span>
+                <span className="text-xs text-muted-foreground">Unit of Measure</span>
+                <span className="text-sm font-medium">{item.unit_of_measure}</span>
               </div>
             </div>
           </fieldset>
 
           <fieldset className="space-y-2">
-            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Pricing</legend>
+            <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Pricing</legend>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { label: "Your Cost", value: currency(item.cost) },
@@ -934,8 +934,8 @@ function ItemDrawer({
                 { label: "Margin",    value: `${margin.toFixed(1)}%`, highlight: margin > 0 },
               ].map(({ label, value, highlight }) => (
                 <div key={label} className="flex flex-col items-center rounded-lg border border-border bg-surface/50 py-3 px-2 gap-1">
-                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{label}</span>
-                  <span className={cn("text-[15px] font-semibold tabular-nums", highlight && "text-status-won")}>{value}</span>
+                  <span className="text-2xs uppercase tracking-wide text-muted-foreground font-medium">{label}</span>
+                  <span className={cn("text-md font-semibold tabular-nums", highlight && "text-status-won")}>{value}</span>
                 </div>
               ))}
             </div>
@@ -943,15 +943,15 @@ function ItemDrawer({
 
           {item.has_labor && (
             <fieldset className="space-y-2">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Labor</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Labor</legend>
               <div className="rounded-lg border border-border bg-surface/30 px-3 py-1">
                 <div className="flex items-center justify-between py-1.5 border-b border-border/50">
-                  <span className="text-[11.5px] text-muted-foreground">Labor Hours</span>
-                  <span className="text-[12.5px] font-medium">{item.labor_hours != null ? `${item.labor_hours} hr` : "—"}</span>
+                  <span className="text-xs text-muted-foreground">Labor Hours</span>
+                  <span className="text-sm font-medium">{item.labor_hours != null ? `${item.labor_hours} hr` : "—"}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5">
-                  <span className="text-[11.5px] text-muted-foreground">Rate Override</span>
-                  <span className="text-[12.5px] font-medium">{item.labor_rate_override ? `${currency(item.labor_rate_override)}/hr` : "Default rate"}</span>
+                  <span className="text-xs text-muted-foreground">Rate Override</span>
+                  <span className="text-sm font-medium">{item.labor_rate_override ? `${currency(item.labor_rate_override)}/hr` : "Default rate"}</span>
                 </div>
               </div>
             </fieldset>
@@ -960,11 +960,11 @@ function ItemDrawer({
 
         <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
           <button type="button" onClick={onClose}
-            className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+            className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
             Close
           </button>
           <button type="button" onClick={onSwitchToEdit}
-            className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
+            className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
             <Pencil className="h-3 w-3" />
             Edit Item
           </button>
@@ -982,121 +982,121 @@ function ItemDrawer({
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
 
             <fieldset className="space-y-4">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Basic Info</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Basic Info</legend>
 
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11.5px]">Name *</FormLabel>
-                  <FormControl><Input {...field} placeholder="e.g. Axis P3245-V Fixed Dome" className="h-8 text-[13px]" /></FormControl>
-                  <FormMessage className="text-[11px]" />
+                  <FormLabel className="text-xs">Name *</FormLabel>
+                  <FormControl><Input {...field} placeholder="e.g. Axis P3245-V Fixed Dome" className="h-8 text-base" /></FormControl>
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
 
               <div className="grid grid-cols-2 gap-3">
                 <FormField control={form.control} name="categoryId" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Category *</FormLabel>
+                    <FormLabel className="text-xs">Category *</FormLabel>
                     <FormControl>
-                      <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring">
+                      <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring">
                         <option value="">Select category…</option>
                         {categories.map((c) => (
                           <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
                       </FormSelect>
                     </FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
 
                 <FormField control={form.control} name="sku" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">SKU</FormLabel>
-                    <FormControl><Input {...field} placeholder="e.g. AX-P3245-V" className="h-8 text-[13px]" /></FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormLabel className="text-xs">SKU</FormLabel>
+                    <FormControl><Input {...field} placeholder="e.g. AX-P3245-V" className="h-8 text-base" /></FormControl>
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
               </div>
 
               <FormField control={form.control} name="manufacturer" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11.5px]">Manufacturer</FormLabel>
+                  <FormLabel className="text-xs">Manufacturer</FormLabel>
                   <FormControl>
-                    <Input {...field} list="mfr-suggestions" placeholder="e.g. Axis Communications" className="h-8 text-[13px]" />
+                    <Input {...field} list="mfr-suggestions" placeholder="e.g. Axis Communications" className="h-8 text-base" />
                   </FormControl>
                   <datalist id="mfr-suggestions">
                     {manufacturerSuggestions.map((m) => <option key={m} value={m} />)}
                   </datalist>
-                  <FormMessage className="text-[11px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
 
               <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11.5px]">Description</FormLabel>
-                  <FormControl><Textarea {...field} rows={3} placeholder="Brief product description…" className="text-[13px] resize-none" /></FormControl>
-                  <FormMessage className="text-[11px]" />
+                  <FormLabel className="text-xs">Description</FormLabel>
+                  <FormControl><Textarea {...field} rows={3} placeholder="Brief product description…" className="text-base resize-none" /></FormControl>
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
 
               <FormField control={form.control} name="isActive" render={({ field }) => (
                 <FormItem className="flex items-center gap-3">
                   <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                  <FormLabel className="text-[12.5px] font-normal cursor-pointer mt-0!">Active</FormLabel>
+                  <FormLabel className="text-sm font-normal cursor-pointer mt-0!">Active</FormLabel>
                 </FormItem>
               )} />
             </fieldset>
 
             <fieldset className="space-y-4">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Pricing</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Pricing</legend>
               <div className="grid grid-cols-2 gap-3">
                 <FormField control={form.control} name="cost" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Your Cost *</FormLabel>
+                    <FormLabel className="text-xs">Your Cost *</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                        <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-[13px]" />
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                        <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-base" />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="msrp" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">MSRP / List Price</FormLabel>
+                    <FormLabel className="text-xs">MSRP / List Price</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                        <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-[13px]" />
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                        <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-base" />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
               </div>
               <FormField control={form.control} name="unitOfMeasure" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11.5px]">Unit of Measure *</FormLabel>
+                  <FormLabel className="text-xs">Unit of Measure *</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="ea" list="uom-suggestions" className="h-8 text-[13px] w-36" />
+                    <Input {...field} placeholder="ea" list="uom-suggestions" className="h-8 text-base w-36" />
                   </FormControl>
                   <datalist id="uom-suggestions">
                     {UNIT_SUGGESTIONS.map((u) => <option key={u} value={u} />)}
                   </datalist>
-                  <FormMessage className="text-[11px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
             </fieldset>
 
             <fieldset className="space-y-3">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Product Image</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Product Image</legend>
               <div className="flex cursor-default items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface/50 px-6 py-8">
                 <div className="flex flex-col items-center gap-2 text-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                     <Camera className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <p className="text-[12.5px] font-medium">Click to upload or drag & drop</p>
-                  <p className="text-[10.5px] text-muted-foreground/60 italic">Image storage enabled when Supabase Storage is configured</p>
+                  <p className="text-sm font-medium">Click to upload or drag & drop</p>
+                  <p className="text-2xs text-muted-foreground/60 italic">Image storage enabled when Supabase Storage is configured</p>
                 </div>
               </div>
             </fieldset>
@@ -1108,7 +1108,7 @@ function ItemDrawer({
                     <FormControl>
                       <Checkbox checked={field.value} onCheckedChange={field.onChange} id="hasLabor" />
                     </FormControl>
-                    <FormLabel htmlFor="hasLabor" className="text-[11.5px] font-medium cursor-pointer mt-0!">
+                    <FormLabel htmlFor="hasLabor" className="text-xs font-medium cursor-pointer mt-0!">
                       Attach Labor
                     </FormLabel>
                   </FormItem>
@@ -1119,27 +1119,27 @@ function ItemDrawer({
                   <div className="grid grid-cols-2 gap-3">
                     <FormField control={form.control} name="laborHours" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[11.5px]">Labor Hours *</FormLabel>
+                        <FormLabel className="text-xs">Labor Hours *</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" min="0" step="0.25" placeholder="e.g. 1.5" className="h-8 text-[13px]" />
+                          <Input {...field} type="number" min="0" step="0.25" placeholder="e.g. 1.5" className="h-8 text-base" />
                         </FormControl>
-                        <FormMessage className="text-[11px]" />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="laborRateOverride" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[11.5px]">Rate Override</FormLabel>
+                        <FormLabel className="text-xs">Rate Override</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                            <Input {...field} type="number" min="0" step="1" placeholder="85" className="h-8 pl-5 text-[13px]" />
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                            <Input {...field} type="number" min="0" step="1" placeholder="85" className="h-8 pl-5 text-base" />
                           </div>
                         </FormControl>
-                        <FormMessage className="text-[11px]" />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )} />
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     Leave Rate Override blank to use the tenant default ($85/hr). When added to a quote, this item generates a separate labor line.
                   </p>
                 </div>
@@ -1152,19 +1152,19 @@ function ItemDrawer({
             {item ? (
               confirmDelete ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-[11.5px] text-destructive">Delete this item?</span>
+                  <span className="text-xs text-destructive">Delete this item?</span>
                   <button
                     type="button"
                     onClick={() => onDelete(item.id)}
                     disabled={isDeleting}
-                    className="h-7 rounded px-2.5 text-[12px] font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                    className="h-7 rounded px-2.5 text-sm font-medium bg-destructive text-destructive-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
                   >
                     {isDeleting ? "Deleting…" : "Confirm"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(false)}
-                    className="h-7 rounded px-2.5 text-[12px] border border-border hover:bg-accent transition-colors"
+                    className="h-7 rounded px-2.5 text-sm border border-border hover:bg-accent transition-colors"
                   >
                     Cancel
                   </button>
@@ -1173,7 +1173,7 @@ function ItemDrawer({
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(true)}
-                  className="h-7 rounded px-2.5 text-[12px] text-destructive border border-destructive/30 hover:bg-destructive/10 transition-colors"
+                  className="h-7 rounded px-2.5 text-sm text-destructive border border-destructive/30 hover:bg-destructive/10 transition-colors"
                 >
                   Delete
                 </button>
@@ -1182,11 +1182,11 @@ function ItemDrawer({
 
             <div className="flex items-center gap-2">
               <button type="button" onClick={onClose}
-                className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+                className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
                 Cancel
               </button>
               <button type="submit" disabled={isSaving}
-                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+                className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
                 {isSaving ? "Saving…" : item ? "Save Changes" : "Add Item"}
               </button>
             </div>
@@ -1200,7 +1200,7 @@ function ItemDrawer({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="right" className="w-120 flex flex-col p-0 gap-0">
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
-          <SheetTitle className="text-[15px] pr-8">
+          <SheetTitle className="text-md pr-8">
             {mode === "view" && item ? item.name : item ? "Edit Item" : "New Catalog Item"}
           </SheetTitle>
         </SheetHeader>
@@ -1264,26 +1264,26 @@ function NewCategoryDialog({ open, onClose, currentCount }: NewCategoryDialogPro
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-sm p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-border">
-          <DialogTitle className="text-[15px]">New Category</DialogTitle>
+          <DialogTitle className="text-md">New Category</DialogTitle>
         </DialogHeader>
 
         <div className="px-5 py-4 space-y-4">
           {/* Name */}
           <div className="space-y-1.5">
-            <label className="text-[11.5px] font-medium">Name</label>
+            <label className="text-xs font-medium">Name</label>
             <input
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && name.trim() && mutation.mutate()}
               placeholder="e.g. Fire Suppression"
-              className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
 
           {/* Color swatches */}
           <div className="space-y-1.5">
-            <label className="text-[11.5px] font-medium">Color</label>
+            <label className="text-xs font-medium">Color</label>
             <div className="flex flex-wrap gap-2">
               {COLOR_PALETTE.map((c) => (
                 <button
@@ -1302,7 +1302,7 @@ function NewCategoryDialog({ open, onClose, currentCount }: NewCategoryDialogPro
 
           {/* Icon picker */}
           <div className="space-y-1.5">
-            <label className="text-[11.5px] font-medium">Icon</label>
+            <label className="text-xs font-medium">Icon</label>
             <div className="rounded-lg border border-border bg-surface/40 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <div
@@ -1315,13 +1315,13 @@ function NewCategoryDialog({ open, onClose, currentCount }: NewCategoryDialogPro
                   value={iconSearch}
                   onChange={(e) => setIconSearch(e.target.value)}
                   placeholder="Search icons…"
-                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-[12px] focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-7 flex-1 rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
               <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
                 {filteredGroups.map((group) => (
                   <div key={group.label}>
-                    <p className="text-[9.5px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">{group.label}</p>
+                    <p className="text-2xs uppercase tracking-wider text-muted-foreground/60 font-medium mb-1">{group.label}</p>
                     <div className="flex flex-wrap gap-1">
                       {group.icons.map((iconName) => {
                         const Icon = ICON_MAP[iconName] ?? Package2;
@@ -1353,14 +1353,14 @@ function NewCategoryDialog({ open, onClose, currentCount }: NewCategoryDialogPro
 
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border">
           <button type="button" onClick={onClose}
-            className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+            className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
             Cancel
           </button>
           <button
             type="button"
             onClick={() => mutation.mutate()}
             disabled={!name.trim() || mutation.isPending}
-            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {mutation.isPending ? "Adding…" : "Add Category"}
           </button>
@@ -1566,7 +1566,7 @@ function CatalogPage() {
       <FilterBar>
         {/* Breadcrumb when drilled into a category */}
         {activeCategory && !isSearching && (
-          <div className="flex items-center gap-1 text-[12.5px] shrink-0 mr-1">
+          <div className="flex items-center gap-1 text-sm shrink-0 mr-1">
             <button
               type="button"
               onClick={() => setActiveCategoryId(null)}
@@ -1589,7 +1589,7 @@ function CatalogPage() {
           </FilterSelect>
         )}
 
-        <span className="ml-auto text-[11.5px] text-muted-foreground">
+        <span className="ml-auto text-xs text-muted-foreground">
           {showLanding
             ? `${categories.length} categor${categories.length !== 1 ? "ies" : "y"}`
             : `${visibleItems.length} item${visibleItems.length !== 1 ? "s" : ""}`}
@@ -1620,7 +1620,7 @@ function CatalogPage() {
       <div className="flex-1 overflow-y-auto p-4">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <p className="text-[13px] text-muted-foreground">Loading…</p>
+            <p className="text-base text-muted-foreground">Loading…</p>
           </div>
 
         ) : showLanding ? (
@@ -1639,8 +1639,8 @@ function CatalogPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center py-20 text-center">
-              <p className="text-[13px] font-medium">No categories yet</p>
-              <p className="mt-1 text-[12px] text-muted-foreground">Set up your catalog to get started.</p>
+              <p className="text-base font-medium">No categories yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">Set up your catalog to get started.</p>
             </div>
           )
 
@@ -1660,8 +1660,8 @@ function CatalogPage() {
           ) : (
             <div className="flex flex-col items-center py-20 text-center">
               <ImagePlus className="h-8 w-8 text-muted-foreground/25 mb-3" />
-              <p className="text-[13px] font-medium">No items found</p>
-              <p className="mt-1 text-[12px] text-muted-foreground">Try adjusting your filters or add a new item.</p>
+              <p className="text-base font-medium">No items found</p>
+              <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters or add a new item.</p>
             </div>
           )
 

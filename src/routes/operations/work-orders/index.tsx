@@ -109,7 +109,7 @@ async function insertWorkOrder(values: {
 function StatusBadge({ status }: { status: WOStatus }) {
   const { label, cls } = statusMeta[status as ProjectStatus];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -163,9 +163,9 @@ function WorkOrdersListPage() {
 
       <div className="overflow-x-auto">
         <div className="min-w-[720px]">
-          <table className="w-full text-[12.5px]">
+          <table className="w-full text-sm">
             <thead className="bg-surface/50 border-b border-border">
-              <tr className="text-[10.5px] uppercase tracking-wide text-muted-foreground">
+              <tr className="text-2xs uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 px-4 text-left font-medium">Work Order</th>
                 <th className="py-2 px-3 text-left font-medium">Customer</th>
                 <th className="py-2 px-3 text-left font-medium">Status</th>
@@ -186,7 +186,7 @@ function WorkOrdersListPage() {
                   >
                     <td className="py-2.5 px-4">
                       <div className="font-semibold leading-snug">{wo.name}</div>
-                      <div className="text-[10.5px] font-mono text-muted-foreground">{wo.code ?? "—"}</div>
+                      <div className="text-2xs font-mono text-muted-foreground">{wo.code ?? "—"}</div>
                     </td>
                     <td className="py-2.5 px-3 text-muted-foreground">{wo.company?.name ?? "—"}</td>
                     <td className="py-2.5 px-3"><StatusBadge status={wo.status} /></td>
@@ -197,7 +197,7 @@ function WorkOrdersListPage() {
                     <td className="py-2.5 px-3">
                       <div className="flex items-center gap-1.5">
                         <Avatar initials={techInitials} />
-                        <span className="text-[11.5px] text-muted-foreground">{techName.split(" ")[0]}</span>
+                        <span className="text-xs text-muted-foreground">{techName.split(" ")[0]}</span>
                       </div>
                     </td>
                   </tr>
@@ -205,7 +205,7 @@ function WorkOrdersListPage() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-[12.5px] text-muted-foreground">
+                  <td colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
                     {workOrders.length === 0 ? "No work orders yet — create the first one." : "No work orders match the current filters."}
                   </td>
                 </tr>
@@ -251,7 +251,7 @@ function NewWorkOrderModal({
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value;
@@ -363,11 +363,11 @@ function NewWorkOrderModal({
         </div>
         <div>
           <label className={labelCls}>Notes</label>
-          <textarea name="notes" rows={2} className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Any additional context…" />
+          <textarea name="notes" rows={2} className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Any additional context…" />
         </div>
         <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">Cancel</button>
-          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">Cancel</button>
+          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
             {saving ? "Creating…" : "Create Work Order"}
           </button>
         </div>

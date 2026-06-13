@@ -139,7 +139,7 @@ async function patchTicket(id: string, patch: { status?: string; notes?: string 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const { label, cls } = statusMeta[status];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -149,7 +149,7 @@ function StatusBadge({ status }: { status: TicketStatus }) {
 function PriorityBadge({ priority }: { priority: TicketPriority }) {
   const { label, cls, dot } = priorityMeta[priority];
   return (
-    <span className={cn("inline-flex items-center gap-1 text-[11.5px] font-medium", cls)}>
+    <span className={cn("inline-flex items-center gap-1 text-xs font-medium", cls)}>
       <span className={cn("h-1.5 w-1.5 rounded-full", dot)} />
       {label}
     </span>
@@ -235,9 +235,9 @@ function ServiceTicketsPage() {
       {/* Table */}
       <div className="p-4">
         <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <table className="w-full text-[12.5px]">
+          <table className="w-full text-sm">
             <thead className="bg-surface/50">
-              <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border text-2xs uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 px-3 text-left font-medium">Ticket</th>
                 <th className="py-2 px-3 text-left font-medium">Customer</th>
                 <th className="py-2 px-3 text-left font-medium">Issue</th>
@@ -260,16 +260,16 @@ function ServiceTicketsPage() {
                     className="row-hover border-b border-border/60 cursor-pointer"
                   >
                     <td className="py-2.5 px-3">
-                      <div className="font-mono text-[11.5px] text-muted-foreground">{ticket.code ?? "—"}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{ticket.code ?? "—"}</div>
                       {ticket.on_service_plan && (
-                        <span className="inline-block mt-0.5 rounded px-1 py-0.5 text-[9.5px] font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <span className="inline-block mt-0.5 rounded px-1 py-0.5 text-2xs font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                           Service Plan
                         </span>
                       )}
                     </td>
                     <td className="py-2.5 px-3">
                       <div className="font-semibold leading-snug">{customerDisplay}</div>
-                      <div className="text-[11px] text-muted-foreground">{contactDisplay}</div>
+                      <div className="text-xs text-muted-foreground">{contactDisplay}</div>
                     </td>
                     <td className="py-2.5 px-3 max-w-65">
                       <span className="line-clamp-2 leading-snug">{ticket.issue}</span>
@@ -285,15 +285,15 @@ function ServiceTicketsPage() {
                       {assigneeName ? (
                         <div className="flex items-center gap-1.5">
                           <Avatar initials={initials(assigneeName)} />
-                          <span className="text-[11.5px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {assigneeName.split(" ")[0]}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-[11.5px] text-muted-foreground">—</span>
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground whitespace-nowrap">
+                    <td className="py-2.5 px-3 font-mono text-xs text-muted-foreground whitespace-nowrap">
                       {ticket.due_date ?? "—"}
                     </td>
                   </tr>
@@ -301,7 +301,7 @@ function ServiceTicketsPage() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-[12.5px] text-muted-foreground">
+                  <td colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
                     {tickets.length === 0
                       ? "No tickets yet — create the first one."
                       : "No tickets match the current filters."}
@@ -388,56 +388,56 @@ function TicketDrawer({
     <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-mono text-[11px] text-muted-foreground">{ticket.code ?? "—"}</span>
+          <span className="font-mono text-xs text-muted-foreground">{ticket.code ?? "—"}</span>
           {ticket.on_service_plan && (
-            <span className="rounded px-1.5 py-0.5 text-[9.5px] font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <span className="rounded px-1.5 py-0.5 text-2xs font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
               Service Plan
             </span>
           )}
         </div>
-        <SheetTitle className="text-[14.5px] font-semibold leading-snug">{ticket.issue}</SheetTitle>
+        <SheetTitle className="text-md font-semibold leading-snug">{ticket.issue}</SheetTitle>
       </SheetHeader>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
         {/* Status / Priority / Category */}
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3.5 text-[12.5px]">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-3.5 text-sm">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Status</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Status</p>
             <StatusBadge status={ticket.status} />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Priority</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Priority</p>
             <PriorityBadge priority={ticket.priority} />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Category</p>
-            <span className="text-[12px]">{ticket.category}</span>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Category</p>
+            <span className="text-sm">{ticket.category}</span>
           </div>
         </div>
 
         {/* Dates / Assigned */}
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3.5 text-[12.5px]">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-3.5 text-sm">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Created</p>
-            <span className="font-mono text-[12px]">{ticket.created_at.slice(0, 10)}</span>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Created</p>
+            <span className="font-mono text-sm">{ticket.created_at.slice(0, 10)}</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Due</p>
-            <span className="font-mono text-[12px]">{ticket.due_date ?? "—"}</span>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Due</p>
+            <span className="font-mono text-sm">{ticket.due_date ?? "—"}</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Assigned</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Assigned</p>
             <div className="flex items-center gap-1.5">
               <Avatar initials={initials(ticket.assignee?.full_name)} />
-              <span className="text-[12px]">{assigneeName.split(" ")[0]}</span>
+              <span className="text-sm">{assigneeName.split(" ")[0]}</span>
             </div>
           </div>
         </div>
 
         {/* Customer / Contact / Site */}
-        <div className="space-y-3 text-[12.5px]">
+        <div className="space-y-3 text-sm">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Customer</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Customer</p>
             <span className="font-medium">{customerDisplay}</span>
             {contactDisplay !== "—" && (
               <span className="text-muted-foreground"> · {contactDisplay}</span>
@@ -459,7 +459,7 @@ function TicketDrawer({
 
         {/* Notes */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
           <textarea
             value={notes}
             readOnly={!canWrite}
@@ -467,14 +467,14 @@ function TicketDrawer({
             onBlur={canWrite ? () => onNotesSave(notes) : undefined}
             placeholder="Add notes…"
             rows={3}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
           />
         </div>
 
         {/* Activity stub */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Activity</p>
-          <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">Activity</p>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-3.5 w-3.5 shrink-0 opacity-50" />
             <span>Activity log coming soon.</span>
           </div>
@@ -487,14 +487,14 @@ function TicketDrawer({
           <button
             onClick={() => onStatusChange("resolved")}
             disabled={ticket.status === "resolved" || ticket.status === "closed"}
-            className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
+            className="w-full h-8 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
           >
             Mark Resolved
           </button>
           <button
             onClick={() => onStatusChange("closed")}
             disabled={ticket.status === "closed"}
-            className="w-full h-8 rounded-md border border-border text-muted-foreground text-[12.5px] font-medium hover:text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-default transition-colors"
+            className="w-full h-8 rounded-md border border-border text-muted-foreground text-sm font-medium hover:text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-default transition-colors"
           >
             Close Ticket
           </button>
@@ -519,8 +519,8 @@ function NewTicketModal({
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -593,7 +593,7 @@ function NewTicketModal({
             required
             rows={2}
             placeholder="Brief description of the problem…"
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
         <div>
@@ -619,7 +619,7 @@ function NewTicketModal({
         </div>
         <div className="flex items-center gap-2 pt-4">
           <input id="on_service_plan" name="on_service_plan" type="checkbox" className="h-3.5 w-3.5 rounded border-border" />
-          <label htmlFor="on_service_plan" className="text-[12px] text-muted-foreground cursor-pointer select-none">
+          <label htmlFor="on_service_plan" className="text-sm text-muted-foreground cursor-pointer select-none">
             On Service Plan
           </label>
         </div>
@@ -627,14 +627,14 @@ function NewTicketModal({
           <button
             type="button"
             onClick={onClose}
-            className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {saving ? "Creating…" : "Create Ticket"}
           </button>

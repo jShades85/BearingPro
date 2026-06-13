@@ -313,7 +313,7 @@ async function insertOpportunity(values: {
 function StageBadge({ stage }: { stage: OpportunityStage }) {
   const { label, badge } = stageMeta[stage];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium", badge)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", badge)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -428,7 +428,7 @@ function Opportunities() {
           <option value="all">All Assigned</option>
           {team.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
         </FilterSelect>
-        <span className="text-[11px] text-muted-foreground font-mono">
+        <span className="text-xs text-muted-foreground font-mono">
           {filtered.length} of {opps.length}
         </span>
         <div className="ml-auto flex items-center rounded-md border border-border overflow-hidden">
@@ -542,9 +542,9 @@ function KanbanView({
               <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
                 <div className="flex items-center gap-2">
                   <StageBadge stage={stage} />
-                  <span className="font-mono text-[10.5px] text-muted-foreground">{items.length}</span>
+                  <span className="font-mono text-2xs text-muted-foreground">{items.length}</span>
                 </div>
-                <span className="font-mono text-[10.5px] tabular-nums text-muted-foreground">{total ? currency(total) : "—"}</span>
+                <span className="font-mono text-2xs tabular-nums text-muted-foreground">{total ? currency(total) : "—"}</span>
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 p-2">
                 {items.map((opp) => (
@@ -568,7 +568,7 @@ function KanbanView({
                   />
                 ))}
                 {items.length === 0 && (
-                  <div className="py-5 text-center text-[11px] text-muted-foreground">Empty</div>
+                  <div className="py-5 text-center text-xs text-muted-foreground">Empty</div>
                 )}
               </div>
             </div>
@@ -611,7 +611,7 @@ function KanbanCard({
         {canWrite && !isClosedStage(opp.stage) ? (
           <button
             onClick={onOpenSelector}
-            className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium flex items-center gap-1 hover:opacity-80 transition-opacity", stageMeta[opp.stage].badge)}
+            className={cn("rounded px-1.5 py-0.5 text-2xs font-medium flex items-center gap-1 hover:opacity-80 transition-opacity", stageMeta[opp.stage].badge)}
           >
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
             {stageMeta[opp.stage].label}
@@ -626,7 +626,7 @@ function KanbanCard({
               <button
                 key={s}
                 onClick={(e) => { e.stopPropagation(); onMove(s); }}
-                className={cn("flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] hover:bg-accent", s === opp.stage && "bg-accent/60")}
+                className={cn("flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-accent", s === opp.stage && "bg-accent/60")}
               >
                 <StageBadge stage={s} />
               </button>
@@ -634,13 +634,13 @@ function KanbanCard({
           </div>
         )}
       </div>
-      <div className="mt-1.5 text-[12.5px] font-semibold leading-snug truncate">{opp.title}</div>
-      <div className="text-[11px] text-muted-foreground truncate">{opp.company} · {opp.contact}</div>
+      <div className="mt-1.5 text-sm font-semibold leading-snug truncate">{opp.title}</div>
+      <div className="text-xs text-muted-foreground truncate">{opp.company} · {opp.contact}</div>
       <div className="mt-2.5 flex items-center justify-between">
-        <span className="font-mono tabular-nums text-[12.5px] font-semibold">{fmtValue(opp.value)}</span>
+        <span className="font-mono tabular-nums text-sm font-semibold">{fmtValue(opp.value)}</span>
         <PriorityDot p={opp.priority} />
       </div>
-      <div className="mt-2 flex items-center justify-between text-[10.5px] text-muted-foreground">
+      <div className="mt-2 flex items-center justify-between text-2xs text-muted-foreground">
         <span>{opp.closeDate}</span>
         <div className="flex items-center gap-1.5">
           <Avatar initials={opp.repInitials} />
@@ -688,9 +688,9 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
   return (
     <div className="p-4">
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <table className="w-full text-[12.5px]">
+        <table className="w-full text-sm">
           <thead className="bg-surface/50">
-            <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
+            <tr className="border-b border-border text-2xs uppercase tracking-wide text-muted-foreground">
               {(
                 [
                   ["title",     "Opportunity", "text-left"],
@@ -716,16 +716,16 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
               <tr key={o.id} onClick={() => onSelect(o)} className="row-hover border-b border-border/60 cursor-pointer">
                 <td className="py-2.5 px-2">
                   <div className="font-medium leading-snug">{o.title}</div>
-                  <div className="text-[11px] text-muted-foreground">{o.contact}</div>
+                  <div className="text-xs text-muted-foreground">{o.contact}</div>
                 </td>
-                <td className="py-2.5 px-2 text-muted-foreground text-[12px]">{o.company}</td>
+                <td className="py-2.5 px-2 text-muted-foreground text-sm">{o.company}</td>
                 <td className="py-2.5 px-2 text-right font-mono tabular-nums font-semibold">{fmtValue(o.value)}</td>
                 <td className="py-2.5 px-2"><StageBadge stage={o.stage} /></td>
-                <td className="py-2.5 px-2 text-muted-foreground font-mono text-[11.5px]">{o.closeDate}</td>
+                <td className="py-2.5 px-2 text-muted-foreground font-mono text-xs">{o.closeDate}</td>
                 <td className="py-2.5 px-2">
                   <div className="flex items-center gap-1.5">
                     <Avatar initials={o.repInitials} />
-                    <span className="text-[11.5px]">{o.rep}</span>
+                    <span className="text-xs">{o.rep}</span>
                   </div>
                 </td>
                 <td className="py-2.5 px-2 pr-3"><PriorityDot p={o.priority} /></td>
@@ -733,7 +733,7 @@ function ListView({ opps, onSelect }: { opps: Opportunity[]; onSelect: (opp: Opp
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-[12.5px] text-muted-foreground">
+                <td colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
                   {rows.length === 0 ? "No opportunities yet — create the first one." : "No opportunities match the current filters."}
                 </td>
               </tr>
@@ -779,7 +779,7 @@ function OpportunityDrawer({
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -806,7 +806,7 @@ function OpportunityDrawer({
     return (
       <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
         <SheetHeader className="border-b border-border px-5 py-4">
-          <SheetTitle className="text-[15px] font-semibold">Edit Opportunity</SheetTitle>
+          <SheetTitle className="text-md font-semibold">Edit Opportunity</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
           <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
@@ -867,11 +867,11 @@ function OpportunityDrawer({
           </div>
           <div className="border-t border-border px-5 py-4 flex gap-2">
             <button type="submit" disabled={saving}
-              className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              className="flex-1 h-8 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
               {saving ? "Saving…" : "Save Changes"}
             </button>
             <button type="button" onClick={() => setMode("view")}
-              className="flex-1 h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+              className="flex-1 h-8 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
               Cancel
             </button>
           </div>
@@ -883,11 +883,11 @@ function OpportunityDrawer({
   return (
     <SheetContent className="sm:max-w-115 flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4">
-        <SheetTitle className="text-[15px] font-semibold leading-tight">{opp.title}</SheetTitle>
-        <p className="text-[12px] text-muted-foreground">{opp.company} · {opp.contact}</p>
+        <SheetTitle className="text-md font-semibold leading-tight">{opp.title}</SheetTitle>
+        <p className="text-sm text-muted-foreground">{opp.company} · {opp.contact}</p>
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
           <StageBadge stage={opp.stage} />
-          <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium", priorityBadgeCls[opp.priority])}>
+          <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium", priorityBadgeCls[opp.priority])}>
             {priorityLabel[opp.priority]}
           </span>
         </div>
@@ -895,48 +895,48 @@ function OpportunityDrawer({
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
         <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Details</p>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[12.5px]">
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Details</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Value</p>
+              <p className="text-2xs text-muted-foreground mb-0.5">Value</p>
               <p className="font-semibold font-mono tabular-nums">{fmtValue(opp.value)}</p>
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Close Date</p>
+              <p className="text-2xs text-muted-foreground mb-0.5">Close Date</p>
               <p className="font-mono">{opp.closeDate}</p>
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Assigned To</p>
+              <p className="text-2xs text-muted-foreground mb-0.5">Assigned To</p>
               <div className="flex items-center gap-1.5">
                 <Avatar initials={opp.repInitials} />
                 <span>{opp.rep}</span>
               </div>
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Lead Source</p>
+              <p className="text-2xs text-muted-foreground mb-0.5">Lead Source</p>
               <p>{opp.source}</p>
             </div>
           </div>
         </section>
 
         <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Linked Quote</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Linked Quote</p>
           {opp.linkedQuote ? (
             <div className="rounded-md border border-border bg-surface/50 px-3 py-2.5 space-y-2">
-              <div className="flex items-center justify-between text-[12px]">
+              <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-foreground font-medium">{opp.linkedQuote.number}</span>
-                  <span className="text-[10.5px] text-muted-foreground font-mono">v{opp.linkedQuote.revision}</span>
+                  <span className="text-2xs text-muted-foreground font-mono">v{opp.linkedQuote.revision}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium", quoteStatusMeta[opp.linkedQuote.status].cls)}>
+                  <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium", quoteStatusMeta[opp.linkedQuote.status].cls)}>
                     {quoteStatusMeta[opp.linkedQuote.status].label}
                   </span>
                   <span className="font-mono font-semibold">{currency(opp.linkedQuote.value)}</span>
                 </div>
               </div>
               {(opp.linkedQuote.expiryDate || opp.linkedQuote.notes) && (
-                <div className="flex items-center gap-3 text-[11.5px] text-muted-foreground">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   {opp.linkedQuote.expiryDate && <span>Expires {opp.linkedQuote.expiryDate}</span>}
                   {opp.linkedQuote.notes && <span className="truncate">{opp.linkedQuote.notes}</span>}
                 </div>
@@ -946,7 +946,7 @@ function OpportunityDrawer({
                   <button
                     type="button"
                     onClick={() => navigate({ to: "/sales/quotes/$quoteId", params: { quoteId: opp.linkedQuote!.id } })}
-                    className="flex items-center gap-1 h-7 rounded-md border border-border bg-background px-2.5 text-[11.5px] hover:bg-accent transition-colors"
+                    className="flex items-center gap-1 h-7 rounded-md border border-border bg-background px-2.5 text-xs hover:bg-accent transition-colors"
                   >
                     <Pencil className="h-3 w-3" /> Edit
                   </button>
@@ -954,7 +954,7 @@ function OpportunityDrawer({
                     <button
                       type="button"
                       onClick={() => onMarkSent(opp.linkedQuote!.id)}
-                      className="flex items-center gap-1 h-7 rounded-md border border-border bg-background px-2.5 text-[11.5px] hover:bg-accent transition-colors"
+                      className="flex items-center gap-1 h-7 rounded-md border border-border bg-background px-2.5 text-xs hover:bg-accent transition-colors"
                     >
                       <Send className="h-3 w-3" /> Mark as Sent
                     </button>
@@ -963,7 +963,7 @@ function OpportunityDrawer({
                     <button
                       type="button"
                       onClick={() => onAcceptQuote(opp.linkedQuote!.id)}
-                      className="flex items-center gap-1 h-7 rounded-md bg-green-600 text-white px-2.5 text-[11.5px] hover:opacity-90 transition-opacity"
+                      className="flex items-center gap-1 h-7 rounded-md bg-green-600 text-white px-2.5 text-xs hover:opacity-90 transition-opacity"
                     >
                       <Check className="h-3 w-3" /> Accept Quote
                     </button>
@@ -972,13 +972,13 @@ function OpportunityDrawer({
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2.5 text-[12px]">
+            <div className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2.5 text-sm">
               <span className="text-muted-foreground">No quote linked yet</span>
               {canWrite && (
                 <button
                   type="button"
                   onClick={() => navigate({ to: "/sales/quotes/new", search: { opportunityId: opp.id } })}
-                  className="text-primary text-[11.5px] font-medium hover:underline"
+                  className="text-primary text-xs font-medium hover:underline"
                 >
                   Create Quote
                 </button>
@@ -988,32 +988,32 @@ function OpportunityDrawer({
         </section>
 
         <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
           <textarea
             rows={3}
             value={notes}
             readOnly={!canWrite}
             onChange={canWrite ? (e) => setNotes(e.target.value) : undefined}
             onBlur={canWrite ? () => onNotesChange(notes) : undefined}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
             placeholder="Add notes…"
           />
         </section>
 
         {opp.activityFeed.length > 0 && (
           <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Activity</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Activity</p>
             <ul className="space-y-3">
               {opp.activityFeed.map((a, i) => {
                 const Icon = activityIcon[a.kind];
                 return (
-                  <li key={i} className="flex gap-3 text-[12px]">
+                  <li key={i} className="flex gap-3 text-sm">
                     <div className={cn("mt-0.5 shrink-0", activityColor[a.kind])}>
                       <Icon className="h-3.5 w-3.5" />
                     </div>
                     <div>
                       <div>{a.text}</div>
-                      <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.date}</div>
+                      <div className="mt-0.5 font-mono text-2xs text-muted-foreground">{a.date}</div>
                     </div>
                   </li>
                 );
@@ -1027,19 +1027,19 @@ function OpportunityDrawer({
         {canWrite && opp.stage === "closed-won" && !convertPicking && (
           <button
             onClick={() => setConvertPicking(true)}
-            className="w-full h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            className="w-full h-8 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
           >
             Convert to Project / Work Order
           </button>
         )}
         {canWrite && opp.stage === "closed-won" && convertPicking && !showProjectForm && (
           <div className="rounded-md border border-border bg-surface/50 p-3 space-y-2">
-            <p className="text-[11px] text-muted-foreground text-center">What type of record is this?</p>
+            <p className="text-xs text-muted-foreground text-center">What type of record is this?</p>
             <div className="flex gap-2">
               <button
                 disabled={converting}
                 onClick={() => { setConvertPicking(false); setShowProjectForm(true); }}
-                className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                className="flex-1 h-8 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
               >
                 Project
               </button>
@@ -1049,14 +1049,14 @@ function OpportunityDrawer({
                   setConverting(true);
                   try { await onConvert("work-order"); } finally { setConverting(false); }
                 }}
-                className="flex-1 h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50 transition-colors"
+                className="flex-1 h-8 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50 transition-colors"
               >
                 Work Order
               </button>
             </div>
             <button
               onClick={() => setConvertPicking(false)}
-              className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               Cancel
             </button>
@@ -1064,16 +1064,16 @@ function OpportunityDrawer({
         )}
         {canWrite && opp.stage === "closed-won" && showProjectForm && (
           <div className="rounded-md border border-border bg-surface/50 p-3 space-y-2">
-            <p className="text-[11px] font-medium text-foreground">Convert to Project</p>
+            <p className="text-xs font-medium text-foreground">Convert to Project</p>
             <div>
-              <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+              <label className="block text-2xs uppercase tracking-wider text-muted-foreground mb-1">
                 Site Address
               </label>
               <input
                 value={siteAddr}
                 onChange={(e) => setSiteAddr(e.target.value)}
                 placeholder="123 Main St, City, ST 00000"
-                className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <button
@@ -1082,20 +1082,20 @@ function OpportunityDrawer({
                 setConverting(true);
                 try { await onConvert("project", siteAddr || undefined); } finally { setConverting(false); }
               }}
-              className="w-full h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+              className="w-full h-8 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
               {converting ? "Converting…" : "Convert"}
             </button>
             <button
               onClick={() => { setShowProjectForm(false); setSiteAddr(""); }}
-              className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               Back
             </button>
           </div>
         )}
         {canWrite && (
-          <button onClick={() => setMode("edit")} className="w-full h-8 rounded-md border border-border text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <button onClick={() => setMode("edit")} className="w-full h-8 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             Edit Opportunity
           </button>
         )}
@@ -1119,7 +1119,7 @@ function NewOpportunityModal({
   const { data: companies = [] } = useQuery({ queryKey: ["company-options"], queryFn: fetchCompanyOptions });
   const { data: contacts = [] } = useQuery({ queryKey: ["contact-options"], queryFn: fetchContactOptions });
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -1211,15 +1211,15 @@ function NewOpportunityModal({
           <textarea
             name="notes"
             rows={2}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
             placeholder="Any additional context…"
           />
         </div>
         <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             Cancel
           </button>
-          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
             {saving ? "Saving…" : "Create Opportunity"}
           </button>
         </div>

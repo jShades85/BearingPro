@@ -123,7 +123,7 @@ function ReportsPage() {
         <button
           onClick={() => setActiveTab(ALL_TAB)}
           className={cn(
-            "flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap",
+            "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
             activeTab === ALL_TAB
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground",
@@ -138,7 +138,7 @@ function ReportsPage() {
               key={cat.id}
               onClick={() => setActiveTab(cat.id)}
               className={cn(
-                "flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap",
+                "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                 activeTab === cat.id
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground",
@@ -160,7 +160,7 @@ function ReportsPage() {
             <div key={cat.id}>
               <div className="mb-4 flex items-center gap-2">
                 <Icon className="h-4 w-4 text-muted-foreground" />
-                <h2 className="text-[13px] font-semibold">{cat.label}</h2>
+                <h2 className="text-base font-semibold">{cat.label}</h2>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {cat.reports.map((report) => (
@@ -176,7 +176,7 @@ function ReportsPage() {
           <div>
             <div className="mb-4 flex items-center gap-2">
               <Sliders className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-[13px] font-semibold">Custom Reports</h2>
+              <h2 className="text-base font-semibold">Custom Reports</h2>
             </div>
             <div className="rounded-lg border border-border bg-card p-6">
               <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
@@ -184,20 +184,20 @@ function ReportsPage() {
                   <Sliders className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13.5px] font-semibold">Build your own reports</p>
-                  <p className="mt-1 text-[12.5px] text-muted-foreground max-w-xl">
+                  <p className="text-base font-semibold">Build your own reports</p>
+                  <p className="mt-1 text-sm text-muted-foreground max-w-xl">
                     Choose any combination of fields, filters, and groupings from across your data — revenue, jobs, team, inventory, and more. Save reports to your library and schedule them to run automatically.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {["Field picker", "Filter builder", "Chart types", "Saved reports", "Scheduled delivery"].map((f) => (
-                      <span key={f} className="rounded bg-muted px-2 py-0.5 text-[11px] text-muted-foreground font-medium">
+                      <span key={f} className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground font-medium">
                         {f}
                       </span>
                     ))}
                   </div>
                 </div>
                 <div className="shrink-0">
-                  <span className="flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-[12px] font-medium text-muted-foreground">
+                  <span className="flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground">
                     <Lock className="h-3.5 w-3.5" />
                     Post-launch
                   </span>
@@ -222,16 +222,16 @@ function ReportCard({ report }: { report: Report }) {
       isAvailable ? "hover:border-primary/40 cursor-pointer" : "opacity-60",
     )}>
       <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="text-[13px] font-medium leading-snug">{report.name}</p>
+        <p className="text-base font-medium leading-snug">{report.name}</p>
         {isAvailable ? (
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors mt-0.5" />
         ) : (
-          <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+          <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground whitespace-nowrap">
             Coming soon
           </span>
         )}
       </div>
-      <p className="text-[12px] text-muted-foreground leading-relaxed">{report.description}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">{report.description}</p>
     </div>
   );
 }

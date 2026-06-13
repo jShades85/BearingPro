@@ -151,8 +151,8 @@ const METHOD_LABELS: Record<string, string> = {
 
 const PAYMENT_TERMS = ["Due on Receipt", "Net 15", "Net 30", "Net 45", "Net 60"];
 
-const inputCls = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-const labelCls = "block text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-1";
+const inputCls = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -269,7 +269,7 @@ async function importProjectLineItems(invoiceId: string, projectId: string) {
 function StatusBadge({ status }: { status: InvoiceStatus }) {
   const { label, cls } = STATUS_META[status];
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium", cls)}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium", cls)}>
       {label}
     </span>
   );
@@ -302,19 +302,19 @@ function JobCombobox({
           type="button"
           role="combobox"
           aria-expanded={open}
-          className="h-8 w-full flex items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-[12.5px] hover:bg-accent/30 transition-colors"
+          className="h-8 w-full flex items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm hover:bg-accent/30 transition-colors"
         >
           {selected ? (
             <span className="flex items-center gap-2 min-w-0">
               <span className={cn(
-                "shrink-0 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium",
+                "shrink-0 inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium",
                 selectedType === "work-order"
                   ? "bg-violet-500/15 text-violet-600 dark:text-violet-400"
                   : "bg-blue-500/15 text-blue-600 dark:text-blue-400",
               )}>
                 {selectedType === "work-order" ? "WO" : "Proj"}
               </span>
-              <span className="font-mono text-[11.5px] shrink-0">{selected.code}</span>
+              <span className="font-mono text-xs shrink-0">{selected.code}</span>
               <span className="text-muted-foreground truncate">{selected.name}</span>
             </span>
           ) : (
@@ -334,7 +334,7 @@ function JobCombobox({
                   <CommandItem
                     value="__clear__"
                     onSelect={() => { onChange(""); setOpen(false); }}
-                    className="text-[12.5px] text-muted-foreground gap-2"
+                    className="text-sm text-muted-foreground gap-2"
                   >
                     <X className="h-3.5 w-3.5 shrink-0" /> Clear selection
                   </CommandItem>
@@ -349,10 +349,10 @@ function JobCombobox({
                     key={p.id}
                     value={`p:${p.id}`}
                     onSelect={(v) => { onChange(v); setOpen(false); }}
-                    className="text-[12.5px] gap-2"
+                    className="text-sm gap-2"
                   >
                     <Check className={cn("h-3.5 w-3.5 shrink-0", value === `p:${p.id}` ? "opacity-100" : "opacity-0")} />
-                    <span className="font-mono text-[11px] text-muted-foreground shrink-0">{p.code}</span>
+                    <span className="font-mono text-xs text-muted-foreground shrink-0">{p.code}</span>
                     <span className="flex-1 truncate">{p.name}</span>
                   </CommandItem>
                 ))}
@@ -365,10 +365,10 @@ function JobCombobox({
                     key={w.id}
                     value={`w:${w.id}`}
                     onSelect={(v) => { onChange(v); setOpen(false); }}
-                    className="text-[12.5px] gap-2"
+                    className="text-sm gap-2"
                   >
                     <Check className={cn("h-3.5 w-3.5 shrink-0", value === `w:${w.id}` ? "opacity-100" : "opacity-0")} />
-                    <span className="font-mono text-[11px] text-muted-foreground shrink-0">{w.code}</span>
+                    <span className="font-mono text-xs text-muted-foreground shrink-0">{w.code}</span>
                     <span className="flex-1 truncate">{w.name}</span>
                   </CommandItem>
                 ))}
@@ -496,13 +496,13 @@ function InvoiceDrawer({
 
         <SheetHeader className="shrink-0 flex flex-row items-start justify-between gap-2 border-b border-border px-5 py-4 pr-12">
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-0.5">
+            <p className="text-2xs uppercase tracking-widest text-muted-foreground font-medium mb-0.5">
               {invoice.number}
             </p>
-            <SheetTitle className="text-[15px] font-semibold leading-snug">
+            <SheetTitle className="text-md font-semibold leading-snug">
               {invoice.companyName}
             </SheetTitle>
-            <p className="text-[12px] text-muted-foreground mt-0.5">{invoice.contactName}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{invoice.contactName}</p>
           </div>
           <StatusBadge status={invoice.status} />
         </SheetHeader>
@@ -519,8 +519,8 @@ function InvoiceDrawer({
                   { label: "Terms",  value: invoice.paymentTerms },
                 ].map(({ label, value }) => (
                   <div key={label} className="rounded-md border border-border bg-surface p-2.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
-                    <p className={cn("text-[12.5px] font-medium", label === "Due" && invoice.status === "overdue" && "text-red-500")}>
+                    <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
+                    <p className={cn("text-sm font-medium", label === "Due" && invoice.status === "overdue" && "text-red-500")}>
                       {value}
                     </p>
                   </div>
@@ -530,7 +530,7 @@ function InvoiceDrawer({
               {linkedJobLabel && (
                 <div>
                   <p className={labelCls}>Linked Job</p>
-                  <p className="text-[12.5px] text-primary font-medium">{linkedJobLabel}</p>
+                  <p className="text-sm text-primary font-medium">{linkedJobLabel}</p>
                 </div>
               )}
 
@@ -544,7 +544,7 @@ function InvoiceDrawer({
                         type="button"
                         onClick={onImportFromParts}
                         disabled={isLineItemPending}
-                        className="flex items-center gap-1 text-[11px] text-primary hover:underline disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50"
                       >
                         <Download className="h-3 w-3" /> Import from Parts List
                       </button>
@@ -553,15 +553,15 @@ function InvoiceDrawer({
                       type="button"
                       onClick={() => { setAddingItem(true); setNewItem({ description: "", qty: "1", unit_price: "" }); }}
                       disabled={addingItem || isLineItemPending}
-                      className="flex items-center gap-1 text-[11px] text-primary hover:underline disabled:opacity-50"
+                      className="flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50"
                     >
                       <Plus className="h-3 w-3" /> Add Item
                     </button>
                   </div>
                 </div>
                 <div className="rounded-md border border-border overflow-hidden">
-                  <table className="w-full text-[11.5px]">
-                    <thead className="bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted/50 text-2xs uppercase tracking-wider text-muted-foreground">
                       <tr>
                         <th className="text-left py-1.5 px-3 font-medium">Description</th>
                         <th className="text-right py-1.5 px-3 font-medium">Qty</th>
@@ -573,7 +573,7 @@ function InvoiceDrawer({
                     <tbody>
                       {invoice.lineItems.length === 0 && !addingItem && (
                         <tr>
-                          <td colSpan={5} className="px-3 py-4 text-center text-[11.5px] text-muted-foreground italic">
+                          <td colSpan={5} className="px-3 py-4 text-center text-xs text-muted-foreground italic">
                             No line items yet
                           </td>
                         </tr>
@@ -604,7 +604,7 @@ function InvoiceDrawer({
                               value={newItem.description}
                               onChange={(e) => setNewItem((n) => ({ ...n, description: e.target.value }))}
                               placeholder="Description"
-                              className="w-full rounded border border-border bg-background px-2 py-1 text-[11.5px] focus:outline-none focus:ring-1 focus:ring-primary"
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                           </td>
                           <td className="py-1.5 px-2 w-16">
@@ -613,7 +613,7 @@ function InvoiceDrawer({
                               min="1"
                               value={newItem.qty}
                               onChange={(e) => setNewItem((n) => ({ ...n, qty: e.target.value }))}
-                              className="w-full rounded border border-border bg-background px-2 py-1 text-[11.5px] text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                           </td>
                           <td className="py-1.5 px-2 w-24">
@@ -624,10 +624,10 @@ function InvoiceDrawer({
                               value={newItem.unit_price}
                               onChange={(e) => setNewItem((n) => ({ ...n, unit_price: e.target.value }))}
                               placeholder="0.00"
-                              className="w-full rounded border border-border bg-background px-2 py-1 text-[11.5px] text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                              className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                           </td>
-                          <td className="py-1.5 px-3 text-right tabular-nums text-muted-foreground text-[11px]">
+                          <td className="py-1.5 px-3 text-right tabular-nums text-muted-foreground text-xs">
                             {newItem.qty && newItem.unit_price
                               ? currency(Number(newItem.qty) * Number(newItem.unit_price))
                               : "—"}
@@ -644,7 +644,7 @@ function InvoiceDrawer({
                                   setAddingItem(false);
                                 }}
                                 disabled={!newItem.description.trim() || !newItem.qty || !newItem.unit_price || isLineItemPending}
-                                className="h-5 px-1.5 rounded text-[10px] bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40"
+                                className="h-5 px-1.5 rounded text-2xs bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40"
                               >
                                 Add
                               </button>
@@ -666,27 +666,27 @@ function InvoiceDrawer({
 
               {/* Totals */}
               <div className="rounded-md border border-border bg-surface p-3 space-y-1.5">
-                <div className="flex justify-between text-[12px] text-muted-foreground">
+                <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Subtotal</span>
                   <span className="tabular-nums">{currency(invoice.subtotal)}</span>
                 </div>
                 {invoice.taxRate > 0 && (
-                  <div className="flex justify-between text-[12px] text-muted-foreground">
+                  <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Tax ({(invoice.taxRate * 100).toFixed(invoice.taxRate % 0.01 === 0 ? 0 : 2)}%)</span>
                     <span className="tabular-nums">{currency(invoice.taxAmount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-[13px] font-semibold border-t border-border pt-1.5 mt-1">
+                <div className="flex justify-between text-base font-semibold border-t border-border pt-1.5 mt-1">
                   <span>Total</span>
                   <span className="tabular-nums">{currency(invoice.total)}</span>
                 </div>
                 {invoice.amountPaid > 0 && (
                   <>
-                    <div className="flex justify-between text-[12px] text-green-600 dark:text-green-400">
+                    <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
                       <span>Amount Paid</span>
                       <span className="tabular-nums">−{currency(invoice.amountPaid)}</span>
                     </div>
-                    <div className="flex justify-between text-[13px] font-semibold text-amber-600 dark:text-amber-400">
+                    <div className="flex justify-between text-base font-semibold text-amber-600 dark:text-amber-400">
                       <span>Balance Due</span>
                       <span className="tabular-nums">{currency(invoice.balanceDue)}</span>
                     </div>
@@ -696,7 +696,7 @@ function InvoiceDrawer({
 
               {invoice.status === "partial" && (
                 <div>
-                  <div className="flex justify-between text-[10.5px] text-muted-foreground mb-1">
+                  <div className="flex justify-between text-2xs text-muted-foreground mb-1">
                     <span>Payment progress</span>
                     <span>{paidPct}% received</span>
                   </div>
@@ -714,10 +714,10 @@ function InvoiceDrawer({
                     {invoice.payments.map((pmt) => (
                       <div key={pmt.id} className="flex items-center justify-between rounded-md border border-border bg-surface px-3 py-2">
                         <div>
-                          <p className="text-[12px] font-medium">{currency(pmt.amount)}</p>
-                          <p className="text-[10.5px] text-muted-foreground">{fmtDate(pmt.date)} · {METHOD_LABELS[pmt.method] ?? pmt.method}</p>
+                          <p className="text-sm font-medium">{currency(pmt.amount)}</p>
+                          <p className="text-2xs text-muted-foreground">{fmtDate(pmt.date)} · {METHOD_LABELS[pmt.method] ?? pmt.method}</p>
                         </div>
-                        <p className="text-[10.5px] font-mono text-muted-foreground">{pmt.reference}</p>
+                        <p className="text-2xs font-mono text-muted-foreground">{pmt.reference}</p>
                       </div>
                     ))}
                   </div>
@@ -727,13 +727,13 @@ function InvoiceDrawer({
               {invoice.notes && (
                 <div>
                   <p className={labelCls}>Notes</p>
-                  <p className="text-[12.5px] text-muted-foreground leading-relaxed">{invoice.notes}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{invoice.notes}</p>
                 </div>
               )}
             </div>
 
             <div className="shrink-0 flex items-center justify-between gap-2 border-t border-border px-5 py-3">
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 {invoice.status === "overdue" && (
                   <span className="flex items-center gap-1 text-red-500">
                     <AlertCircle className="h-3.5 w-3.5" /> {fmtDate(invoice.dueDate)} — overdue
@@ -747,7 +747,7 @@ function InvoiceDrawer({
               </div>
               <button
                 onClick={onSwitchToEdit}
-                className="flex items-center gap-1.5 h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors"
+                className="flex items-center gap-1.5 h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors"
               >
                 <Pencil className="h-3.5 w-3.5" /> Edit
               </button>
@@ -814,8 +814,8 @@ function InvoiceDrawer({
                 <div>
                   <p className={labelCls}>Line Items ({invoice.lineItems.length})</p>
                   <div className="rounded-md border border-border overflow-hidden">
-                    <table className="w-full text-[11.5px]">
-                      <thead className="bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <table className="w-full text-xs">
+                      <thead className="bg-muted/50 text-2xs uppercase tracking-wider text-muted-foreground">
                         <tr>
                           <th className="text-left py-1.5 px-3 font-medium">Description</th>
                           <th className="text-right py-1.5 px-3 font-medium">Qty</th>
@@ -845,7 +845,7 @@ function InvoiceDrawer({
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   rows={3}
                   placeholder="Internal notes…"
-                  className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+                  className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
                 />
               </div>
             </div>
@@ -854,7 +854,7 @@ function InvoiceDrawer({
               <button
                 type="button"
                 onClick={() => { initializedRef.current = false; onSwitchToEdit(); }}
-                className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors"
+                className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors"
               >
                 Cancel
               </button>
@@ -862,7 +862,7 @@ function InvoiceDrawer({
                 type="button"
                 onClick={handleSave}
                 disabled={isPending}
-                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {isPending ? "Saving…" : "Save Changes"}
               </button>
@@ -912,7 +912,7 @@ function NewInvoiceModal({
     >
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-background shadow-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-[14px] font-semibold">New Invoice</h2>
+          <h2 className="text-md font-semibold">New Invoice</h2>
           <button onClick={onClose} className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent transition-colors">
             <X className="h-4 w-4" />
           </button>
@@ -963,19 +963,19 @@ function NewInvoiceModal({
               {...field("notes")}
               rows={2}
               placeholder="Internal notes…"
-              className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+              className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
             />
           </div>
-          <p className="text-[10.5px] text-muted-foreground">Invoice is created as a draft. Add line items after creating.</p>
+          <p className="text-2xs text-muted-foreground">Invoice is created as a draft. Add line items after creating.</p>
         </div>
         <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
-          <button onClick={onClose} className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+          <button onClick={onClose} className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
             Cancel
           </button>
           <button
             onClick={() => onCreate(form)}
             disabled={isPending || !form.companyName.trim() || !form.issuedDate}
-            className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {isPending ? "Creating…" : "Create Invoice"}
           </button>
@@ -1182,8 +1182,8 @@ function InvoicesPage() {
       </FilterBar>
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[12.5px]">
-          <thead className="sticky top-0 z-10 text-[10.5px] uppercase tracking-wide text-muted-foreground bg-surface border-b border-border">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 z-10 text-2xs uppercase tracking-wide text-muted-foreground bg-surface border-b border-border">
             <tr>
               <th className="text-left font-medium py-2 px-4">Number</th>
               <th className="text-left font-medium py-2">Customer</th>
@@ -1197,7 +1197,7 @@ function InvoicesPage() {
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-muted-foreground text-[12px]">
+                <td colSpan={7} className="py-12 text-center text-muted-foreground text-sm">
                   No invoices match your filters.
                 </td>
               </tr>
@@ -1208,7 +1208,7 @@ function InvoicesPage() {
                 className="border-b border-border/60 hover:bg-accent/40 cursor-pointer transition-colors"
                 onClick={() => { setSelectedId(inv.id); setDrawerMode("view"); }}
               >
-                <td className="py-2.5 px-4 font-mono text-[11px] text-muted-foreground">{inv.number}</td>
+                <td className="py-2.5 px-4 font-mono text-xs text-muted-foreground">{inv.number}</td>
                 <td className="py-2.5 font-medium">{inv.companyName}</td>
                 <td className="py-2.5 text-right font-mono tabular-nums font-semibold">{currency(inv.total)}</td>
                 <td className="py-2.5 text-right font-mono tabular-nums hidden sm:table-cell">
@@ -1224,7 +1224,7 @@ function InvoicesPage() {
                 <td className="py-2.5 pr-4 text-right" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => { setSelectedId(inv.id); setDrawerMode("view"); }}
-                    className="text-[11.5px] text-primary hover:underline"
+                    className="text-xs text-primary hover:underline"
                   >
                     {inv.status === "draft" ? "Edit" : "View"}
                   </button>

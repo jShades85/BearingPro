@@ -144,7 +144,7 @@ function getInitials(name: string): string {
 function StageBadge({ stage }: { stage: CompanyStage }) {
   const { label, cls } = stageMeta[stage];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -219,18 +219,18 @@ function CompanyDetailPage() {
   }, [setMeta, company]);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-16 text-[12.5px] text-muted-foreground">Loading…</div>;
+    return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">Loading…</div>;
   }
 
   if (!company) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <Building2 className="h-10 w-10 text-muted-foreground/40 mb-3" />
-        <p className="text-[14px] font-medium">Company not found</p>
-        <p className="text-[12.5px] text-muted-foreground mt-1 mb-4">This company doesn't exist or you don't have access.</p>
+        <p className="text-md font-medium">Company not found</p>
+        <p className="text-sm text-muted-foreground mt-1 mb-4">This company doesn't exist or you don't have access.</p>
         <Link
           to="/crm/companies"
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12.5px] font-medium text-primary-foreground hover:opacity-90"
+          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
           Back to Companies
         </Link>
@@ -244,7 +244,7 @@ function CompanyDetailPage() {
       <div className="border-b border-border px-5 py-2.5">
         <Link
           to="/crm/companies"
-          className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           All Companies
@@ -256,25 +256,25 @@ function CompanyDetailPage() {
         <div className="flex items-start gap-4">
           <Avatar
             initials={getInitials(company.name)}
-            className="!h-14 !w-14 !text-[18px] !rounded-xl shrink-0"
+            className="!h-14 !w-14 !text-lg !rounded-xl shrink-0"
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-[17px] font-semibold">{company.name}</h1>
+              <h1 className="text-lg font-semibold">{company.name}</h1>
               <StageBadge stage={company.stage} />
               {canWrite && (
                 <button
                   onClick={() => setEditOpen(true)}
-                  className="ml-auto flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  className="ml-auto flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 >
                   <Pencil className="h-3 w-3" /> Edit
                 </button>
               )}
             </div>
-            <p className="text-[12.5px] text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {[company.industry, company.city && company.state ? `${company.city}, ${company.state}` : company.city ?? company.state].filter(Boolean).join(" · ")}
             </p>
-            <div className="mt-2.5 flex flex-wrap items-center gap-4 text-[12px] text-muted-foreground">
+            <div className="mt-2.5 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               {company.phone && (
                 <a href={`tel:${company.phone}`} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
                   <Phone className="h-3.5 w-3.5 shrink-0" />
@@ -306,11 +306,11 @@ function CompanyDetailPage() {
           {/* Company info */}
           {(company.billing_address || company.service_address) && (
             <section>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Company Info</p>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-[12.5px]">
+              <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Company Info</p>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                 {company.billing_address && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-1">Billing Address</p>
+                    <p className="text-2xs text-muted-foreground mb-1">Billing Address</p>
                     <div className="flex items-start gap-2 text-foreground/80">
                       <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
                       <span>{company.billing_address}</span>
@@ -319,7 +319,7 @@ function CompanyDetailPage() {
                 )}
                 {company.service_address && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground mb-1">Service Address</p>
+                    <p className="text-2xs text-muted-foreground mb-1">Service Address</p>
                     <div className="flex items-start gap-2 text-foreground/80">
                       <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
                       <span>{company.service_address}</span>
@@ -333,12 +333,12 @@ function CompanyDetailPage() {
           {/* Contacts */}
           <section>
             <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <p className="text-2xs uppercase tracking-wider text-muted-foreground">
                 Contacts <span className="ml-1 text-foreground font-mono">{contacts.length}</span>
               </p>
               <Link
                 to="/crm/contacts"
-                className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Plus className="h-3 w-3" />
                 Add Contact
@@ -349,28 +349,28 @@ function CompanyDetailPage() {
                 {contacts.map((contact) => (
                   <div
                     key={contact.id}
-                    className="flex items-center gap-3 rounded-md border border-border bg-surface/40 px-3 py-2.5 text-[12px]"
+                    className="flex items-center gap-3 rounded-md border border-border bg-surface/40 px-3 py-2.5 text-sm"
                   >
-                    <Avatar initials={getInitials(contact.full_name)} className="!h-7 !w-7 !text-[10px] !rounded-full shrink-0" />
+                    <Avatar initials={getInitials(contact.full_name)} className="!h-7 !w-7 !text-2xs !rounded-full shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium leading-snug truncate">{contact.full_name}</div>
-                      <div className="text-[11px] text-muted-foreground">{contact.title ?? "—"}</div>
+                      <div className="text-xs text-muted-foreground">{contact.title ?? "—"}</div>
                     </div>
                     <div className="hidden sm:flex flex-col items-end gap-0.5 shrink-0">
-                      {contact.phone && <span className="font-mono text-[11px] text-muted-foreground">{contact.phone}</span>}
-                      {contact.email && <span className="text-[11px] text-muted-foreground truncate max-w-[180px]">{contact.email}</span>}
+                      {contact.phone && <span className="font-mono text-xs text-muted-foreground">{contact.phone}</span>}
+                      {contact.email && <span className="text-xs text-muted-foreground truncate max-w-[180px]">{contact.email}</span>}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-[12px] text-muted-foreground">No contacts yet.</p>
+              <p className="text-sm text-muted-foreground">No contacts yet.</p>
             )}
           </section>
 
           {/* Open opportunities where this company is the customer */}
           <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">
               Open Opportunities{openOpps.length > 0 && <span className="ml-1 text-muted-foreground/60">({openOpps.length})</span>}
             </p>
             {openOpps.length > 0 ? (
@@ -380,27 +380,27 @@ function CompanyDetailPage() {
                     key={opp.id}
                     to="/sales/opportunities"
                     search={{ opp: opp.id }}
-                    className="flex items-center gap-3 rounded-md border border-border bg-surface/40 px-3 py-2.5 text-[12px] hover:border-primary/30 transition-colors"
+                    className="flex items-center gap-3 rounded-md border border-border bg-surface/40 px-3 py-2.5 text-sm hover:border-primary/30 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="font-medium leading-snug truncate">{opp.title}</div>
-                      <span className={cn("mt-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium", oppStageMeta[opp.stage].cls)}>
+                      <span className={cn("mt-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", oppStageMeta[opp.stage].cls)}>
                         <span className="h-1.5 w-1.5 rounded-full bg-current" />
                         {oppStageMeta[opp.stage].label}
                       </span>
                     </div>
-                    <span className="font-mono tabular-nums text-[11.5px] font-semibold shrink-0">{opp.value ? currency(opp.value) : "—"}</span>
+                    <span className="font-mono tabular-nums text-xs font-semibold shrink-0">{opp.value ? currency(opp.value) : "—"}</span>
                   </Link>
                 ))}
               </div>
             ) : (
-              <p className="text-[12px] text-muted-foreground">No open opportunities.</p>
+              <p className="text-sm text-muted-foreground">No open opportunities.</p>
             )}
           </section>
 
           {/* Active projects where this company is the customer */}
           <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">
               Active Projects{openProjects.length > 0 && <span className="ml-1 text-muted-foreground/60">({openProjects.length})</span>}
             </p>
             {openProjects.length > 0 ? (
@@ -410,24 +410,24 @@ function CompanyDetailPage() {
                     key={project.id}
                     to="/operations/projects/$projectId"
                     params={{ projectId: project.id }}
-                    className="flex items-center gap-3 rounded-md border border-border bg-surface/40 px-3 py-2.5 text-[12px] hover:border-primary/30 transition-colors"
+                    className="flex items-center gap-3 rounded-md border border-border bg-surface/40 px-3 py-2.5 text-sm hover:border-primary/30 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="font-medium leading-snug truncate">{project.name}</div>
                       <div className="mt-1 flex items-center gap-2">
-                        <span className="font-mono text-[10px] text-muted-foreground">{project.code}</span>
-                        <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium", projectStatusMeta[project.status].cls)}>
+                        <span className="font-mono text-2xs text-muted-foreground">{project.code}</span>
+                        <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", projectStatusMeta[project.status].cls)}>
                           <span className="h-1.5 w-1.5 rounded-full bg-current" />
                           {projectStatusMeta[project.status].label}
                         </span>
                       </div>
                     </div>
-                    <span className="font-mono tabular-nums text-[11.5px] font-semibold shrink-0">{project.contract_value ? currency(project.contract_value) : "—"}</span>
+                    <span className="font-mono tabular-nums text-xs font-semibold shrink-0">{project.contract_value ? currency(project.contract_value) : "—"}</span>
                   </Link>
                 ))}
               </div>
             ) : (
-              <p className="text-[12px] text-muted-foreground">No active projects.</p>
+              <p className="text-sm text-muted-foreground">No active projects.</p>
             )}
           </section>
         </div>
@@ -437,7 +437,7 @@ function CompanyDetailPage() {
           {/* Notes */}
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Notes</p>
+              <p className="text-2xs uppercase tracking-wider text-muted-foreground">Notes</p>
               {canWrite && !editingNotes && (
                 <button
                   onClick={() => setEditingNotes(true)}
@@ -454,14 +454,14 @@ function CompanyDetailPage() {
                   rows={6}
                   value={notesText}
                   onChange={(e) => setNotesText(e.target.value)}
-                  className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12px] leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="Add notes…"
                 />
                 <div className="mt-2 flex gap-1.5">
                   <button
                     onClick={() => saveNotes.mutate()}
                     disabled={saveNotes.isPending}
-                    className="flex-1 h-7 rounded-md bg-primary text-[11.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="flex-1 h-7 rounded-md bg-primary text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     {saveNotes.isPending ? "Saving…" : "Save"}
                   </button>
@@ -477,7 +477,7 @@ function CompanyDetailPage() {
                 </div>
               </>
             ) : (
-              <p className="text-[12px] text-muted-foreground leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                 {company.notes?.trim() || "No notes."}
               </p>
             )}
@@ -512,7 +512,7 @@ function EditCompanyModal({
   onClose: () => void;
   onSaved: (updated: DbCompany) => void;
 }) {
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const [form, setForm] = useState({
     name:            company.name,
@@ -618,14 +618,14 @@ function EditCompanyModal({
       <div className="mt-3 flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={() => mutate()}
           disabled={!form.name.trim() || isPending}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {isPending ? "Saving…" : "Save Changes"}
         </button>

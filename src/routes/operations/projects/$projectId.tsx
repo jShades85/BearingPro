@@ -203,7 +203,7 @@ function toProjectRecord(d: DbProject): ProjectRecord {
 function TypeBadge({ type }: { type: ProjectRecord["type"] }) {
   return (
     <span className={cn(
-      "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium",
+      "inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium",
       type === "work-order"
         ? "bg-slate-500/10 text-slate-500 dark:text-slate-400"
         : "bg-primary/10 text-primary",
@@ -242,7 +242,7 @@ function StatusDropdown({
         type="button"
         onClick={() => !disabled && setOpen((v) => !v)}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium transition-opacity",
+          "inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-opacity",
           disabled ? "cursor-default" : "hover:opacity-80",
           cls,
         )}
@@ -262,11 +262,11 @@ function StatusDropdown({
                 type="button"
                 onClick={() => { onChange(s); setOpen(false); }}
                 className={cn(
-                  "flex w-full items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-accent transition-colors",
+                  "flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent transition-colors",
                   status === s && "bg-accent/50",
                 )}
               >
-                <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium", c)}>
+                <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", c)}>
                   <span className="h-1.5 w-1.5 rounded-full bg-current" />
                   {l}
                 </span>
@@ -292,9 +292,9 @@ function StatBlock({
 }) {
   return (
     <div className="rounded-lg border border-border bg-card px-4 py-3">
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
-      <p className={cn("text-[18px] font-semibold tabular-nums leading-none", valueClass)}>{value}</p>
-      {sub && <p className="mt-1 text-[11px] text-muted-foreground">{sub}</p>}
+      <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
+      <p className={cn("text-lg font-semibold tabular-nums leading-none", valueClass)}>{value}</p>
+      {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
     </div>
   );
 }
@@ -316,7 +316,7 @@ function AddPhaseModal({
 }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -347,7 +347,7 @@ function AddPhaseModal({
     <DialogContent className="max-w-md" onInteractOutside={(e) => { if (saving) e.preventDefault(); }}>
       <DialogHeader><DialogTitle>Add Phase</DialogTitle></DialogHeader>
       {(dbProject.company || dbProject.site_address) && (
-        <div className="rounded-md bg-muted/40 border border-border px-3 py-2 text-[12px] text-muted-foreground space-y-0.5">
+        <div className="rounded-md bg-muted/40 border border-border px-3 py-2 text-sm text-muted-foreground space-y-0.5">
           {dbProject.company && <p><span className="font-medium text-foreground">{dbProject.company.name}</span></p>}
           {dbProject.site_address && <p>{dbProject.site_address}</p>}
         </div>
@@ -376,14 +376,14 @@ function AddPhaseModal({
         </div>
         <div>
           <label className={labelCls}>Notes</label>
-          <textarea name="notes" rows={2} className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Any additional context…" />
+          <textarea name="notes" rows={2} className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Any additional context…" />
         </div>
         {saveError && (
-          <p className="rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-[12px] text-destructive">{saveError}</p>
+          <p className="rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-sm text-destructive">{saveError}</p>
         )}
         <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">Cancel</button>
-          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">Cancel</button>
+          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
             {saving ? "Adding…" : "Add Phase"}
           </button>
         </div>
@@ -421,14 +421,14 @@ function ProjectPhasesTab({
   return (
     <div className="px-5 py-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground">
           {phases.length} phase{phases.length !== 1 ? "s" : ""}
         </p>
         {canWrite && (
           <button
             type="button"
             onClick={() => setAddOpen(true)}
-            className="flex items-center gap-1.5 h-7 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            className="flex items-center gap-1.5 h-7 rounded-md border border-border bg-surface px-2.5 text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
             Add Phase
@@ -437,18 +437,18 @@ function ProjectPhasesTab({
       </div>
 
       {isLoading ? (
-        <div className="py-10 text-center text-[12.5px] text-muted-foreground">Loading phases…</div>
+        <div className="py-10 text-center text-sm text-muted-foreground">Loading phases…</div>
       ) : phases.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
-          <p className="text-[13px] font-medium">No phases yet</p>
-          <p className="mt-1 text-[12px] text-muted-foreground mb-4">
+          <p className="text-base font-medium">No phases yet</p>
+          <p className="mt-1 text-sm text-muted-foreground mb-4">
             Add phases to break this project into schedulable work orders.
           </p>
           {canWrite && (
             <button
               type="button"
               onClick={() => setAddOpen(true)}
-              className="flex items-center gap-1.5 h-7 rounded-md bg-primary px-3 text-[12px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="flex items-center gap-1.5 h-7 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
             >
               <Plus className="h-3.5 w-3.5" />
               Add First Phase
@@ -457,9 +457,9 @@ function ProjectPhasesTab({
         </div>
       ) : (
         <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-[12.5px]">
+          <table className="w-full text-sm">
             <thead className="bg-surface/50 border-b border-border">
-              <tr className="text-[10.5px] uppercase tracking-wide text-muted-foreground">
+              <tr className="text-2xs uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 px-4 text-left font-medium">Phase</th>
                 <th className="py-2 px-3 text-left font-medium">Status</th>
                 <th className="py-2 px-3 text-left font-medium">Assigned</th>
@@ -480,17 +480,17 @@ function ProjectPhasesTab({
                   >
                     <td className="py-2.5 px-4">
                       <div className="font-medium leading-snug">{phase.name}</div>
-                      <div className="text-[10.5px] font-mono text-muted-foreground">{phase.code ?? "—"}</div>
+                      <div className="text-2xs font-mono text-muted-foreground">{phase.code ?? "—"}</div>
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+                      <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
                         <span className="h-1.5 w-1.5 rounded-full bg-current" />
                         {label}
                       </span>
                     </td>
                     <td className="py-2.5 px-3">
                       <div className="flex items-center gap-1.5">
-                        <Avatar initials={techInitials} className="!h-5 !w-5 !text-[8px] shrink-0" />
+                        <Avatar initials={techInitials} className="!h-5 !w-5 !text-2xs shrink-0" />
                         <span className="text-muted-foreground">{techName.split(" ")[0]}</span>
                       </div>
                     </td>
@@ -603,15 +603,15 @@ export function ProjectDetailView({
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <Briefcase className="h-10 w-10 text-muted-foreground/40 mb-3" />
-        <p className="text-[14px] font-medium">
+        <p className="text-md font-medium">
           {section === "Work Orders" ? "Work order" : "Project"} not found
         </p>
-        <p className="text-[12.5px] text-muted-foreground mt-1 mb-4">
+        <p className="text-sm text-muted-foreground mt-1 mb-4">
           No record with ID &ldquo;{projectId}&rdquo; exists.
         </p>
         <Link
           to={backHref}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12.5px] font-medium text-primary-foreground hover:opacity-90"
+          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
           Back to {section}
         </Link>
@@ -620,7 +620,7 @@ export function ProjectDetailView({
   }
 
   if (!project) {
-    return <div className="flex items-center justify-center py-24 text-muted-foreground text-[13px]">Loading…</div>;
+    return <div className="flex items-center justify-center py-24 text-muted-foreground text-base">Loading…</div>;
   }
 
   const margin = project.contractValue > 0
@@ -636,7 +636,7 @@ export function ProjectDetailView({
       <div className="border-b border-border px-5 py-2.5">
         <Link
           to={backHref}
-          className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M10 13L5 8l5-5" strokeLinecap="round" strokeLinejoin="round" />
@@ -650,12 +650,12 @@ export function ProjectDetailView({
         <div className="flex items-start justify-between gap-6">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="font-mono text-[10.5px] text-muted-foreground">{project.code}</span>
+              <span className="font-mono text-2xs text-muted-foreground">{project.code}</span>
               <TypeBadge type={project.type} />
             </div>
-            <h1 className="text-[19px] font-semibold tracking-tight leading-snug">{project.name}</h1>
-            <p className="mt-0.5 text-[13px] text-muted-foreground">{project.customer}</p>
-            <div className="mt-1.5 flex items-center gap-1.5 text-[12px] text-muted-foreground">
+            <h1 className="text-lg font-semibold tracking-tight leading-snug">{project.name}</h1>
+            <p className="mt-0.5 text-base text-muted-foreground">{project.customer}</p>
+            <div className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="h-3.5 w-3.5 shrink-0" />
               <span>{project.siteAddress}</span>
             </div>
@@ -663,13 +663,13 @@ export function ProjectDetailView({
 
           <div className="flex flex-col items-end gap-2 shrink-0">
             <StatusDropdown status={status} onChange={(s) => statusMutation.mutate(s)} disabled={!canWrite} />
-            <p className="text-[22px] font-semibold tabular-nums">{currency(project.contractValue)}</p>
-            <p className="text-[10.5px] text-muted-foreground">Contract Value</p>
+            <p className="text-display font-semibold tabular-nums">{currency(project.contractValue)}</p>
+            <p className="text-2xs text-muted-foreground">Contract Value</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <dl className="flex flex-wrap gap-x-6 gap-y-2 text-[12px]">
+          <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
             <div className="flex items-center gap-1.5">
               <dt className="text-muted-foreground">Start</dt>
               <dd className="font-medium">{project.startDate}</dd>
@@ -694,7 +694,7 @@ export function ProjectDetailView({
 
           <div className="flex items-center gap-2 shrink-0">
             {canWrite && (
-              <button type="button" onClick={() => setEditOpen(true)} className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
+              <button type="button" onClick={() => setEditOpen(true)} className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
                 <Pencil className="h-3.5 w-3.5" />
                 Edit
               </button>
@@ -733,7 +733,7 @@ export function ProjectDetailView({
             type="button"
             onClick={() => setTab(t.id)}
             className={cn(
-              "relative h-9 rounded-md px-2.5 text-[12.5px] transition-colors",
+              "relative h-9 rounded-md px-2.5 text-sm transition-colors",
               tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -753,8 +753,8 @@ export function ProjectDetailView({
         {tab === "files"    && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <UploadCloud className="h-9 w-9 text-muted-foreground/30 mb-3" />
-            <p className="text-[13px] font-medium">No files attached</p>
-            <p className="mt-1 text-[12px] text-muted-foreground">File attachments coming soon.</p>
+            <p className="text-base font-medium">No files attached</p>
+            <p className="mt-1 text-sm text-muted-foreground">File attachments coming soon.</p>
           </div>
         )}
       </div>
@@ -816,14 +816,14 @@ function ProjectEditDrawer({
     }
   }, [open, dbProject]);
 
-  const fieldCls = "w-full rounded-md border border-input bg-background px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring";
-  const labelCls = "text-[12px] font-medium text-muted-foreground";
+  const fieldCls = "w-full rounded-md border border-input bg-background px-3 py-1.5 text-base focus:outline-none focus:ring-1 focus:ring-ring";
+  const labelCls = "text-sm font-medium text-muted-foreground";
 
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
         <SheetHeader className="border-b border-border px-5 py-4">
-          <SheetTitle className="text-[15px] font-semibold">Edit Project</SheetTitle>
+          <SheetTitle className="text-md font-semibold">Edit Project</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
@@ -881,7 +881,7 @@ function ProjectEditDrawer({
         </div>
 
         <div className="border-t border-border px-5 py-4 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-md border border-border px-3 py-1.5 text-[13px] hover:bg-accent transition-colors">
+          <button type="button" onClick={onClose} className="rounded-md border border-border px-3 py-1.5 text-base hover:bg-accent transition-colors">
             Cancel
           </button>
           <button
@@ -898,7 +898,7 @@ function ProjectEditDrawer({
               budgeted_hours: budgetedHours ? parseFloat(budgetedHours) : null,
               notes: notes.trim() || null,
             })}
-            className="rounded-md bg-primary px-3 py-1.5 text-[13px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-60"
+            className="rounded-md bg-primary px-3 py-1.5 text-base font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save Changes"}
           </button>
@@ -928,7 +928,7 @@ function OverviewTab({
   return (
     <div className="px-5 py-5 space-y-6">
       <section>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Financials</p>
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-3">Financials</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatBlock label="Contract Value" value={currency(project.contractValue)} />
           <StatBlock label="Budgeted Cost" value={currency(project.budgetedCost)} />
@@ -943,7 +943,7 @@ function OverviewTab({
       </section>
 
       <section>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Progress</p>
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-3">Progress</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <StatBlock label="Budgeted Hours" value={project.budgetedHours > 0 ? `${project.budgetedHours} hrs` : "—"} />
           <StatBlock
@@ -961,7 +961,7 @@ function OverviewTab({
         </div>
         {project.budgetedHours > 0 && (
           <div className="mt-3 space-y-1">
-            <div className="flex items-center justify-between text-[10.5px] text-muted-foreground">
+            <div className="flex items-center justify-between text-2xs text-muted-foreground">
               <span>Hours used</span>
               <span className="font-mono">{project.loggedHours} / {project.budgetedHours} hrs</span>
             </div>
@@ -976,18 +976,18 @@ function OverviewTab({
       </section>
 
       <section>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Recent Activity</p>
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-3">Recent Activity</p>
         <ul className="space-y-3">
           {ACTIVITY.map((a, i) => {
             const Icon = a.icon;
             return (
-              <li key={i} className="flex gap-3 text-[12.5px]">
+              <li key={i} className="flex gap-3 text-sm">
                 <div className={cn("mt-0.5 shrink-0", a.color)}>
                   <Icon className="h-3.5 w-3.5" />
                 </div>
                 <div>
                   <p>{a.text}</p>
-                  <p className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">{a.time}</p>
+                  <p className="mt-0.5 font-mono text-2xs text-muted-foreground">{a.time}</p>
                 </div>
               </li>
             );

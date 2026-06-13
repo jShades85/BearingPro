@@ -222,7 +222,7 @@ function MultiSelect({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-foreground hover:bg-accent/40 transition-colors"
+        className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs text-foreground hover:bg-accent/40 transition-colors"
       >
         {selected.length > 0 ? `${label} (${selected.length})` : label}
         <ChevronDown className="h-3 w-3 text-muted-foreground" />
@@ -232,7 +232,7 @@ function MultiSelect({
           {options.map((opt) => (
             <label
               key={opt}
-              className="flex cursor-pointer items-center gap-2.5 px-3 py-1.5 text-[12px] hover:bg-accent/40"
+              className="flex cursor-pointer items-center gap-2.5 px-3 py-1.5 text-sm hover:bg-accent/40"
             >
               <input
                 type="checkbox"
@@ -297,12 +297,12 @@ function JobBlock({
           )}
           style={style}
         >
-          <div className="truncate text-[10.5px] font-semibold leading-snug">{job.title}</div>
+          <div className="truncate text-2xs font-semibold leading-snug">{job.title}</div>
           {!compact && (
-            <div className="truncate text-[9.5px] opacity-70 leading-snug">{job.customer}</div>
+            <div className="truncate text-2xs opacity-70 leading-snug">{job.customer}</div>
           )}
           {!compact && (
-            <div className="truncate text-[9.5px] opacity-70 leading-snug font-mono">
+            <div className="truncate text-2xs opacity-70 leading-snug font-mono">
               {job.startTime} – {job.endTime}
             </div>
           )}
@@ -312,12 +312,12 @@ function JobBlock({
                 <span
                   key={tech.id}
                   title={tech.name}
-                  className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/30 dark:bg-black/20 border border-current/30 text-[8px] font-bold"
+                  className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/30 dark:bg-black/20 border border-current/30 text-2xs font-bold"
                 >
                   {techInitials(tech.name)}
                 </span>
               ))}
-              <span className={cn("ml-0.5 rounded border border-current/20 px-1 py-px text-[9px] font-semibold", colors.bg, colors.text)}>
+              <span className={cn("ml-0.5 rounded border border-current/20 px-1 py-px text-2xs font-semibold", colors.bg, colors.text)}>
                 {CATEGORY_LABELS[job.category]}
               </span>
             </div>
@@ -326,12 +326,12 @@ function JobBlock({
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" side="right" align="start" sideOffset={8}>
         <div className="px-4 pt-4 pb-3">
-          <div className="text-[13px] font-semibold leading-snug">{job.title}</div>
-          <div className="mt-0.5 text-[10.5px] text-muted-foreground">{job.jobReference}</div>
+          <div className="text-base font-semibold leading-snug">{job.title}</div>
+          <div className="mt-0.5 text-2xs text-muted-foreground">{job.jobReference}</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10.5px] font-semibold border-current/20",
+                "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-2xs font-semibold border-current/20",
                 colors.bg,
                 colors.text,
               )}
@@ -341,7 +341,7 @@ function JobBlock({
             </span>
             <span
               className={cn(
-                "inline-flex items-center rounded-md border px-2 py-0.5 text-[10.5px] font-semibold",
+                "inline-flex items-center rounded-md border px-2 py-0.5 text-2xs font-semibold",
                 STATUS_BADGE_CLASSES[job.status],
               )}
             >
@@ -349,7 +349,7 @@ function JobBlock({
             </span>
           </div>
         </div>
-        <div className="border-t border-border px-4 py-3 flex flex-col gap-2.5 text-[11.5px]">
+        <div className="border-t border-border px-4 py-3 flex flex-col gap-2.5 text-xs">
           <div className="flex items-start gap-2">
             <MapPin className="mt-px h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <div>
@@ -375,9 +375,9 @@ function JobBlock({
               {job.assignedTechs.map((tech) => (
                 <span
                   key={tech.id}
-                  className="inline-flex items-center gap-1 rounded-full border border-border bg-accent/60 px-2 py-0.5 text-[10.5px]"
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-accent/60 px-2 py-0.5 text-2xs"
                 >
-                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[7.5px] font-bold">
+                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold">
                     {techInitials(tech.name)}
                   </span>
                   {tech.name}
@@ -386,21 +386,21 @@ function JobBlock({
             </div>
           </div>
           {job.notes && (
-            <p className="pl-5 italic text-[11px] leading-snug text-muted-foreground">{job.notes}</p>
+            <p className="pl-5 italic text-xs leading-snug text-muted-foreground">{job.notes}</p>
           )}
         </div>
         <div className="flex gap-2 border-t border-border px-4 py-3">
           <button
             type="button"
             onClick={handleViewJob}
-            className="flex-1 h-7 rounded-md bg-primary text-primary-foreground text-[11.5px] font-medium hover:opacity-90 transition-opacity"
+            className="flex-1 h-7 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity"
           >
             View Job
           </button>
           <button
             type="button"
             onClick={() => { setOpen(false); onEditSchedule(job); }}
-            className="flex-1 h-7 rounded-md border border-border text-[11.5px] font-medium text-foreground hover:bg-accent/40 transition-colors"
+            className="flex-1 h-7 rounded-md border border-border text-xs font-medium text-foreground hover:bg-accent/40 transition-colors"
           >
             Edit Schedule
           </button>
@@ -416,7 +416,7 @@ function TimeGutter() {
   return (
     <div className="border-r border-border bg-surface/30">
       {HOURS.map((h) => (
-        <div key={h} className="flex items-start justify-end pr-2 pt-0.5 border-b border-border/40 text-[10px] font-mono text-muted-foreground" style={{ height: CELL_H }}>
+        <div key={h} className="flex items-start justify-end pr-2 pt-0.5 border-b border-border/40 text-2xs font-mono text-muted-foreground" style={{ height: CELL_H }}>
           {String(h).padStart(2, "0")}:00
         </div>
       ))}
@@ -476,10 +476,10 @@ function WeekView({
                   isToday && "bg-primary/5",
                 )}
               >
-                <div className={cn("text-[10px] uppercase tracking-wide text-muted-foreground", isToday && "text-primary font-semibold")}>
+                <div className={cn("text-2xs uppercase tracking-wide text-muted-foreground", isToday && "text-primary font-semibold")}>
                   {date.toLocaleDateString("en-US", { weekday: "short" })}
                 </div>
-                <div className={cn("text-[13px] font-semibold leading-tight", isToday ? "text-primary" : "text-foreground")}>
+                <div className={cn("text-base font-semibold leading-tight", isToday ? "text-primary" : "text-foreground")}>
                   {date.getMonth() + 1}/{date.getDate()}
                 </div>
               </button>
@@ -567,10 +567,10 @@ function DayView({
         >
           <div />
           <div className={cn("border-l border-border px-3 py-2", isToday && "bg-primary/5")}>
-            <div className={cn("text-[10px] uppercase tracking-wide text-muted-foreground", isToday && "text-primary font-semibold")}>
+            <div className={cn("text-2xs uppercase tracking-wide text-muted-foreground", isToday && "text-primary font-semibold")}>
               {new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" })}
             </div>
-            <div className={cn("text-[13px] font-semibold", isToday ? "text-primary" : "text-foreground")}>
+            <div className={cn("text-base font-semibold", isToday ? "text-primary" : "text-foreground")}>
               {new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </div>
           </div>
@@ -641,9 +641,9 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const inputCls =
-  "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
-const errorCls = "mt-0.5 text-[10.5px] text-red-500";
+  "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
+const errorCls = "mt-0.5 text-2xs text-red-500";
 
 function ScheduleDrawer({
   open,
@@ -732,7 +732,7 @@ function ScheduleDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full max-w-md overflow-y-auto p-0">
         <SheetHeader className="border-b border-border px-5 py-4">
-          <SheetTitle className="text-[14px]">{editingJob ? "Edit Schedule" : "Dispatch Work Order"}</SheetTitle>
+          <SheetTitle className="text-md">{editingJob ? "Edit Schedule" : "Dispatch Work Order"}</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 px-5 py-4">
@@ -770,7 +770,7 @@ function ScheduleDrawer({
               ))}
             </FormSelect>
             {selectedCategory && (
-              <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span className={cn("h-2 w-2 rounded-full", CATEGORY_COLORS[selectedCategory].dot)} />
                 {CATEGORY_LABELS[selectedCategory]}
               </div>
@@ -815,7 +815,7 @@ function ScheduleDrawer({
             <label className={labelCls}>Assign Techs *</label>
             <div className="rounded-md border border-border bg-surface p-2 flex flex-col gap-1">
               {teamMembers.map((member) => (
-                <label key={member.id} className="flex items-center gap-2 cursor-pointer text-[12.5px]">
+                <label key={member.id} className="flex items-center gap-2 cursor-pointer text-sm">
                   <input
                     type="checkbox"
                     checked={techIds?.includes(member.id) ?? false}
@@ -845,13 +845,13 @@ function ScheduleDrawer({
             <button
               type="button"
               onClick={() => { reset(); onOpenChange(false); }}
-              className="h-8 rounded-md border border-border px-4 text-[12.5px] text-muted-foreground hover:bg-accent/40 transition-colors"
+              className="h-8 rounded-md border border-border px-4 text-sm text-muted-foreground hover:bg-accent/40 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
             >
               Save
             </button>
@@ -1128,7 +1128,7 @@ function SchedulingPage() {
         <button
           type="button"
           onClick={goToday}
-          className="h-7 rounded-md border border-border bg-surface px-3 text-[11.5px] font-medium hover:bg-accent/40 transition-colors"
+          className="h-7 rounded-md border border-border bg-surface px-3 text-xs font-medium hover:bg-accent/40 transition-colors"
         >
           Today
         </button>
@@ -1149,7 +1149,7 @@ function SchedulingPage() {
           </button>
         </div>
 
-        <span className="flex-1 text-center text-[13px] font-medium">{rangeLabel}</span>
+        <span className="flex-1 text-center text-base font-medium">{rangeLabel}</span>
 
         {/* View toggle */}
         <div className="flex overflow-hidden rounded-md border border-border">
@@ -1159,7 +1159,7 @@ function SchedulingPage() {
               type="button"
               onClick={() => changeView(v)}
               className={cn(
-                "px-3 py-1 text-[11.5px] font-medium transition-colors",
+                "px-3 py-1 text-xs font-medium transition-colors",
                 view === v
                   ? "bg-primary text-primary-foreground"
                   : "bg-surface text-muted-foreground hover:bg-accent/40",
@@ -1205,7 +1205,7 @@ function SchedulingPage() {
           ))}
         </FilterSelect>
 
-        <span className="ml-auto text-[11px] font-mono text-muted-foreground">
+        <span className="ml-auto text-xs font-mono text-muted-foreground">
           {visibleJobs.length} job{visibleJobs.length !== 1 ? "s" : ""}
         </span>
       </FilterBar>

@@ -147,7 +147,7 @@ function StatusDropdown({
         type="button"
         onClick={() => !disabled && setOpen((v) => !v)}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium transition-opacity",
+          "inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-opacity",
           disabled ? "cursor-default" : "hover:opacity-80",
           cls,
         )}
@@ -166,11 +166,11 @@ function StatusDropdown({
                 type="button"
                 onClick={() => { onChange(value); setOpen(false); }}
                 className={cn(
-                  "flex w-full items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-accent transition-colors",
+                  "flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent transition-colors",
                   status === value && "bg-accent/50",
                 )}
               >
-                <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium", c)}>
+                <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", c)}>
                   <span className="h-1.5 w-1.5 rounded-full bg-current" />
                   {l}
                 </span>
@@ -245,13 +245,13 @@ export default function WorkOrderDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <Briefcase className="h-10 w-10 text-muted-foreground/40 mb-3" />
-        <p className="text-[14px] font-medium">Work order not found</p>
-        <p className="text-[12.5px] text-muted-foreground mt-1 mb-4">
+        <p className="text-md font-medium">Work order not found</p>
+        <p className="text-sm text-muted-foreground mt-1 mb-4">
           No record with ID &ldquo;{workOrderId}&rdquo; exists.
         </p>
         <Link
           to="/operations/work-orders"
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12.5px] font-medium text-primary-foreground hover:opacity-90"
+          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
           Back to Work Orders
         </Link>
@@ -260,7 +260,7 @@ export default function WorkOrderDetailPage() {
   }
 
   if (!wo) {
-    return <div className="flex items-center justify-center py-24 text-muted-foreground text-[13px]">Loading…</div>;
+    return <div className="flex items-center justify-center py-24 text-muted-foreground text-base">Loading…</div>;
   }
 
   const techName = wo.assignee?.full_name ?? "Unassigned";
@@ -274,7 +274,7 @@ export default function WorkOrderDetailPage() {
           <Link
             to="/operations/projects/$projectId"
             params={{ projectId: wo.project.id }}
-            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M10 13L5 8l5-5" strokeLinecap="round" strokeLinejoin="round" />
@@ -284,7 +284,7 @@ export default function WorkOrderDetailPage() {
         ) : (
           <Link
             to="/operations/work-orders"
-            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M10 13L5 8l5-5" strokeLinecap="round" strokeLinejoin="round" />
@@ -298,11 +298,11 @@ export default function WorkOrderDetailPage() {
       <div className="border-b border-border px-5 py-5 space-y-4">
         <div className="flex items-start justify-between gap-6">
           <div className="min-w-0">
-            <h1 className="text-[19px] font-semibold tracking-tight leading-snug">
+            <h1 className="text-lg font-semibold tracking-tight leading-snug">
               {wo.code ? `${wo.code} — ` : ""}{wo.name}
             </h1>
-            <p className="mt-0.5 text-[13px] text-muted-foreground">{wo.company?.name ?? "—"}</p>
-            <div className="mt-1.5 flex items-center gap-1.5 text-[12px] text-muted-foreground">
+            <p className="mt-0.5 text-base text-muted-foreground">{wo.company?.name ?? "—"}</p>
+            <div className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="h-3.5 w-3.5 shrink-0" />
               <span>{wo.site_address ?? "—"}</span>
             </div>
@@ -310,15 +310,15 @@ export default function WorkOrderDetailPage() {
 
           <div className="flex flex-col items-end gap-2 shrink-0">
             <StatusDropdown status={status} onChange={(s) => statusMutation.mutate(s)} disabled={!canWrite} />
-            <p className="text-[22px] font-semibold tabular-nums">
+            <p className="text-display font-semibold tabular-nums">
               {wo.contract_value != null ? currency(Number(wo.contract_value)) : "—"}
             </p>
-            <p className="text-[10.5px] text-muted-foreground">Estimated Value</p>
+            <p className="text-2xs text-muted-foreground">Estimated Value</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <dl className="flex flex-wrap gap-x-6 gap-y-2 text-[12px]">
+          <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
             {wo.project && (
               <div className="flex items-center gap-1.5">
                 <dt className="text-muted-foreground">Project</dt>
@@ -336,7 +336,7 @@ export default function WorkOrderDetailPage() {
             <div className="flex items-center gap-2">
               <dt className="text-muted-foreground">Assigned</dt>
               <dd className="flex items-center gap-1.5">
-                <Avatar initials={techInitials} className="!h-5 !w-5 !text-[8px] shrink-0" />
+                <Avatar initials={techInitials} className="!h-5 !w-5 !text-2xs shrink-0" />
                 <span className="font-medium">{techName}</span>
               </dd>
             </div>
@@ -356,7 +356,7 @@ export default function WorkOrderDetailPage() {
 
           <div className="flex items-center gap-2 shrink-0">
             {canWrite && (
-              <button type="button" onClick={() => setEditOpen(true)} className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
+              <button type="button" onClick={() => setEditOpen(true)} className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors">
                 <Pencil className="h-3.5 w-3.5" />
                 Edit
               </button>
@@ -395,7 +395,7 @@ export default function WorkOrderDetailPage() {
             type="button"
             onClick={() => setTab(t.id)}
             className={cn(
-              "relative h-9 rounded-md px-2.5 text-[12.5px] transition-colors",
+              "relative h-9 rounded-md px-2.5 text-sm transition-colors",
               tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -457,14 +457,14 @@ function WorkOrderEditDrawer({
     }
   }, [open, wo]);
 
-  const fieldCls = "w-full rounded-md border border-input bg-background px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring";
-  const labelCls = "text-[12px] font-medium text-muted-foreground";
+  const fieldCls = "w-full rounded-md border border-input bg-background px-3 py-1.5 text-base focus:outline-none focus:ring-1 focus:ring-ring";
+  const labelCls = "text-sm font-medium text-muted-foreground";
 
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
         <SheetHeader className="border-b border-border px-5 py-4">
-          <SheetTitle className="text-[15px] font-semibold">Edit Work Order</SheetTitle>
+          <SheetTitle className="text-md font-semibold">Edit Work Order</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
@@ -511,7 +511,7 @@ function WorkOrderEditDrawer({
         </div>
 
         <div className="border-t border-border px-5 py-4 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-md border border-border px-3 py-1.5 text-[13px] hover:bg-accent transition-colors">
+          <button type="button" onClick={onClose} className="rounded-md border border-border px-3 py-1.5 text-base hover:bg-accent transition-colors">
             Cancel
           </button>
           <button
@@ -526,7 +526,7 @@ function WorkOrderEditDrawer({
               budgeted_hours: budgetedHours ? parseFloat(budgetedHours) : null,
               notes: notes.trim() || null,
             })}
-            className="rounded-md bg-primary px-3 py-1.5 text-[13px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-60"
+            className="rounded-md bg-primary px-3 py-1.5 text-base font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save Changes"}
           </button>

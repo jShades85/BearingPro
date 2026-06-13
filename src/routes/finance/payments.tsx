@@ -106,8 +106,8 @@ const METHOD_META: Record<string, { label: string; cls: string }> = {
   cash:        { label: "Cash",        cls: "bg-slate-500/15 text-slate-500 dark:text-slate-400" },
 };
 
-const labelCls = "block text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-1";
-const inputCls = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1";
+const inputCls = "w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -145,7 +145,7 @@ function toInvoice(r: DbInvoice): Invoice {
 function StatusBadge({ status }: { status: InvoiceStatus }) {
   const { label, cls } = STATUS_META[status];
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium", cls)}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium", cls)}>
       {label}
     </span>
   );
@@ -156,7 +156,7 @@ function StatusBadge({ status }: { status: InvoiceStatus }) {
 function MethodBadge({ method }: { method: string }) {
   const meta = METHOD_META[method] ?? { label: method, cls: "bg-muted text-muted-foreground" };
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium", meta.cls)}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium", meta.cls)}>
       {meta.label}
     </span>
   );
@@ -182,11 +182,11 @@ function InvoiceCombobox({
           type="button"
           role="combobox"
           aria-expanded={open}
-          className="h-9 w-full flex items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-[12.5px] hover:bg-accent/30 transition-colors"
+          className="h-9 w-full flex items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm hover:bg-accent/30 transition-colors"
         >
           {selected ? (
             <span className="flex items-center gap-2 min-w-0">
-              <span className="font-mono text-[11.5px] shrink-0 text-muted-foreground">{selected.number}</span>
+              <span className="font-mono text-xs shrink-0 text-muted-foreground">{selected.number}</span>
               <span className="font-medium truncate">{selected.companyName}</span>
               <StatusBadge status={selected.status} />
               <span className="text-muted-foreground shrink-0 tabular-nums">{currency(selected.balanceDue)} due</span>
@@ -215,7 +215,7 @@ function InvoiceCombobox({
                   <CommandItem
                     value="__clear__"
                     onSelect={() => { onChange(""); setOpen(false); }}
-                    className="text-[12.5px] text-muted-foreground gap-2"
+                    className="text-sm text-muted-foreground gap-2"
                   >
                     <X className="h-3.5 w-3.5 shrink-0" /> Clear selection
                   </CommandItem>
@@ -229,13 +229,13 @@ function InvoiceCombobox({
                   key={inv.id}
                   value={inv.id}
                   onSelect={(v) => { onChange(v); setOpen(false); }}
-                  className="text-[12.5px] gap-2"
+                  className="text-sm gap-2"
                 >
                   <Check className={cn("h-3.5 w-3.5 shrink-0", value === inv.id ? "opacity-100" : "opacity-0")} />
-                  <span className="font-mono text-[11px] text-muted-foreground shrink-0">{inv.number}</span>
+                  <span className="font-mono text-xs text-muted-foreground shrink-0">{inv.number}</span>
                   <span className="flex-1 truncate">{inv.companyName}</span>
                   <StatusBadge status={inv.status} />
-                  <span className="text-[12px] font-semibold tabular-nums shrink-0">{currency(inv.balanceDue)}</span>
+                  <span className="text-sm font-semibold tabular-nums shrink-0">{currency(inv.balanceDue)}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -265,8 +265,8 @@ function OutstandingTab({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[12.5px]">
-        <thead className="border-b border-border bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+      <table className="w-full text-sm">
+        <thead className="border-b border-border bg-muted/40 text-2xs uppercase tracking-wider text-muted-foreground">
           <tr>
             <th className="text-left px-4 py-2.5 font-medium">Invoice #</th>
             <th className="text-left px-4 py-2.5 font-medium">Customer</th>
@@ -283,7 +283,7 @@ function OutstandingTab({
             const od = daysOverdue(inv.dueDate);
             return (
               <tr key={inv.id} className="border-b border-border/60 hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3 font-mono text-[12px] font-medium">{inv.number}</td>
+                <td className="px-4 py-3 font-mono text-sm font-medium">{inv.number}</td>
                 <td className="px-4 py-3 font-medium">{inv.companyName}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{currency(inv.total)}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-muted-foreground hidden sm:table-cell">
@@ -291,14 +291,14 @@ function OutstandingTab({
                 </td>
                 <td className={cn("px-4 py-3 text-right tabular-nums font-semibold", inv.status === "overdue" && "text-red-500")}>
                   <span className="block">{currency(inv.balanceDue)}</span>
-                  {od > 0 && <span className="text-[10px] font-normal text-red-400">{od}d overdue</span>}
+                  {od > 0 && <span className="text-2xs font-normal text-red-400">{od}d overdue</span>}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{fmtDate(inv.dueDate)}</td>
                 <td className="px-4 py-3"><StatusBadge status={inv.status} /></td>
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => onCollect(inv.id)}
-                    className="h-7 rounded-md bg-primary/10 px-3 text-[11.5px] font-medium text-primary hover:bg-primary/20 transition-colors whitespace-nowrap"
+                    className="h-7 rounded-md bg-primary/10 px-3 text-xs font-medium text-primary hover:bg-primary/20 transition-colors whitespace-nowrap"
                   >
                     Collect →
                   </button>
@@ -308,7 +308,7 @@ function OutstandingTab({
           })}
           {filtered.length === 0 && (
             <tr>
-              <td colSpan={8} className="px-4 py-16 text-center text-[12.5px] text-muted-foreground">
+              <td colSpan={8} className="px-4 py-16 text-center text-sm text-muted-foreground">
                 No outstanding invoices found
               </td>
             </tr>
@@ -339,8 +339,8 @@ function AllPaymentsTab({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[12.5px]">
-        <thead className="border-b border-border bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+      <table className="w-full text-sm">
+        <thead className="border-b border-border bg-muted/40 text-2xs uppercase tracking-wider text-muted-foreground">
           <tr>
             <th className="text-left px-4 py-2.5 font-medium">Date</th>
             <th className="text-left px-4 py-2.5 font-medium">Invoice #</th>
@@ -354,10 +354,10 @@ function AllPaymentsTab({
           {filtered.map((p) => (
             <tr key={p.id} className="border-b border-border/60 hover:bg-muted/30 transition-colors">
               <td className="px-4 py-3 text-muted-foreground">{fmtDate(p.date)}</td>
-              <td className="px-4 py-3 font-mono text-[12px] font-medium">{p.invoiceNumber}</td>
+              <td className="px-4 py-3 font-mono text-sm font-medium">{p.invoiceNumber}</td>
               <td className="px-4 py-3 font-medium">{p.companyName}</td>
               <td className="px-4 py-3"><MethodBadge method={p.method} /></td>
-              <td className="px-4 py-3 text-muted-foreground font-mono text-[11.5px] hidden md:table-cell">
+              <td className="px-4 py-3 text-muted-foreground font-mono text-xs hidden md:table-cell">
                 {p.reference || "—"}
               </td>
               <td className="px-4 py-3 text-right tabular-nums font-semibold text-green-600 dark:text-green-400">
@@ -367,7 +367,7 @@ function AllPaymentsTab({
           ))}
           {filtered.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-4 py-16 text-center text-[12.5px] text-muted-foreground">
+              <td colSpan={6} className="px-4 py-16 text-center text-sm text-muted-foreground">
                 No payments found
               </td>
             </tr>
@@ -473,14 +473,14 @@ function CollectTab({
           <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
         </div>
         <div className="text-center">
-          <p className="text-[16px] font-semibold">Payment Recorded</p>
-          <p className="text-[13px] text-muted-foreground mt-1">
+          <p className="text-lg font-semibold">Payment Recorded</p>
+          <p className="text-base text-muted-foreground mt-1">
             {currency(recordedAmount)} applied to {selectedInvoice.number}
           </p>
         </div>
         <button
           onClick={() => { setRecorded(false); onInvoiceChange(""); }}
-          className="h-8 rounded-md border border-border px-4 text-[12.5px] hover:bg-accent transition-colors mt-2"
+          className="h-8 rounded-md border border-border px-4 text-sm hover:bg-accent transition-colors mt-2"
         >
           Record Another Payment
         </button>
@@ -495,17 +495,17 @@ function CollectTab({
           <Mail className="h-8 w-8 text-blue-600 dark:text-blue-400" />
         </div>
         <div className="text-center">
-          <p className="text-[16px] font-semibold">Payment Link Sent</p>
-          <p className="text-[13px] text-muted-foreground mt-1">
+          <p className="text-lg font-semibold">Payment Link Sent</p>
+          <p className="text-base text-muted-foreground mt-1">
             {currency(amountNum)} link sent to {email || selectedInvoice.contactName}
           </p>
-          <p className="text-[11.5px] text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             The invoice will update to Paid once the customer completes checkout.
           </p>
         </div>
         <button
           onClick={() => { setLinkSent(false); onInvoiceChange(""); }}
-          className="h-8 rounded-md border border-border px-4 text-[12.5px] hover:bg-accent transition-colors mt-2"
+          className="h-8 rounded-md border border-border px-4 text-sm hover:bg-accent transition-colors mt-2"
         >
           Send Another Link
         </button>
@@ -526,30 +526,30 @@ function CollectTab({
           <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                   {selectedInvoice.number}
                 </p>
-                <p className="text-[15px] font-semibold mt-0.5">{selectedInvoice.companyName}</p>
-                <p className="text-[12px] text-muted-foreground">{selectedInvoice.contactName}</p>
+                <p className="text-md font-semibold mt-0.5">{selectedInvoice.companyName}</p>
+                <p className="text-sm text-muted-foreground">{selectedInvoice.contactName}</p>
               </div>
               <StatusBadge status={selectedInvoice.status} />
             </div>
             <div className="h-px bg-border" />
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Invoice Total</p>
-                <p className="text-[13.5px] font-medium tabular-nums">{currency(selectedInvoice.total)}</p>
+                <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">Invoice Total</p>
+                <p className="text-base font-medium tabular-nums">{currency(selectedInvoice.total)}</p>
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Paid</p>
-                <p className="text-[13.5px] font-medium tabular-nums text-green-600 dark:text-green-400">
+                <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">Paid</p>
+                <p className="text-base font-medium tabular-nums text-green-600 dark:text-green-400">
                   {selectedInvoice.amountPaid > 0 ? currency(selectedInvoice.amountPaid) : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Balance Due</p>
+                <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">Balance Due</p>
                 <p className={cn(
-                  "text-[13.5px] font-semibold tabular-nums",
+                  "text-base font-semibold tabular-nums",
                   selectedInvoice.status === "overdue" ? "text-red-500" : "text-foreground",
                 )}>
                   {currency(selectedInvoice.balanceDue)}
@@ -564,7 +564,7 @@ function CollectTab({
             <div>
               <label className={labelCls}>Amount</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12.5px] text-muted-foreground">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
                 <input
                   type="number"
                   value={amount}
@@ -576,7 +576,7 @@ function CollectTab({
                 />
               </div>
               {isPartial && (
-                <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                   Partial payment — {currency(selectedInvoice.balanceDue - amountNum)} will remain outstanding
                 </p>
               )}
@@ -611,13 +611,13 @@ function CollectTab({
                       )}
                     >
                       {m === "stripe" && (
-                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-semibold text-primary-foreground whitespace-nowrap">
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-primary px-1.5 py-0.5 text-2xs font-semibold text-primary-foreground whitespace-nowrap">
                           Recommended
                         </span>
                       )}
                       {icons[m]}
-                      <span className={cn("text-[12px] font-medium", method === m ? "text-foreground" : "")}>{labels[m][0]}</span>
-                      <span className="text-[10px] leading-tight text-muted-foreground">{labels[m][1]}</span>
+                      <span className={cn("text-sm font-medium", method === m ? "text-foreground" : "")}>{labels[m][0]}</span>
+                      <span className="text-2xs leading-tight text-muted-foreground">{labels[m][1]}</span>
                     </button>
                   );
                 })}
@@ -631,8 +631,8 @@ function CollectTab({
                     <CreditCard className="h-4 w-4 text-[#635BFF]" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-medium">Stripe Payment Link</p>
-                    <p className="text-[11.5px] text-muted-foreground mt-0.5">
+                    <p className="text-base font-medium">Stripe Payment Link</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Customer pays by card or ACH bank transfer. 2.9% + 30¢ per card, 0.8% per ACH (capped at $5).
                     </p>
                   </div>
@@ -648,21 +648,21 @@ function CollectTab({
                   />
                 </div>
                 <div className="rounded-md border border-border bg-background px-3 py-2">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Payment link</p>
-                  <p className="font-mono text-[11.5px] text-muted-foreground truncate">{fakeStripeLink}</p>
+                  <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-1">Payment link</p>
+                  <p className="font-mono text-xs text-muted-foreground truncate">{fakeStripeLink}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => { setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2500); }}
-                    className="flex-1 h-9 flex items-center justify-center gap-2 rounded-md border border-border bg-background text-[12.5px] hover:bg-accent transition-colors"
+                    className="flex-1 h-9 flex items-center justify-center gap-2 rounded-md border border-border bg-background text-sm hover:bg-accent transition-colors"
                   >
                     {linkCopied ? <><Check className="h-3.5 w-3.5 text-green-500" /> Copied!</> : <><Link2 className="h-3.5 w-3.5" /> Copy Link</>}
                   </button>
                   <button
                     type="button"
                     onClick={() => setLinkSent(true)}
-                    className="flex-1 h-9 flex items-center justify-center gap-2 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+                    className="flex-1 h-9 flex items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
                   >
                     <Mail className="h-3.5 w-3.5" /> Send via Email
                   </button>
@@ -710,7 +710,7 @@ function CollectTab({
                 type="button"
                 onClick={() => collectMutation.mutate()}
                 disabled={collectMutation.isPending || !amountNum || amountNum <= 0}
-                className="w-full h-10 rounded-md bg-primary text-[13px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full h-10 rounded-md bg-primary text-base font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {collectMutation.isPending ? "Recording…" : "Record Payment"}
               </button>
@@ -719,7 +719,7 @@ function CollectTab({
         )}
 
         {!selectedInvoice && (
-          <div className="rounded-xl border border-dashed border-border p-12 text-center text-[12.5px] text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
             Select an invoice above to begin collecting a payment
           </div>
         )}

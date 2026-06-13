@@ -110,7 +110,7 @@ function getInitials(name: string): string {
 
 function TypeBadge({ type }: { type: ContactType }) {
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", typeMeta[type])}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", typeMeta[type])}>
       {type}
     </span>
   );
@@ -119,7 +119,7 @@ function TypeBadge({ type }: { type: ContactType }) {
 function StageBadge({ stage }: { stage: LifecycleStage }) {
   const { label, cls } = stageMeta[stage];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -180,7 +180,7 @@ function ContactsPage() {
   }, []);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-16 text-[12.5px] text-muted-foreground">Loading…</div>;
+    return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">Loading…</div>;
   }
 
   return (
@@ -207,7 +207,7 @@ function ContactsPage() {
             <option key={m.id} value={m.id}>{m.full_name ?? "—"}</option>
           ))}
         </FilterSelect>
-        <span className="text-[11px] text-muted-foreground font-mono">
+        <span className="text-xs text-muted-foreground font-mono">
           {filtered.length} of {contacts.length}
         </span>
       </FilterBar>
@@ -215,9 +215,9 @@ function ContactsPage() {
       {/* Table */}
       <div className="p-4 overflow-x-auto">
         <div className="rounded-lg border border-border bg-card overflow-hidden min-w-[900px]">
-          <table className="w-full text-[12.5px]">
+          <table className="w-full text-sm">
             <thead className="bg-surface/50">
-              <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border text-2xs uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 px-3 text-left font-medium">Name</th>
                 <th className="py-2 px-3 text-left font-medium">Company</th>
                 <th className="py-2 px-3 text-left font-medium">Phone</th>
@@ -240,7 +240,7 @@ function ContactsPage() {
                       <Avatar initials={getInitials(c.full_name)} />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold leading-snug">{c.full_name}</div>
-                        <div className="text-[11px] text-muted-foreground">{c.title ?? "—"}</div>
+                        <div className="text-xs text-muted-foreground">{c.title ?? "—"}</div>
                       </div>
                       {c.customer_type === "commercial"
                         ? <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
@@ -250,20 +250,20 @@ function ContactsPage() {
                   </td>
                   <td className="py-2.5 px-3">
                     {c.company
-                      ? <span className="text-foreground/75 text-[12px]">{c.company.name}</span>
-                      : <span className="text-muted-foreground/40 text-[12px]">—</span>
+                      ? <span className="text-foreground/75 text-sm">{c.company.name}</span>
+                      : <span className="text-muted-foreground/40 text-sm">—</span>
                     }
                   </td>
-                  <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground whitespace-nowrap">
+                  <td className="py-2.5 px-3 font-mono text-xs text-muted-foreground whitespace-nowrap">
                     {c.phone ?? "—"}
                   </td>
-                  <td className="py-2.5 px-3 text-muted-foreground text-[11.5px]">
+                  <td className="py-2.5 px-3 text-muted-foreground text-xs">
                     <span className="truncate block max-w-[180px]">{c.email ?? "—"}</span>
                   </td>
                   <td className="py-2.5 px-3">
                     {c.contact_type
                       ? <TypeBadge type={c.contact_type} />
-                      : <span className="text-muted-foreground/40 text-[12px]">—</span>
+                      : <span className="text-muted-foreground/40 text-sm">—</span>
                     }
                   </td>
                   <td className="py-2.5 px-3">
@@ -271,10 +271,10 @@ function ContactsPage() {
                       ? (
                         <div className="flex items-center gap-1.5">
                           <Avatar initials={getInitials(c.assignee.full_name)} />
-                          <span className="text-[11.5px]">{c.assignee.full_name.split(" ")[0]}</span>
+                          <span className="text-xs">{c.assignee.full_name.split(" ")[0]}</span>
                         </div>
                       )
-                      : <span className="text-muted-foreground/40 text-[12px]">—</span>
+                      : <span className="text-muted-foreground/40 text-sm">—</span>
                     }
                   </td>
                   <td className="py-2.5 px-3">
@@ -304,7 +304,7 @@ function ContactsPage() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-[12.5px] text-muted-foreground">
+                  <td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
                     {contacts.length === 0
                       ? "No contacts yet. Add your first one."
                       : "No contacts match the current filters."}
@@ -362,17 +362,17 @@ function ContactDrawer({
     <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4">
         <div className="flex items-center gap-3">
-          <Avatar initials={getInitials(c.full_name)} className="!h-11 !w-11 !text-[15px] !rounded-xl" />
+          <Avatar initials={getInitials(c.full_name)} className="!h-11 !w-11 !text-md !rounded-xl" />
           <div className="flex-1 min-w-0">
-            <SheetTitle className="text-[15px] font-semibold leading-tight">{c.full_name}</SheetTitle>
-            <p className="text-[12px] text-muted-foreground">
+            <SheetTitle className="text-md font-semibold leading-tight">{c.full_name}</SheetTitle>
+            <p className="text-sm text-muted-foreground">
               {c.title}{!isResidential && c.company ? ` · ${c.company.name}` : ""}
             </p>
           </div>
           {mode === "view" && canWrite && (
             <button
               onClick={onSwitchToEdit}
-              className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+              className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
             >
               <Pencil className="h-3 w-3" /> Edit
             </button>
@@ -381,7 +381,7 @@ function ContactDrawer({
         {c.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {c.tags.map((tag) => (
-              <span key={tag} className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span key={tag} className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground">
                 {tag}
               </span>
             ))}
@@ -403,12 +403,12 @@ function ContactViewBody({ contact: c, isResidential }: { contact: DbContact; is
     <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
       {/* Contact info */}
       <section>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Contact Info</p>
-        <div className="space-y-2 text-[12.5px]">
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Contact Info</p>
+        <div className="space-y-2 text-sm">
           {c.phone && (
             <div className="flex items-center gap-2.5 text-muted-foreground">
               <Phone className="h-3.5 w-3.5 shrink-0" />
-              <span className="font-mono text-[12px]">{c.phone}</span>
+              <span className="font-mono text-sm">{c.phone}</span>
             </div>
           )}
           {c.email && (
@@ -429,8 +429,8 @@ function ContactViewBody({ contact: c, isResidential }: { contact: DbContact; is
       {/* Property address — residential only */}
       {isResidential && c.address && (
         <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Property Address</p>
-          <div className="flex items-start gap-2.5 rounded-md border border-border bg-surface/50 px-3 py-2.5 text-[12.5px]">
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Property Address</p>
+          <div className="flex items-start gap-2.5 rounded-md border border-border bg-surface/50 px-3 py-2.5 text-sm">
             <Home className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
             <span className="text-foreground">{c.address}</span>
           </div>
@@ -439,10 +439,10 @@ function ContactViewBody({ contact: c, isResidential }: { contact: DbContact; is
 
       {/* Details */}
       <section>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Details</p>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[12.5px]">
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Details</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
           <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5">Assigned To</p>
+            <p className="text-2xs text-muted-foreground mb-0.5">Assigned To</p>
             {c.assignee?.full_name
               ? (
                 <div className="flex items-center gap-1.5">
@@ -454,17 +454,17 @@ function ContactViewBody({ contact: c, isResidential }: { contact: DbContact; is
             }
           </div>
           <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5">Lead Source</p>
+            <p className="text-2xs text-muted-foreground mb-0.5">Lead Source</p>
             <span>{c.source ?? "—"}</span>
           </div>
           {!isResidential && c.contact_type && (
             <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Type</p>
+              <p className="text-2xs text-muted-foreground mb-0.5">Type</p>
               <TypeBadge type={c.contact_type} />
             </div>
           )}
           <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5">Stage</p>
+            <p className="text-2xs text-muted-foreground mb-0.5">Stage</p>
             <StageBadge stage={c.stage} />
           </div>
         </div>
@@ -473,8 +473,8 @@ function ContactViewBody({ contact: c, isResidential }: { contact: DbContact; is
       {/* Related company — commercial only */}
       {!isResidential && c.company && (
         <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Company</p>
-          <div className="flex items-center gap-2 text-[12.5px]">
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Company</p>
+          <div className="flex items-center gap-2 text-sm">
             <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface">
               <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
@@ -486,8 +486,8 @@ function ContactViewBody({ contact: c, isResidential }: { contact: DbContact; is
       {/* Notes */}
       {c.notes && (
         <section>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
-          <p className="text-[12.5px] text-muted-foreground leading-relaxed">{c.notes}</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{c.notes}</p>
         </section>
       )}
     </div>
@@ -508,7 +508,7 @@ function ContactEditBody({
   teamMembers: TeamMember[];
 }) {
   const qc = useQueryClient();
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const [form, setForm] = useState({
     full_name:    c.full_name,
@@ -637,7 +637,7 @@ function ContactEditBody({
             value={form.notes}
             onChange={set("notes")}
             placeholder="Add any notes…"
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
       </div>
@@ -645,13 +645,13 @@ function ContactEditBody({
         <button
           onClick={() => mutate()}
           disabled={!form.full_name.trim() || isPending}
-          className="flex-1 h-8 rounded-md bg-primary text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="flex-1 h-8 rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {isPending ? "Saving…" : "Save Changes"}
         </button>
         <button
           onClick={onCancel}
-          className="h-8 rounded-md border border-border px-4 text-[12.5px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          className="h-8 rounded-md border border-border px-4 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
           Cancel
         </button>
@@ -675,7 +675,7 @@ const initialForm = {
 
 function NewContactModal({ onClose, teamMembers }: { onClose: () => void; teamMembers: TeamMember[] }) {
   const qc = useQueryClient();
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const [form, setForm] = useState(initialForm);
 
@@ -733,7 +733,7 @@ function NewContactModal({ onClose, teamMembers }: { onClose: () => void; teamMe
               type="button"
               onClick={() => setForm((f) => ({ ...f, customer_type: "commercial" }))}
               className={cn(
-                "flex-1 h-8 flex items-center justify-center gap-1.5 text-[12px] font-medium transition-colors",
+                "flex-1 h-8 flex items-center justify-center gap-1.5 text-sm font-medium transition-colors",
                 isCommercial ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground",
               )}
             >
@@ -744,7 +744,7 @@ function NewContactModal({ onClose, teamMembers }: { onClose: () => void; teamMe
               type="button"
               onClick={() => setForm((f) => ({ ...f, customer_type: "residential" }))}
               className={cn(
-                "flex-1 h-8 flex items-center justify-center gap-1.5 text-[12px] font-medium transition-colors border-l border-border",
+                "flex-1 h-8 flex items-center justify-center gap-1.5 text-sm font-medium transition-colors border-l border-border",
                 !isCommercial ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground hover:text-foreground",
               )}
             >
@@ -823,21 +823,21 @@ function NewContactModal({ onClose, teamMembers }: { onClose: () => void; teamMe
             value={form.notes}
             onChange={set("notes")}
             placeholder="Add any notes…"
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
       </div>
       <div className="mt-3 flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={() => mutate()}
           disabled={!fullName || isPending}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {isPending ? "Saving…" : "Add Contact"}
         </button>

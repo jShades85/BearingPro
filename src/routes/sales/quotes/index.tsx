@@ -149,16 +149,16 @@ function QuotesPage() {
         <FilterSelect value={dateRange} onChange={(v) => setDateRange(v as DateRange)}>
           {DATE_RANGES.map((r) => <option key={r} value={r}>{r}</option>)}
         </FilterSelect>
-        <span className="text-[11px] text-muted-foreground font-mono">
+        <span className="text-xs text-muted-foreground font-mono">
           {filtered.length} of {quotes.length}
         </span>
       </FilterBar>
 
       <div className="p-4 overflow-x-auto">
         <div className="rounded-lg border border-border bg-card overflow-hidden min-w-[820px]">
-          <table className="w-full text-[12.5px]">
+          <table className="w-full text-sm">
             <thead className="bg-surface/50">
-              <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border text-2xs uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 px-3 text-left font-medium">Number</th>
                 <th className="py-2 px-3 text-left font-medium">Opportunity</th>
                 <th className="py-2 px-3 text-left font-medium">Company / Contact</th>
@@ -171,7 +171,7 @@ function QuotesPage() {
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[12.5px] text-muted-foreground">
+                  <td colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
                     Loading quotes…
                   </td>
                 </tr>
@@ -185,24 +185,24 @@ function QuotesPage() {
                     onClick={() => openDetail(q.id)}
                     className="row-hover border-b border-border/60 cursor-pointer"
                   >
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-muted-foreground">{q.number}</td>
+                    <td className="py-2.5 px-3 font-mono text-xs text-muted-foreground">{q.number}</td>
                     <td className="py-2.5 px-3 font-medium">{opp?.title ?? "—"}</td>
                     <td className="py-2.5 px-3">
-                      <div className="text-[12.5px]">{opp?.company?.name ?? "—"}</div>
-                      <div className="text-[11px] text-muted-foreground">{opp?.contact?.full_name ?? ""}</div>
+                      <div className="text-sm">{opp?.company?.name ?? "—"}</div>
+                      <div className="text-xs text-muted-foreground">{opp?.contact?.full_name ?? ""}</div>
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className={cn("inline-flex items-center gap-1.5 text-[11.5px] capitalize", s.cls)}>
+                      <span className={cn("inline-flex items-center gap-1.5 text-xs capitalize", s.cls)}>
                         <s.icon className="h-3 w-3" /> {s.label}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[11px] text-muted-foreground">
+                    <td className="py-2.5 px-3 text-right font-mono text-xs text-muted-foreground">
                       v{q.revision}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold">
                       {q.value != null ? currency(q.value) : "—"}
                     </td>
-                    <td className="py-2.5 px-3 pr-3 text-right text-muted-foreground text-[11.5px]">
+                    <td className="py-2.5 px-3 pr-3 text-right text-muted-foreground text-xs">
                       {q.expiry_date ? fmtDate(q.expiry_date) : <span className="text-muted-foreground/40">—</span>}
                     </td>
                   </tr>
@@ -210,7 +210,7 @@ function QuotesPage() {
               })}
               {!isLoading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[12.5px] text-muted-foreground">
+                  <td colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
                     {quotes.length === 0
                       ? "No quotes yet. Create one from an opportunity in Estimating or Negotiation."
                       : "No quotes match the current filters."}

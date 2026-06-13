@@ -283,11 +283,11 @@ function AvatarStack({ assignees }: { assignees: string[] }) {
         <Avatar
           key={a}
           initials={a}
-          className={cn("!h-5 !w-5 !text-[8.5px] ring-1 ring-background", i > 0 && "-ml-1.5")}
+          className={cn("!h-5 !w-5 !text-2xs ring-1 ring-background", i > 0 && "-ml-1.5")}
         />
       ))}
       {overflow > 0 && (
-        <span className="-ml-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-muted ring-1 ring-background text-[9px] font-medium text-muted-foreground">
+        <span className="-ml-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-muted ring-1 ring-background text-2xs font-medium text-muted-foreground">
           +{overflow}
         </span>
       )}
@@ -299,7 +299,7 @@ function TaskRow({ task, onToggle }: { task: Task; onToggle: () => void }) {
   return (
     <div
       className={cn(
-        "grid items-center gap-x-3 px-4 py-2 text-[12px] border-t border-border/40 hover:bg-accent/20 transition-colors",
+        "grid items-center gap-x-3 px-4 py-2 text-sm border-t border-border/40 hover:bg-accent/20 transition-colors",
         task.done && "opacity-55",
       )}
       style={{ gridTemplateColumns: "1.25rem 1fr 8rem 5.5rem 3.5rem 3.5rem" }}
@@ -325,23 +325,23 @@ function TaskRow({ task, onToggle }: { task: Task; onToggle: () => void }) {
       <div className="flex items-center gap-1.5 min-w-0">
         {task.assignee ? (
           <>
-            <Avatar initials={task.assignee} className="!h-4 !w-4 !text-[7.5px] shrink-0" />
-            <span className="text-[11px] text-muted-foreground truncate">
+            <Avatar initials={task.assignee} className="!h-4 !w-4 !text-2xs shrink-0" />
+            <span className="text-xs text-muted-foreground truncate">
               {ownerNames[task.assignee]?.split(" ")[0] ?? task.assignee}
             </span>
           </>
         ) : (
-          <span className="text-[11px] text-muted-foreground">—</span>
+          <span className="text-xs text-muted-foreground">—</span>
         )}
       </div>
 
-      <span className="text-[11px] text-muted-foreground">{task.dueDate}</span>
+      <span className="text-xs text-muted-foreground">{task.dueDate}</span>
 
-      <span className="text-right font-mono text-[11px] text-muted-foreground">
+      <span className="text-right font-mono text-xs text-muted-foreground">
         {task.estHours > 0 ? `${task.estHours}h` : "—"}
       </span>
 
-      <span className="text-right font-mono text-[11px] text-muted-foreground">
+      <span className="text-right font-mono text-xs text-muted-foreground">
         {task.actualHours > 0 ? `${task.actualHours}h` : "—"}
       </span>
     </div>
@@ -373,12 +373,12 @@ function AddTaskForm({
           if (e.key === "Escape") onCancel();
         }}
         placeholder="Task title…"
-        className="flex-1 bg-transparent text-[12.5px] outline-none placeholder:text-muted-foreground/50"
+        className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
       />
       <button
         type="button"
         onClick={onAdd}
-        className="flex h-6 items-center rounded bg-primary px-2.5 text-[11px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+        className="flex h-6 items-center rounded bg-primary px-2.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
       >
         Add
       </button>
@@ -436,11 +436,11 @@ function PhaseCard({
             : <ChevronRight className="h-4 w-4" />}
         </span>
 
-        <span className="font-medium text-[13px] flex-1 min-w-0 truncate">{phase.name}</span>
+        <span className="font-medium text-base flex-1 min-w-0 truncate">{phase.name}</span>
 
         {/* Status badge */}
         <span className={cn(
-          "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap shrink-0",
+          "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap shrink-0",
           statusCls,
         )}>
           <span className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -449,14 +449,14 @@ function PhaseCard({
 
         {/* Hours */}
         {phase.budgetedHours > 0 && (
-          <span className="hidden sm:block text-[11px] font-mono text-muted-foreground whitespace-nowrap shrink-0">
+          <span className="hidden sm:block text-xs font-mono text-muted-foreground whitespace-nowrap shrink-0">
             {phase.loggedHours}h&thinsp;/&thinsp;{phase.budgetedHours}h
           </span>
         )}
 
         {/* Task count */}
         {phase.tasks.length > 0 && (
-          <span className="text-[11px] text-muted-foreground shrink-0">
+          <span className="text-xs text-muted-foreground shrink-0">
             {doneTasks}/{phase.tasks.length}
           </span>
         )}
@@ -473,7 +473,7 @@ function PhaseCard({
           {/* Column header */}
           {phase.tasks.length > 0 && (
             <div
-              className="hidden sm:grid items-center gap-x-3 px-4 py-1.5 text-[10px] uppercase tracking-wide text-muted-foreground bg-surface/40 border-b border-border/40"
+              className="hidden sm:grid items-center gap-x-3 px-4 py-1.5 text-2xs uppercase tracking-wide text-muted-foreground bg-surface/40 border-b border-border/40"
               style={{ gridTemplateColumns: "1.25rem 1fr 8rem 5.5rem 3.5rem 3.5rem" }}
             >
               <span />
@@ -490,7 +490,7 @@ function PhaseCard({
           ))}
 
           {phase.tasks.length === 0 && !addingTask && (
-            <p className="px-4 py-3 text-[12px] text-muted-foreground italic">No tasks yet.</p>
+            <p className="px-4 py-3 text-sm text-muted-foreground italic">No tasks yet.</p>
           )}
 
           {addingTask ? (
@@ -504,7 +504,7 @@ function PhaseCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onStartAdd(); }}
-              className="flex w-full items-center gap-1.5 px-4 py-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors border-t border-border/40"
+              className="flex w-full items-center gap-1.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors border-t border-border/40"
             >
               <Plus className="h-3.5 w-3.5" />
               Add Task
@@ -544,7 +544,7 @@ function WorkOrderChecklist({
   return (
     <div className="px-5 py-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground">
           Tasks
           {tasks.length > 0 && (
             <span className="ml-2 font-mono text-muted-foreground/60">
@@ -557,7 +557,7 @@ function WorkOrderChecklist({
       <div className="rounded-lg border border-border bg-card overflow-hidden">
         {tasks.length > 0 && (
           <div
-            className="hidden sm:grid items-center gap-x-3 px-4 py-1.5 text-[10px] uppercase tracking-wide text-muted-foreground bg-surface/40 border-b border-border"
+            className="hidden sm:grid items-center gap-x-3 px-4 py-1.5 text-2xs uppercase tracking-wide text-muted-foreground bg-surface/40 border-b border-border"
             style={{ gridTemplateColumns: "1.25rem 1fr 8rem 5.5rem 3.5rem 3.5rem" }}
           >
             <span />
@@ -574,7 +574,7 @@ function WorkOrderChecklist({
         ))}
 
         {tasks.length === 0 && !addingTask && (
-          <p className="px-4 py-4 text-[12px] text-muted-foreground italic">No tasks yet.</p>
+          <p className="px-4 py-4 text-sm text-muted-foreground italic">No tasks yet.</p>
         )}
 
         {addingTask ? (
@@ -589,7 +589,7 @@ function WorkOrderChecklist({
             type="button"
             onClick={onStartAdd}
             className={cn(
-              "flex w-full items-center gap-1.5 px-4 py-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors",
+              "flex w-full items-center gap-1.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors",
               tasks.length > 0 && "border-t border-border/40",
             )}
           >
@@ -751,7 +751,7 @@ export function PhasesPanel({ projectId, projectType }: PhasesPanelProps) {
     <div className="px-5 py-4">
       {/* Toolbar: count + template selector */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground">
           {phases.length} phase{phases.length !== 1 ? "s" : ""}
           {totalTasks > 0 && (
             <span className="ml-2 font-mono text-muted-foreground/60">
@@ -767,7 +767,7 @@ export function PhasesPanel({ projectId, projectType }: PhasesPanelProps) {
             e.target.value = "none";
             applyTemplate(val);
           }}
-          className="h-6 rounded border border-border bg-surface px-2 text-[11px] text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+          className="h-6 rounded border border-border bg-surface px-2 text-xs text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
         >
           <option value="none" disabled>Apply Template</option>
           {TEMPLATES.map((t) => (
@@ -797,8 +797,8 @@ export function PhasesPanel({ projectId, projectType }: PhasesPanelProps) {
         {/* Empty state */}
         {phases.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
-            <p className="text-[13px] font-medium text-foreground">No phases yet</p>
-            <p className="mt-1 text-[12px] text-muted-foreground">
+            <p className="text-base font-medium text-foreground">No phases yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
               Apply a template above or add phases manually below.
             </p>
           </div>
@@ -817,12 +817,12 @@ export function PhasesPanel({ projectId, projectType }: PhasesPanelProps) {
                 if (e.key === "Escape") cancelAddPhase();
               }}
               placeholder="Phase name…"
-              className="flex-1 bg-transparent text-[12.5px] outline-none placeholder:text-muted-foreground/50"
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
             />
             <button
               type="button"
               onClick={commitAddPhase}
-              className="flex h-6 items-center rounded bg-primary px-2.5 text-[11px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="flex h-6 items-center rounded bg-primary px-2.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
             >
               Add
             </button>
@@ -839,7 +839,7 @@ export function PhasesPanel({ projectId, projectType }: PhasesPanelProps) {
           <button
             type="button"
             onClick={() => setAddingPhase(true)}
-            className="flex items-center gap-1.5 rounded-md px-3 py-2 text-[12px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
             Add Phase

@@ -11,8 +11,8 @@ export function PageHeader({
     <div className="border-b border-border bg-background">
       <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4">
         <div>
-          <h1 className="text-[19px] font-semibold tracking-tight">{title}</h1>
-          {subtitle && <p className="mt-0.5 text-[12.5px] text-muted-foreground">{subtitle}</p>}
+          <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
+          {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
@@ -26,7 +26,7 @@ export function Tab({ active, children, onClick }: { active?: boolean; children:
     <button
       onClick={onClick}
       className={cn(
-        "relative h-8 rounded-md px-2.5 text-[12.5px] transition-colors",
+        "relative h-8 rounded-md px-2.5 text-sm transition-colors",
         active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
       )}
     >
@@ -47,7 +47,7 @@ const stageMap: Record<DealStage, { label: string; cls: string }> = {
 export function StageChip({ stage }: { stage: DealStage }) {
   const s = stageMap[stage];
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10.5px] font-medium", s.cls)}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-2xs font-medium", s.cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {s.label}
     </span>
@@ -64,7 +64,7 @@ const priMap: Record<Priority, { label: string; cls: string }> = {
 export function PriorityDot({ p }: { p: Priority }) {
   const m = priMap[p];
   return (
-    <span className={cn("inline-flex items-center gap-1 text-[11px]", m.cls)}>
+    <span className={cn("inline-flex items-center gap-1 text-xs", m.cls)}>
       <svg viewBox="0 0 10 10" className="h-2.5 w-2.5"><circle cx="5" cy="5" r="4" fill="currentColor" /></svg>
       {m.label}
     </span>
@@ -76,7 +76,7 @@ export function Avatar({ initials, className }: { initials: string; className?: 
   let h = 0; for (let i = 0; i < initials.length; i++) h = (h * 31 + initials.charCodeAt(i)) % 360;
   return (
     <span
-      className={cn("inline-flex h-5 w-5 items-center justify-center rounded-full text-[9.5px] font-semibold text-white/95", className)}
+      className={cn("inline-flex h-5 w-5 items-center justify-center rounded-full text-2xs font-semibold text-white/95", className)}
       style={{ background: `linear-gradient(135deg, oklch(0.55 0.16 ${h}), oklch(0.42 0.18 ${(h + 40) % 360}))` }}
     >
       {initials}
@@ -89,11 +89,11 @@ export function StatCard({
 }: { label: string; value: string; delta?: string; accent?: "up" | "down" }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <div className="text-[11.5px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="mt-1.5 flex items-baseline gap-2">
-        <div className="text-[22px] font-semibold tracking-tight">{value}</div>
+        <div className="text-display font-semibold tracking-tight">{value}</div>
         {delta && (
-          <span className={cn("text-[11px] font-medium", accent === "down" ? "text-destructive" : "text-status-won")}>
+          <span className={cn("text-xs font-medium", accent === "down" ? "text-destructive" : "text-status-won")}>
             {delta}
           </span>
         )}
@@ -135,10 +135,10 @@ export function JobCard({ id: _id, title, customer, status, date, assignee, valu
       className="cursor-pointer px-3 py-2.5 hover:bg-elevated transition-colors"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-[12.5px] font-semibold">{title}</span>
+        <span className="truncate text-sm font-semibold">{title}</span>
         <StageChip stage={status} />
       </div>
-      <div className="mt-1.5 flex items-center gap-3 text-[11.5px] text-muted-foreground">
+      <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1 truncate">
           <Building2 className="h-3 w-3 shrink-0" />
           {customer}
@@ -149,11 +149,11 @@ export function JobCard({ id: _id, title, customer, status, date, assignee, valu
         </span>
       </div>
       <div className="mt-2 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-[11.5px]">
+        <span className="flex items-center gap-1.5 text-xs">
           <Avatar initials={assignee} />
           <span className="text-muted-foreground">{assignee}</span>
         </span>
-        <span className="font-mono text-[11px] text-muted-foreground tabular-nums">{value}</span>
+        <span className="font-mono text-xs text-muted-foreground tabular-nums">{value}</span>
       </div>
     </Card>
   );

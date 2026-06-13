@@ -80,7 +80,7 @@ export function FormSelect({
           aria-describedby={ariaDescribedBy}
           aria-invalid={ariaInvalid}
           className={cn(
-            "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:ring-1 focus:ring-primary",
+            "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm focus:ring-1 focus:ring-primary",
             className,
           )}
         >
@@ -90,7 +90,7 @@ export function FormSelect({
         </SelectTrigger>
         <SelectContent>
           {noneOption && (
-            <SelectItem value={EMPTY} className="text-[12.5px]">
+            <SelectItem value={EMPTY} className="text-sm">
               {noneOption.label}
             </SelectItem>
           )}
@@ -101,7 +101,7 @@ export function FormSelect({
                 key={opt.value}
                 value={opt.value}
                 disabled={opt.disabled}
-                className="text-[12.5px]"
+                className="text-sm"
               >
                 {opt.label}
               </SelectItem>

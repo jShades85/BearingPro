@@ -248,8 +248,8 @@ function QuoteDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <FileText className="h-10 w-10 text-muted-foreground/40 mb-3" />
-        <p className="text-[14px] font-medium">Quote not found</p>
-        <p className="text-[12.5px] text-muted-foreground mt-1">The quote ID "{quoteId}" doesn't exist.</p>
+        <p className="text-md font-medium">Quote not found</p>
+        <p className="text-sm text-muted-foreground mt-1">The quote ID "{quoteId}" doesn't exist.</p>
       </div>
     );
   }
@@ -264,7 +264,7 @@ function QuoteDetailPage() {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
           <Link to="/sales/quotes"
-            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors">
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-3.5 w-3.5" />
             Quotes & Estimates
           </Link>
@@ -272,29 +272,29 @@ function QuoteDetailPage() {
           {/* Header */}
           <section>
             <div className="flex items-center gap-2.5 mb-2">
-              <span className="font-mono text-[11px] text-muted-foreground">{q.number}</span>
-              <span className={cn("inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10.5px] font-medium", statusCls)}>
+              <span className="font-mono text-xs text-muted-foreground">{q.number}</span>
+              <span className={cn("inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-2xs font-medium", statusCls)}>
                 <StatusIcon className="h-3 w-3" />
                 {statusLabel}
               </span>
               {q.revision > 1 && (
-                <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-2xs font-medium text-amber-600 dark:text-amber-400">
                   v{q.revision}
                 </span>
               )}
             </div>
-            <h1 className="text-[18px] font-semibold tracking-tight leading-snug">
+            <h1 className="text-lg font-semibold tracking-tight leading-snug">
               {q.opportunity?.title ?? "Quote"}
             </h1>
             {q.opportunity?.company && (
-              <p className="mt-1 text-[13px] text-muted-foreground">
+              <p className="mt-1 text-base text-muted-foreground">
                 {q.opportunity.company.name}
                 {q.opportunity.contact && (
                   <> · <span className="text-foreground">{q.opportunity.contact.full_name}</span></>
                 )}
               </p>
             )}
-            <div className="mt-2.5 flex flex-wrap gap-x-6 gap-y-1 text-[11.5px] text-muted-foreground">
+            <div className="mt-2.5 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
               {q.expiry_date && (
                 <span>Expires: <span className="text-foreground">{q.expiry_date}</span></span>
               )}
@@ -305,21 +305,21 @@ function QuoteDetailPage() {
           {/* Notes + expiry */}
           <div className="grid grid-cols-2 gap-x-5 gap-y-3 rounded-lg border border-border bg-card p-4">
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Valid Until</p>
+              <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Valid Until</p>
               <input
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div className="col-span-2">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Notes</p>
+              <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Notes</p>
               <textarea
                 rows={2}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Add notes…"
               />
             </div>
@@ -327,11 +327,11 @@ function QuoteDetailPage() {
 
           {/* Builder */}
           <section>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Line Items</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Line Items</p>
 
             {sections.length === 0 ? (
               <div className="rounded-lg border border-border bg-card p-5 space-y-4">
-                <p className="text-[12.5px] text-muted-foreground">Apply a template or start blank to build this quote.</p>
+                <p className="text-sm text-muted-foreground">Apply a template or start blank to build this quote.</p>
                 <div className="flex items-center gap-2">
                   <FormSelect
                     value={selectedTemplateId}
@@ -344,14 +344,14 @@ function QuoteDetailPage() {
                   <button
                     type="button"
                     onClick={() => applyTemplate(selectedTemplateId)}
-                    className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+                    className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
                   >
                     Apply Template
                   </button>
                   <button
                     type="button"
                     onClick={startBlank}
-                    className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    className="h-8 rounded-md border border-border bg-surface px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                   >
                     Start blank
                   </button>
@@ -375,7 +375,7 @@ function QuoteDetailPage() {
                 <button
                   type="button"
                   onClick={() => setLaborModalOpen(true)}
-                  className="flex items-center gap-2 w-full rounded-lg border border-dashed border-border px-4 py-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-surface/40 transition-colors"
+                  className="flex items-center gap-2 w-full rounded-lg border border-dashed border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-surface/40 transition-colors"
                 >
                   <Clock className="h-3.5 w-3.5 shrink-0" />
                   Add Additional Labor
@@ -383,21 +383,21 @@ function QuoteDetailPage() {
                 {/* Totals */}
                 <div className="rounded-lg border border-border overflow-hidden">
                   <div className="divide-y divide-border">
-                    <div className="flex justify-between px-4 py-2.5 text-[12.5px] text-muted-foreground">
+                    <div className="flex justify-between px-4 py-2.5 text-sm text-muted-foreground">
                       <span>Subtotal</span>
                       <span className="font-mono tabular-nums">{currency(subtotal)}</span>
                     </div>
-                    <div className="flex justify-between px-4 py-3 text-[15px] font-semibold">
+                    <div className="flex justify-between px-4 py-3 text-md font-semibold">
                       <span>Total</span>
                       <span className="font-mono tabular-nums">{currency(subtotal)}</span>
                     </div>
                     <div className="flex justify-between px-4 py-2 bg-surface/30">
-                      <span className="text-[11.5px] text-muted-foreground">Cost</span>
-                      <span className="font-mono text-[11.5px] text-muted-foreground tabular-nums">{currency(costTotal)}</span>
+                      <span className="text-xs text-muted-foreground">Cost</span>
+                      <span className="font-mono text-xs text-muted-foreground tabular-nums">{currency(costTotal)}</span>
                     </div>
                     <div className="flex justify-between px-4 py-2 bg-surface/30">
-                      <span className="text-[11.5px] text-muted-foreground">Gross Margin</span>
-                      <span className={cn("font-mono text-[11.5px] font-medium tabular-nums", marginColor(margin))}>
+                      <span className="text-xs text-muted-foreground">Gross Margin</span>
+                      <span className={cn("font-mono text-xs font-medium tabular-nums", marginColor(margin))}>
                         {margin.toFixed(1)}%
                       </span>
                     </div>
@@ -412,9 +412,9 @@ function QuoteDetailPage() {
         {/* Sticky save bar */}
         <div className="shrink-0 border-t border-border bg-background/95 backdrop-blur-sm px-5 py-3 flex items-center justify-between">
           {saveError ? (
-            <span className="text-[11.5px] text-destructive">{saveError}</span>
+            <span className="text-xs text-destructive">{saveError}</span>
           ) : (
-            <span className="text-[11.5px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               Unsaved changes will be lost if you navigate away.
             </span>
           )}
@@ -422,7 +422,7 @@ function QuoteDetailPage() {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="flex items-center gap-2 h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             Save Changes
@@ -435,14 +435,14 @@ function QuoteDetailPage() {
 
         {/* Actions */}
         <div className="rounded-lg border border-border bg-card p-4 space-y-2">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Actions</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-3">Actions</p>
 
           {q.status === "draft" && (
             <button
               type="button"
               onClick={() => markSentMutation.mutate()}
               disabled={markSentMutation.isPending}
-              className="flex w-full items-center justify-center gap-2 h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 h-8 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {markSentMutation.isPending
                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -457,7 +457,7 @@ function QuoteDetailPage() {
               type="button"
               onClick={() => acceptMutation.mutate()}
               disabled={acceptMutation.isPending}
-              className="flex w-full items-center justify-center gap-2 h-8 rounded-md bg-green-600 text-white text-[12.5px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 h-8 rounded-md bg-green-600 text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {acceptMutation.isPending
                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -470,7 +470,7 @@ function QuoteDetailPage() {
           <button
             type="button"
             disabled
-            className="flex w-full items-center justify-center gap-2 h-8 rounded-md border border-border bg-surface text-[12.5px] text-muted-foreground cursor-not-allowed opacity-60"
+            className="flex w-full items-center justify-center gap-2 h-8 rounded-md border border-border bg-surface text-sm text-muted-foreground cursor-not-allowed opacity-60"
           >
             <Download className="h-3.5 w-3.5" />
             Download PDF
@@ -480,7 +480,7 @@ function QuoteDetailPage() {
             <button
               type="button"
               onClick={() => navigate({ to: "/sales/opportunities" })}
-              className="flex w-full items-center justify-center gap-2 h-8 rounded-md border border-border bg-surface text-[12.5px] text-foreground hover:bg-accent transition-colors"
+              className="flex w-full items-center justify-center gap-2 h-8 rounded-md border border-border bg-surface text-sm text-foreground hover:bg-accent transition-colors"
             >
               <FolderKanban className="h-3.5 w-3.5" />
               Convert to Project
@@ -489,34 +489,34 @@ function QuoteDetailPage() {
         </div>
 
         {/* Details */}
-        <div className="rounded-lg border border-border bg-card p-4 space-y-2.5 text-[12px]">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Details</p>
+        <div className="rounded-lg border border-border bg-card p-4 space-y-2.5 text-sm">
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">Details</p>
           <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5">Status</p>
-            <span className={cn("inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10.5px] font-medium", statusCls)}>
+            <p className="text-2xs text-muted-foreground mb-0.5">Status</p>
+            <span className={cn("inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-2xs font-medium", statusCls)}>
               <StatusIcon className="h-3 w-3" />
               {statusLabel}
             </span>
           </div>
           {q.revision > 0 && (
             <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Revision</p>
+              <p className="text-2xs text-muted-foreground mb-0.5">Revision</p>
               <p>v{q.revision}</p>
             </div>
           )}
           <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5">Created</p>
+            <p className="text-2xs text-muted-foreground mb-0.5">Created</p>
             <p>{new Date(q.created_at).toLocaleDateString()}</p>
           </div>
           {q.expiry_date && (
             <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Expiry Date</p>
+              <p className="text-2xs text-muted-foreground mb-0.5">Expiry Date</p>
               <p>{q.expiry_date}</p>
             </div>
           )}
           {q.opportunity && (
             <div>
-              <p className="text-[10px] text-muted-foreground mb-0.5">Linked Opportunity</p>
+              <p className="text-2xs text-muted-foreground mb-0.5">Linked Opportunity</p>
               <button
                 type="button"
                 onClick={() => navigate({ to: "/sales/opportunities" })}
@@ -530,10 +530,10 @@ function QuoteDetailPage() {
 
         {/* Value summary */}
         <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Value</p>
-          <p className="text-[20px] font-semibold tabular-nums font-mono">{currency(subtotal)}</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">Value</p>
+          <p className="text-lg font-semibold tabular-nums font-mono">{currency(subtotal)}</p>
           {costTotal > 0 && (
-            <p className={cn("text-[11.5px] mt-0.5 font-medium", marginColor(margin))}>
+            <p className={cn("text-xs mt-0.5 font-medium", marginColor(margin))}>
               {margin.toFixed(1)}% margin
             </p>
           )}

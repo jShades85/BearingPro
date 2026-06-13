@@ -84,12 +84,12 @@ function SettingsShell() {
     <div className="flex h-full">
       {/* Sub-nav */}
       <aside className="w-[200px] shrink-0 border-r border-border bg-surface/40 px-3 py-5">
-        <p className="mb-4 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        <p className="mb-4 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
           Settings
         </p>
         {sections.map((section) => (
           <div key={section.title} className="mb-5">
-            <p className="mb-1 px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
+            <p className="mb-1 px-2 text-2xs font-medium uppercase tracking-wider text-muted-foreground/50">
               {section.title}
             </p>
             <ul className="space-y-0.5">
@@ -101,7 +101,7 @@ function SettingsShell() {
                     <Link
                       to={item.to}
                       className={cn(
-                        "flex h-7 items-center gap-2 rounded-md px-2 text-[12.5px] transition-colors",
+                        "flex h-7 items-center gap-2 rounded-md px-2 text-sm transition-colors",
                         active
                           ? "bg-accent text-foreground font-medium"
                           : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",

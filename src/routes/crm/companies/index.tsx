@@ -72,7 +72,7 @@ function getInitials(name: string): string {
 function StageBadge({ stage }: { stage: CompanyStage }) {
   const { label, cls } = stageMeta[stage];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -120,7 +120,7 @@ function CompaniesPage() {
   );
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-16 text-[12.5px] text-muted-foreground">Loading…</div>;
+    return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">Loading…</div>;
   }
 
   return (
@@ -138,7 +138,7 @@ function CompaniesPage() {
           <option value="prospect">Prospect</option>
           <option value="inactive">Inactive</option>
         </FilterSelect>
-        <span className="text-[11px] text-muted-foreground font-mono">
+        <span className="text-xs text-muted-foreground font-mono">
           {filtered.length} of {companies.length}
         </span>
         {/* View toggle */}
@@ -180,16 +180,16 @@ function CompaniesPage() {
               <div className="flex items-start gap-3">
                 <Avatar
                   initials={getInitials(c.name)}
-                  className="!h-9 !w-9 !text-[13px] !rounded-lg shrink-0"
+                  className="!h-9 !w-9 !text-base !rounded-lg shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold truncate leading-snug">{c.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{c.industry ?? "—"}</div>
+                  <div className="text-base font-semibold truncate leading-snug">{c.name}</div>
+                  <div className="text-xs text-muted-foreground">{c.industry ?? "—"}</div>
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between">
                 {(c.city || c.state) ? (
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3 shrink-0" />
                     <span>{[c.city, c.state].filter(Boolean).join(", ")}</span>
                   </div>
@@ -199,7 +199,7 @@ function CompaniesPage() {
             </div>
           ))}
           {filtered.length === 0 && (
-            <div className="col-span-3 py-12 text-center text-[12.5px] text-muted-foreground">
+            <div className="col-span-3 py-12 text-center text-sm text-muted-foreground">
               {companies.length === 0
                 ? "No companies yet. Add your first one."
                 : "No companies match the current filters."}
@@ -212,9 +212,9 @@ function CompaniesPage() {
       {view === "list" && (
         <div className="p-4 overflow-x-auto">
           <div className="rounded-lg border border-border bg-card overflow-hidden min-w-[600px]">
-            <table className="w-full text-[12.5px]">
+            <table className="w-full text-sm">
               <thead className="bg-surface/50">
-                <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
+                <tr className="border-b border-border text-2xs uppercase tracking-wide text-muted-foreground">
                   <th className="py-2 px-3 text-left font-medium">Company</th>
                   <th className="py-2 px-3 text-left font-medium">Location</th>
                   <th className="py-2 px-3 text-left font-medium">Stage</th>
@@ -231,14 +231,14 @@ function CompaniesPage() {
                   >
                     <td className="py-2.5 px-3">
                       <div className="flex items-center gap-2.5">
-                        <Avatar initials={getInitials(c.name)} className="!h-7 !w-7 !text-[10px] !rounded-md shrink-0" />
+                        <Avatar initials={getInitials(c.name)} className="!h-7 !w-7 !text-2xs !rounded-md shrink-0" />
                         <div>
                           <div className="font-semibold leading-snug">{c.name}</div>
-                          <div className="text-[11px] text-muted-foreground">{c.industry ?? "—"}</div>
+                          <div className="text-xs text-muted-foreground">{c.industry ?? "—"}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-2.5 px-3 text-muted-foreground text-[12px]">
+                    <td className="py-2.5 px-3 text-muted-foreground text-sm">
                       {(c.city || c.state) ? (
                         <div className="flex items-center gap-1.5">
                           <MapPin className="h-3 w-3 shrink-0" />
@@ -249,7 +249,7 @@ function CompaniesPage() {
                     <td className="py-2.5 px-3">
                       <StageBadge stage={c.stage} />
                     </td>
-                    <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground">
+                    <td className="py-2.5 px-3 font-mono text-xs text-muted-foreground">
                       {c.phone ?? "—"}
                     </td>
                     <td className="py-2.5 px-3 pr-3 text-right">
@@ -264,7 +264,7 @@ function CompaniesPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-[12.5px] text-muted-foreground">
+                    <td colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                       {companies.length === 0 ? "No companies yet." : "No companies match the current filters."}
                     </td>
                   </tr>
@@ -293,7 +293,7 @@ const initialForm = {
 
 function NewCompanyModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
-  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const [form, setForm] = useState(initialForm);
   const [sameAddress, setSameAddress] = useState(false);
@@ -381,7 +381,7 @@ function NewCompanyModal({ onClose }: { onClose: () => void }) {
         <div className="col-span-2">
           <label className={cn(labelCls, "flex items-center justify-between")}>
             <span>Service Address</span>
-            <label className="flex items-center gap-1.5 text-[11px] normal-case tracking-normal text-muted-foreground cursor-pointer">
+            <label className="flex items-center gap-1.5 text-xs normal-case tracking-normal text-muted-foreground cursor-pointer">
               <input
                 type="checkbox"
                 checked={sameAddress}
@@ -394,7 +394,7 @@ function NewCompanyModal({ onClose }: { onClose: () => void }) {
           {!sameAddress ? (
             <input className={inputCls} value={form.service_address} onChange={set("service_address")} placeholder="Street, City, State ZIP" />
           ) : (
-            <div className="h-8 rounded-md border border-border bg-muted/30 px-2.5 flex items-center text-[12px] text-muted-foreground">
+            <div className="h-8 rounded-md border border-border bg-muted/30 px-2.5 flex items-center text-sm text-muted-foreground">
               Same as billing address
             </div>
           )}
@@ -406,21 +406,21 @@ function NewCompanyModal({ onClose }: { onClose: () => void }) {
             value={form.notes}
             onChange={set("notes")}
             placeholder="Add any notes…"
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
       </div>
       <div className="mt-3 flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={() => mutate()}
           disabled={!form.name.trim() || isPending}
-          className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {isPending ? "Saving…" : "Add Company"}
         </button>

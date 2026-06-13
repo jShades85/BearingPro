@@ -111,10 +111,10 @@ function TeamAvatar({ name, className }: { name: string; className?: string }) {
 // ─── RoleBadge ────────────────────────────────────────────────────────────────
 
 function RoleBadge({ role }: { role: Pick<Role, "name" | "color"> | null }) {
-  if (!role) return <span className="rounded px-1.5 py-0.5 text-[10.5px] bg-muted text-muted-foreground">No role</span>;
+  if (!role) return <span className="rounded px-1.5 py-0.5 text-2xs bg-muted text-muted-foreground">No role</span>;
   return (
     <span
-      className="rounded px-1.5 py-0.5 text-[10.5px] font-medium text-white"
+      className="rounded px-1.5 py-0.5 text-2xs font-medium text-white"
       style={{ backgroundColor: role.color + "cc" }}
     >
       {role.name}
@@ -146,7 +146,7 @@ function TagInput({ value, onChange, suggestions, placeholder }: {
       {value.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {value.map((t) => (
-            <span key={t} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11.5px] font-medium text-primary">
+            <span key={t} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
               {t}
               <button type="button" onClick={() => onChange(value.filter((x) => x !== t))} className="hover:text-destructive transition-colors">
                 <X className="h-2.5 w-2.5" />
@@ -165,13 +165,13 @@ function TagInput({ value, onChange, suggestions, placeholder }: {
         onFocus={() => setShowSugg(true)}
         onBlur={() => setTimeout(() => setShowSugg(false), 150)}
         placeholder={placeholder ?? "Type to add…"}
-        className="h-7 w-full rounded-md border border-border bg-background px-2.5 text-[12.5px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+        className="h-7 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
       />
       {showSugg && filtered.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {filtered.map((s) => (
             <button key={s} type="button" onMouseDown={(e) => { e.preventDefault(); add(s); }}
-              className="rounded-full border border-border px-2 py-0.5 text-[10.5px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors">
+              className="rounded-full border border-border px-2 py-0.5 text-2xs text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors">
               + {s}
             </button>
           ))}
@@ -185,7 +185,7 @@ function TagInput({ value, onChange, suggestions, placeholder }: {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-3 text-[10.5px] font-semibold uppercase tracking-widest text-muted-foreground">
+    <p className="mb-3 text-2xs font-semibold uppercase tracking-widest text-muted-foreground">
       {children}
     </p>
   );
@@ -240,8 +240,8 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
     onOpenChange(false);
   });
 
-  const fieldCls = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary";  const labelCls = "mb-1 block text-[11.5px] font-medium text-foreground";
-  const errorCls = "mt-0.5 text-[11px] text-destructive";
+  const fieldCls = "h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";  const labelCls = "mb-1 block text-xs font-medium text-foreground";
+  const errorCls = "mt-0.5 text-xs text-destructive";
 
   if (!member) return null;
 
@@ -250,10 +250,10 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
       <SheetContent className="sm:max-w-[480px] flex flex-col p-0 gap-0">
         <SheetHeader className="border-b border-border px-5 py-4">
           <div className="flex items-center gap-3">
-            <TeamAvatar name={member.full_name ?? "?"} className="h-10 w-10 text-[14px]" />
+            <TeamAvatar name={member.full_name ?? "?"} className="h-10 w-10 text-md" />
             <div>
-              <SheetTitle className="text-[15px] font-semibold leading-tight">{member.full_name ?? "Unknown"}</SheetTitle>
-              <p className="text-[12px] text-muted-foreground">{member.roles?.name ?? "No role"}</p>
+              <SheetTitle className="text-md font-semibold leading-tight">{member.full_name ?? "Unknown"}</SheetTitle>
+              <p className="text-sm text-muted-foreground">{member.roles?.name ?? "No role"}</p>
             </div>
           </div>
         </SheetHeader>
@@ -297,7 +297,7 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
                       value={member.email ?? ""}
                       className={cn(fieldCls, "opacity-60 cursor-not-allowed")}
                     />
-                    <p className="text-[10.5px] text-muted-foreground">Email changes require the member to update their account.</p>
+                    <p className="text-2xs text-muted-foreground">Email changes require the member to update their account.</p>
                   </div>
 
                   <FormField control={form.control} name="phone" render={({ field }) => (
@@ -339,7 +339,7 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
               {/* Compensation */}
               <div>
                 <SectionLabel>Compensation</SectionLabel>
-                <div className="mb-3 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-[11.5px] text-amber-700 dark:text-amber-400">
+                <div className="mb-3 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
                   <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                   <span>Visible to Admin and Owner roles only. Role-based visibility enforced when permissions are wired up.</span>
                 </div>
@@ -359,7 +359,7 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
                     <FormItem>
                       <FormLabel className={labelCls}>Pay Rate</FormLabel>
                       <div className="relative">
-                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
+                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
                         <FormControl>
                           <Input {...field} type="number" min={0} step={0.01} className={cn(fieldCls, "pl-5")} placeholder="0.00" />
                         </FormControl>
@@ -404,7 +404,7 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
                 <SectionLabel>Assigned Jobs</SectionLabel>
                 <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-3">
                   <Briefcase className="h-4 w-4 shrink-0 text-muted-foreground/50" />
-                  <span className="text-[12px] text-muted-foreground">Job assignments available after projects are wired up.</span>
+                  <span className="text-sm text-muted-foreground">Job assignments available after projects are wired up.</span>
                 </div>
               </div>
 
@@ -412,11 +412,11 @@ function MemberDrawer({ open, onOpenChange, member, roles, onSave }: {
 
             <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-3">
               <button type="button" onClick={() => onOpenChange(false)}
-                className="h-8 rounded-md border border-border px-4 text-[12.5px] hover:bg-accent transition-colors">
+                className="h-8 rounded-md border border-border px-4 text-sm hover:bg-accent transition-colors">
                 Cancel
               </button>
               <button type="submit"
-                className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
                 Save Changes
               </button>
             </div>
@@ -438,12 +438,12 @@ function MemberCard({ member, onEdit }: { member: Member; onEdit: () => void }) 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
       <div className="flex items-start gap-3">
-        <TeamAvatar name={member.full_name ?? "?"} className="h-10 w-10 text-[14px]" />
+        <TeamAvatar name={member.full_name ?? "?"} className="h-10 w-10 text-md" />
         <div className="min-w-0 flex-1">
-          <span className="truncate text-[13.5px] font-semibold leading-snug">{member.full_name ?? "—"}</span>
+          <span className="truncate text-base font-semibold leading-snug">{member.full_name ?? "—"}</span>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <RoleBadge role={member.roles} />
-            <span className={cn("rounded px-1.5 py-0.5 text-[10.5px] font-medium", avail.cls)}>{avail.label}</span>
+            <span className={cn("rounded px-1.5 py-0.5 text-2xs font-medium", avail.cls)}>{avail.label}</span>
           </div>
         </div>
       </div>
@@ -451,32 +451,32 @@ function MemberCard({ member, onEdit }: { member: Member; onEdit: () => void }) 
       {skills.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {visibleSkills.map((s) => (
-            <span key={s} className="rounded-full bg-muted px-2 py-0.5 text-[10.5px] text-muted-foreground">{s}</span>
+            <span key={s} className="rounded-full bg-muted px-2 py-0.5 text-2xs text-muted-foreground">{s}</span>
           ))}
           {extraSkills > 0 && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10.5px] text-muted-foreground">+{extraSkills} more</span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-2xs text-muted-foreground">+{extraSkills} more</span>
           )}
         </div>
       )}
 
-      <div className="flex items-center justify-between text-[11.5px] text-muted-foreground">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <Briefcase className="h-3.5 w-3.5" />
           <span className="italic">Jobs coming soon</span>
         </div>
         <button type="button" onClick={onEdit}
-          className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:border-primary/40 hover:text-foreground transition-colors">
+          className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:border-primary/40 hover:text-foreground transition-colors">
           <Pencil className="h-3 w-3" /> Edit
         </button>
       </div>
 
       <div className="space-y-1 border-t border-border/60 pt-2.5">
-        <div className="flex items-center gap-2 text-[11.5px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Mail className="h-3 w-3 shrink-0" />
           <span className="truncate">{member.email ?? "—"}</span>
         </div>
         {member.phone && (
-          <div className="flex items-center gap-2 text-[11.5px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Phone className="h-3 w-3 shrink-0" />
             <span>{member.phone}</span>
           </div>
@@ -562,7 +562,7 @@ function TeamPage() {
   }, [members, search, roleFilter, availFilter, skillsFilter]);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-24 text-[12.5px] text-muted-foreground">Loading team…</div>;
+    return <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">Loading team…</div>;
   }
 
   return (
@@ -579,12 +579,12 @@ function TeamPage() {
         <Popover open={skillsPopOpen} onOpenChange={setSkillsPopOpen}>
           <PopoverTrigger asChild>
             <button type="button" className={cn(
-              "flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors",
+              "flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors",
               skillsFilter.length > 0 && "border-primary/50 text-foreground",
             )}>
               Skills
               {skillsFilter.length > 0 && (
-                <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-medium text-primary">{skillsFilter.length}</span>
+                <span className="rounded-full bg-primary/15 px-1.5 text-2xs font-medium text-primary">{skillsFilter.length}</span>
               )}
               <ChevronDown className="h-3 w-3" />
             </button>
@@ -592,10 +592,10 @@ function TeamPage() {
           <PopoverContent className="w-52 p-2" align="start">
             <div className="space-y-0.5">
               {allSkills.length === 0 && (
-                <p className="px-1.5 py-1 text-[12px] text-muted-foreground">No skills added yet.</p>
+                <p className="px-1.5 py-1 text-sm text-muted-foreground">No skills added yet.</p>
               )}
               {allSkills.map((skill) => (
-                <label key={skill} className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1.5 text-[12px] hover:bg-accent">
+                <label key={skill} className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1.5 text-sm hover:bg-accent">
                   <Checkbox
                     checked={skillsFilter.includes(skill)}
                     onCheckedChange={(checked) =>
@@ -607,7 +607,7 @@ function TeamPage() {
               ))}
               {skillsFilter.length > 0 && (
                 <button type="button" onClick={() => setSkillsFilter([])}
-                  className="mt-1 w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors py-1">
+                  className="mt-1 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
                   Clear filter
                 </button>
               )}
@@ -615,7 +615,7 @@ function TeamPage() {
           </PopoverContent>
         </Popover>
 
-        <span className="ml-auto font-mono text-[11px] text-muted-foreground">
+        <span className="ml-auto font-mono text-xs text-muted-foreground">
           {filtered.length} of {members.length}
         </span>
       </FilterBar>
@@ -628,7 +628,7 @@ function TeamPage() {
             ))}
           </div>
         ) : (
-          <div className="py-16 text-center text-[12.5px] text-muted-foreground">
+          <div className="py-16 text-center text-sm text-muted-foreground">
             {members.length === 0 ? "No team members yet." : "No members match the current filters."}
           </div>
         )}

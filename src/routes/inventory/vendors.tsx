@@ -112,7 +112,7 @@ function getInitials(name: string): string {
 function StatusBadge({ status }: { status: VendorStatus }) {
   const { label, cls } = STATUS_META[status];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
       {status === "preferred" ? <Star className="h-2.5 w-2.5 fill-current" /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
       {label}
     </span>
@@ -121,7 +121,7 @@ function StatusBadge({ status }: { status: VendorStatus }) {
 
 function CategoryBadge({ category }: { category: VendorCategory }) {
   return (
-    <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-muted text-muted-foreground">
+    <span className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium bg-muted text-muted-foreground">
       {category}
     </span>
   );
@@ -132,7 +132,7 @@ function VendorAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" 
   return (
     <div className={cn(
       "shrink-0 flex items-center justify-center rounded-lg bg-linear-to-br from-primary/20 to-chart-2/20 font-semibold text-primary",
-      size === "sm" ? "h-7 w-7 text-[10px]" : "h-10 w-10 text-[12px]",
+      size === "sm" ? "h-7 w-7 text-2xs" : "h-10 w-10 text-sm",
     )}>
       {initials}
     </div>
@@ -190,8 +190,8 @@ function VendorDrawer({
     };
   }
 
-  const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const labelCls = "block text-[10.5px] font-medium text-muted-foreground mb-1";
+  const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const labelCls = "block text-2xs font-medium text-muted-foreground mb-1";
 
   return (
     <Sheet open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -200,7 +200,7 @@ function VendorDrawer({
           <div className="flex items-start gap-3 pr-6">
             {vendor && <VendorAvatar name={vendor.name} />}
             <div className="min-w-0 flex-1">
-              <SheetTitle className="text-[14px] font-semibold leading-snug truncate">
+              <SheetTitle className="text-md font-semibold leading-snug truncate">
                 {vendor?.name ?? "Vendor"}
               </SheetTitle>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -221,9 +221,9 @@ function VendorDrawer({
                   { label: "Last Order", value: vendor.lastOrderDate ? fmtDate(vendor.lastOrderDate) : "—", sub: "" },
                 ].map(({ label, value, sub }) => (
                   <div key={label} className="rounded-lg border border-border bg-surface/30 px-3 py-2.5 text-center">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
-                    <p className="text-[13px] font-semibold tabular-nums">{value}</p>
-                    {sub && <p className="text-[10.5px] text-muted-foreground mt-0.5">{sub}</p>}
+                    <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
+                    <p className="text-base font-semibold tabular-nums">{value}</p>
+                    {sub && <p className="text-2xs text-muted-foreground mt-0.5">{sub}</p>}
                   </div>
                 ))}
               </div>
@@ -231,22 +231,22 @@ function VendorDrawer({
               <fieldset className="space-y-0 rounded-lg border border-border overflow-hidden divide-y divide-border/50">
                 {vendor.accountNumber && (
                   <div className="flex items-center justify-between px-3.5 py-2">
-                    <span className="text-[11.5px] text-muted-foreground">Account #</span>
-                    <span className="text-[12.5px] font-mono font-medium">{vendor.accountNumber}</span>
+                    <span className="text-xs text-muted-foreground">Account #</span>
+                    <span className="text-sm font-mono font-medium">{vendor.accountNumber}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between px-3.5 py-2">
-                  <span className="text-[11.5px] text-muted-foreground">Payment Terms</span>
-                  <span className="text-[12.5px] font-medium">{vendor.paymentTerms}</span>
+                  <span className="text-xs text-muted-foreground">Payment Terms</span>
+                  <span className="text-sm font-medium">{vendor.paymentTerms}</span>
                 </div>
                 {vendor.website && (
                   <div className="flex items-center justify-between px-3.5 py-2">
-                    <span className="text-[11.5px] text-muted-foreground">Website</span>
+                    <span className="text-xs text-muted-foreground">Website</span>
                     <a
                       href={`https://${vendor.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[12.5px] text-blue-600 dark:text-blue-400 hover:underline"
+                      className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline"
                     >
                       {vendor.website}
                       <ExternalLink className="h-3 w-3 shrink-0" />
@@ -255,50 +255,50 @@ function VendorDrawer({
                 )}
                 {vendor.phone && (
                   <div className="flex items-center justify-between px-3.5 py-2">
-                    <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1.5">
                       <Phone className="h-3 w-3" /> Phone
                     </span>
-                    <span className="text-[12.5px]">{vendor.phone}</span>
+                    <span className="text-sm">{vendor.phone}</span>
                   </div>
                 )}
                 {vendor.email && (
                   <div className="flex items-center justify-between px-3.5 py-2">
-                    <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1.5">
                       <Mail className="h-3 w-3" /> Email
                     </span>
-                    <a href={`mailto:${vendor.email}`} className="text-[12.5px] text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href={`mailto:${vendor.email}`} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                       {vendor.email}
                     </a>
                   </div>
                 )}
                 {(vendor.city || vendor.state) && (
                   <div className="flex items-center justify-between px-3.5 py-2">
-                    <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1.5">
                       <MapPin className="h-3 w-3" /> Location
                     </span>
-                    <span className="text-[12.5px]">{vendor.city}{vendor.state && `, ${vendor.state}`}</span>
+                    <span className="text-sm">{vendor.city}{vendor.state && `, ${vendor.state}`}</span>
                   </div>
                 )}
               </fieldset>
 
               {vendor.repName && (
                 <fieldset>
-                  <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Account Rep</legend>
+                  <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Account Rep</legend>
                   <div className="rounded-lg border border-border overflow-hidden divide-y divide-border/50">
                     <div className="flex items-center justify-between px-3.5 py-2">
-                      <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5"><User className="h-3 w-3" /> Name</span>
-                      <span className="text-[12.5px] font-medium">{vendor.repName}</span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5"><User className="h-3 w-3" /> Name</span>
+                      <span className="text-sm font-medium">{vendor.repName}</span>
                     </div>
                     {vendor.repPhone && (
                       <div className="flex items-center justify-between px-3.5 py-2">
-                        <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5"><Phone className="h-3 w-3" /> Phone</span>
-                        <span className="text-[12.5px]">{vendor.repPhone}</span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Phone className="h-3 w-3" /> Phone</span>
+                        <span className="text-sm">{vendor.repPhone}</span>
                       </div>
                     )}
                     {vendor.repEmail && (
                       <div className="flex items-center justify-between px-3.5 py-2">
-                        <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> Email</span>
-                        <a href={`mailto:${vendor.repEmail}`} className="text-[12.5px] text-blue-600 dark:text-blue-400 hover:underline">{vendor.repEmail}</a>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> Email</span>
+                        <a href={`mailto:${vendor.repEmail}`} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">{vendor.repEmail}</a>
                       </div>
                     )}
                   </div>
@@ -307,8 +307,8 @@ function VendorDrawer({
 
               {vendor.notes && (
                 <fieldset>
-                  <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Notes</legend>
-                  <p className="text-[12.5px] text-muted-foreground leading-relaxed rounded-lg border border-border bg-surface/30 px-3.5 py-3">
+                  <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Notes</legend>
+                  <p className="text-sm text-muted-foreground leading-relaxed rounded-lg border border-border bg-surface/30 px-3.5 py-3">
                     {vendor.notes}
                   </p>
                 </fieldset>
@@ -317,11 +317,11 @@ function VendorDrawer({
 
             <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
               <button type="button" onClick={onClose}
-                className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+                className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
                 Close
               </button>
               <button type="button" onClick={onSwitchToEdit}
-                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
+                className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
                 <Pencil className="h-3 w-3" /> Edit
               </button>
             </div>
@@ -332,7 +332,7 @@ function VendorDrawer({
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
               <fieldset className="space-y-3">
-                <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Vendor Details</legend>
+                <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Vendor Details</legend>
                 <div>
                   <label className={labelCls}>Vendor Name *</label>
                   <input {...field("name")} className={inputCls} placeholder="e.g. ADI Global Distribution" />
@@ -368,7 +368,7 @@ function VendorDrawer({
               </fieldset>
 
               <fieldset className="space-y-3">
-                <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Contact</legend>
+                <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Contact</legend>
                 <div>
                   <label className={labelCls}>Website</label>
                   <input {...field("website")} className={inputCls} placeholder="e.g. adisecurity.com" />
@@ -396,7 +396,7 @@ function VendorDrawer({
               </fieldset>
 
               <fieldset className="space-y-3">
-                <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Account Rep</legend>
+                <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Account Rep</legend>
                 <div>
                   <label className={labelCls}>Rep Name</label>
                   <input {...field("rep_name")} className={inputCls} placeholder="Full name" />
@@ -414,26 +414,26 @@ function VendorDrawer({
               </fieldset>
 
               <fieldset>
-                <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Notes</legend>
+                <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Notes</legend>
                 <textarea
                   {...field("notes")}
                   rows={3}
                   placeholder="Internal notes about this vendor…"
-                  className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+                  className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
                 />
               </fieldset>
             </div>
 
             <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
               <button type="button" onClick={onSwitchToEdit}
-                className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+                className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
                 Cancel
               </button>
               <button
                 type="button"
                 disabled={isPending}
                 onClick={() => onSave(form as TablesUpdate<"vendors">)}
-                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+                className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
               >
                 {isPending ? "Saving…" : "Save Changes"}
               </button>
@@ -618,7 +618,7 @@ function VendorsPage() {
           <button
             type="button"
             onClick={() => { setSearch(""); setCategoryFilter("all"); setStatusFilter("all"); }}
-            className="flex h-7 items-center gap-1 rounded-md border border-border bg-surface px-2 text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+            className="flex h-7 items-center gap-1 rounded-md border border-border bg-surface px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
           >
             <X className="h-3 w-3" /> Clear
           </button>
@@ -650,35 +650,35 @@ function VendorsPage() {
               <div className="flex items-start gap-3">
                 <VendorAvatar name={v.name} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold truncate leading-snug">{v.name}</div>
+                  <div className="text-base font-semibold truncate leading-snug">{v.name}</div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <CategoryBadge category={v.category} />
                   </div>
                 </div>
                 <StatusBadge status={v.status} />
               </div>
-              <div className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3 shrink-0" />
                 <span>{v.city}, {v.state}</span>
               </div>
               <div className="mt-3 grid grid-cols-3 gap-2 border-t border-border pt-3">
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">YTD Spend</div>
-                  <div className="text-[12.5px] font-semibold tabular-nums">{currency(v.ytdSpend)}</div>
+                  <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">YTD Spend</div>
+                  <div className="text-sm font-semibold tabular-nums">{currency(v.ytdSpend)}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Total POs</div>
-                  <div className="text-[12.5px] font-semibold">{v.totalPOs}</div>
+                  <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">Total POs</div>
+                  <div className="text-sm font-semibold">{v.totalPOs}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Active POs</div>
-                  <div className={cn("text-[12.5px] font-semibold", v.activePOs > 0 && "text-amber-600 dark:text-amber-400")}>
+                  <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-0.5">Active POs</div>
+                  <div className={cn("text-sm font-semibold", v.activePOs > 0 && "text-amber-600 dark:text-amber-400")}>
                     {v.activePOs}
                   </div>
                 </div>
               </div>
               {v.repName && (
-                <div className="mt-2.5 pt-2.5 border-t border-border flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <div className="mt-2.5 pt-2.5 border-t border-border flex items-center gap-1.5 text-xs text-muted-foreground">
                   <User className="h-3 w-3 shrink-0" />
                   <span>{v.repName}</span>
                 </div>
@@ -686,7 +686,7 @@ function VendorsPage() {
             </div>
           ))}
           {filtered.length === 0 && (
-            <div className="col-span-3 py-12 text-center text-[12.5px] text-muted-foreground">
+            <div className="col-span-3 py-12 text-center text-sm text-muted-foreground">
               No vendors match the current filters.
             </div>
           )}
@@ -696,9 +696,9 @@ function VendorsPage() {
       {view === "list" && (
         <div className="p-4 overflow-x-auto">
           <div className="rounded-lg border border-border bg-card overflow-hidden min-w-215">
-            <table className="w-full text-[12.5px]">
+            <table className="w-full text-sm">
               <thead className="bg-surface/50">
-                <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
+                <tr className="border-b border-border text-2xs uppercase tracking-wide text-muted-foreground">
                   <th className="py-2 px-3 text-left font-medium">Vendor</th>
                   <th className="py-2 px-3 text-left font-medium">Status</th>
                   <th className="py-2 px-3 text-left font-medium">Account #</th>
@@ -722,30 +722,30 @@ function VendorsPage() {
                         <VendorAvatar name={v.name} size="sm" />
                         <div>
                           <div className="font-semibold leading-snug">{v.name}</div>
-                          <div className="text-[11px] text-muted-foreground">{v.category}</div>
+                          <div className="text-xs text-muted-foreground">{v.category}</div>
                         </div>
                       </div>
                     </td>
                     <td className="py-2.5 px-3"><StatusBadge status={v.status} /></td>
-                    <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground">{v.accountNumber ?? "—"}</td>
+                    <td className="py-2.5 px-3 font-mono text-xs text-muted-foreground">{v.accountNumber ?? "—"}</td>
                     <td className="py-2.5 px-3 text-muted-foreground">{v.paymentTerms}</td>
                     <td className="py-2.5 px-3">
                       {v.repName ? (
                         <div>
                           <div className="leading-snug">{v.repName}</div>
-                          {v.repEmail && <div className="text-[11px] text-muted-foreground truncate max-w-36">{v.repEmail}</div>}
+                          {v.repEmail && <div className="text-xs text-muted-foreground truncate max-w-36">{v.repEmail}</div>}
                         </div>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[11.5px]">{currency(v.ytdSpend)}</td>
+                    <td className="py-2.5 px-3 text-right font-mono text-xs">{currency(v.ytdSpend)}</td>
                     <td className="py-2.5 px-3 text-right">
                       <span className={cn("font-semibold", v.activePOs > 0 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
                         {v.activePOs}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-right text-muted-foreground text-[12px]">
+                    <td className="py-2.5 px-3 text-right text-muted-foreground text-sm">
                       {v.lastOrderDate ? fmtDate(v.lastOrderDate) : "—"}
                     </td>
                     <td className="py-2.5 px-3 pr-3 text-right">
@@ -761,7 +761,7 @@ function VendorsPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="py-8 text-center text-[12.5px] text-muted-foreground">
+                    <td colSpan={9} className="py-8 text-center text-sm text-muted-foreground">
                       No vendors match the current filters.
                     </td>
                   </tr>
@@ -825,8 +825,8 @@ function NewVendorModal({
     };
   }
 
-  const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
-  const labelCls = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls = "h-8 w-full rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const labelCls = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   return (
     <div
@@ -835,7 +835,7 @@ function NewVendorModal({
     >
       <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-background shadow-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-[14px] font-semibold">New Vendor</h2>
+          <h2 className="text-md font-semibold">New Vendor</h2>
           <button onClick={onClose} className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent transition-colors">
             <X className="h-4 w-4" />
           </button>
@@ -890,7 +890,7 @@ function NewVendorModal({
             <input {...f("state")} className={inputCls} placeholder="ST" />
           </div>
           <div className="col-span-2 pt-1 border-t border-border">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Account Rep (Optional)</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">Account Rep (Optional)</p>
           </div>
           <div className="col-span-2">
             <label className={labelCls}>Rep Name</label>
@@ -907,18 +907,18 @@ function NewVendorModal({
           <div className="col-span-2">
             <label className={labelCls}>Notes</label>
             <textarea {...f("notes")} rows={3} placeholder="Internal notes…"
-              className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" />
+              className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary" />
           </div>
         </div>
         <div className="flex justify-end gap-2 px-5 py-4 border-t border-border">
           <button onClick={onClose}
-            className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             Cancel
           </button>
           <button
             onClick={() => { if (form.name.trim()) onAdd(form); }}
             disabled={!form.name.trim() || isPending}
-            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {isPending ? "Adding…" : "Add Vendor"}
           </button>

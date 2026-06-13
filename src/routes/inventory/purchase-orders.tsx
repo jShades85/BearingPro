@@ -224,7 +224,7 @@ function StatusBadge({ status, overdue }: { status: POStatus; overdue?: boolean 
   const m = STATUS_META[status];
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap",
+      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap",
       overdue && status !== "received" && status !== "cancelled"
         ? "bg-red-500/15 text-red-600 dark:text-red-400"
         : m.badgeCls,
@@ -247,7 +247,7 @@ function StatusTimeline({ status }: { status: POStatus }) {
   if (status === "cancelled") {
     return (
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-3 py-1 text-[11.5px] font-medium text-red-600 dark:text-red-400">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400">
           <X className="h-3.5 w-3.5" /> Cancelled
         </span>
       </div>
@@ -275,7 +275,7 @@ function StatusTimeline({ status }: { status: POStatus }) {
                   : <Circle className="h-2 w-2 text-muted-foreground/30" />}
               </div>
               <span className={cn(
-                "text-[10px] whitespace-nowrap",
+                "text-2xs whitespace-nowrap",
                 active ? "text-foreground font-medium" : future ? "text-muted-foreground/50" : "text-muted-foreground",
               )}>
                 {step.label}
@@ -299,7 +299,7 @@ function LineItemProgressBar({ received, ordered }: { received: number; ordered:
       <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
         <div className={cn("h-full rounded-full transition-all", done ? "bg-green-500" : "bg-amber-500")} style={{ width: `${pct}%` }} />
       </div>
-      <span className={cn("text-[10.5px] font-mono tabular-nums whitespace-nowrap", done ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400")}>
+      <span className={cn("text-2xs font-mono tabular-nums whitespace-nowrap", done ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400")}>
         {received}/{ordered}
       </span>
     </div>
@@ -328,17 +328,17 @@ function JobCombobox({ value, onChange, projects, workOrders }: JobComboboxProps
           type="button"
           role="combobox"
           aria-expanded={open}
-          className="h-8 w-full flex items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-[12.5px] hover:bg-accent/30 transition-colors"
+          className="h-8 w-full flex items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm hover:bg-accent/30 transition-colors"
         >
           {selected ? (
             <span className="flex items-center gap-2 min-w-0">
               <span className={cn(
-                "shrink-0 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium",
+                "shrink-0 inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium",
                 selected.type === "work-order" ? "bg-violet-500/15 text-violet-600 dark:text-violet-400" : "bg-blue-500/15 text-blue-600 dark:text-blue-400",
               )}>
                 {selected.type === "work-order" ? "WO" : "Proj"}
               </span>
-              <span className="font-mono text-[11.5px] shrink-0">{selected.code}</span>
+              <span className="font-mono text-xs shrink-0">{selected.code}</span>
               <span className="text-muted-foreground truncate">{selected.name}</span>
             </span>
           ) : (
@@ -364,7 +364,7 @@ function JobCombobox({ value, onChange, projects, workOrders }: JobComboboxProps
             {value && (
               <>
                 <CommandGroup>
-                  <CommandItem value="__clear__" onSelect={() => { onChange(""); setOpen(false); }} className="text-[12.5px] text-muted-foreground gap-2">
+                  <CommandItem value="__clear__" onSelect={() => { onChange(""); setOpen(false); }} className="text-sm text-muted-foreground gap-2">
                     <X className="h-3.5 w-3.5 shrink-0" />
                     Clear — general stock
                   </CommandItem>
@@ -376,11 +376,11 @@ function JobCombobox({ value, onChange, projects, workOrders }: JobComboboxProps
               {projects.map((job) => {
                 const enc = `p:${job.id}`;
                 return (
-                  <CommandItem key={job.id} value={enc} onSelect={(v) => { onChange(v); setOpen(false); }} className="text-[12.5px] gap-2">
+                  <CommandItem key={job.id} value={enc} onSelect={(v) => { onChange(v); setOpen(false); }} className="text-sm gap-2">
                     <Check className={cn("h-3.5 w-3.5 shrink-0", value === enc ? "opacity-100" : "opacity-0")} />
-                    <span className="font-mono text-[11px] text-muted-foreground shrink-0">{job.code}</span>
+                    <span className="font-mono text-xs text-muted-foreground shrink-0">{job.code}</span>
                     <span className="flex-1 truncate">{job.name}</span>
-                    <span className="text-[11px] text-muted-foreground shrink-0 truncate max-w-28">{job.customer}</span>
+                    <span className="text-xs text-muted-foreground shrink-0 truncate max-w-28">{job.customer}</span>
                   </CommandItem>
                 );
               })}
@@ -389,11 +389,11 @@ function JobCombobox({ value, onChange, projects, workOrders }: JobComboboxProps
               {workOrders.map((job) => {
                 const enc = `w:${job.id}`;
                 return (
-                  <CommandItem key={job.id} value={enc} onSelect={(v) => { onChange(v); setOpen(false); }} className="text-[12.5px] gap-2">
+                  <CommandItem key={job.id} value={enc} onSelect={(v) => { onChange(v); setOpen(false); }} className="text-sm gap-2">
                     <Check className={cn("h-3.5 w-3.5 shrink-0", value === enc ? "opacity-100" : "opacity-0")} />
-                    <span className="font-mono text-[11px] text-muted-foreground shrink-0">{job.code}</span>
+                    <span className="font-mono text-xs text-muted-foreground shrink-0">{job.code}</span>
                     <span className="flex-1 truncate">{job.name}</span>
-                    <span className="text-[11px] text-muted-foreground shrink-0 truncate max-w-28">{job.customer}</span>
+                    <span className="text-xs text-muted-foreground shrink-0 truncate max-w-28">{job.customer}</span>
                   </CommandItem>
                 );
               })}
@@ -424,7 +424,7 @@ function CatalogCombobox({ catalog, onSelect, onCustom }: CatalogComboboxProps) 
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="h-8 w-full flex items-center gap-2 rounded-md border border-border bg-background px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors"
+          className="h-8 w-full flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors"
         >
           <Plus className="h-3.5 w-3.5 shrink-0" />
           Add from catalog…
@@ -445,18 +445,18 @@ function CatalogCombobox({ catalog, onSelect, onCustom }: CatalogComboboxProps) 
             <CommandEmpty>No catalog items found.</CommandEmpty>
             <CommandGroup heading="Catalog">
               {catalog.map((item) => (
-                <CommandItem key={item.id} value={item.id} onSelect={handleSelect} className="text-[12.5px] gap-3">
+                <CommandItem key={item.id} value={item.id} onSelect={handleSelect} className="text-sm gap-3">
                   <span className="flex-1 min-w-0">
                     <span className="block truncate">{item.name}</span>
-                    <span className="text-[11px] font-mono text-muted-foreground">{item.sku}</span>
+                    <span className="text-xs font-mono text-muted-foreground">{item.sku}</span>
                   </span>
-                  <span className="font-mono text-[12px] text-muted-foreground shrink-0">{currency(item.unitCost)}</span>
+                  <span className="font-mono text-sm text-muted-foreground shrink-0">{currency(item.unitCost)}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup>
-              <CommandItem value="__custom__" onSelect={handleSelect} className="text-[12.5px] text-muted-foreground gap-2">
+              <CommandItem value="__custom__" onSelect={handleSelect} className="text-sm text-muted-foreground gap-2">
                 <Plus className="h-3.5 w-3.5 shrink-0" />
                 Add custom item…
               </CommandItem>
@@ -620,64 +620,64 @@ function PODrawer({
           <div className="space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
               <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-[13.5px] font-semibold">{po.vendorName}</span>
+              <span className="text-base font-semibold">{po.vendorName}</span>
               <StatusBadge status={po.status} overdue={overdue} />
               {overdue && (
-                <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium bg-red-500/15 text-red-600 dark:text-red-400">
+                <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium bg-red-500/15 text-red-600 dark:text-red-400">
                   <AlertTriangle className="h-3 w-3" /> Overdue
                 </span>
               )}
             </div>
             <div className="rounded-lg border border-border bg-surface/30 px-3 py-1 divide-y divide-border/50">
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-[11.5px] text-muted-foreground">Order Date</span>
-                <span className="text-[12.5px] font-medium">{fmtDate(po.orderDate)}</span>
+                <span className="text-xs text-muted-foreground">Order Date</span>
+                <span className="text-sm font-medium">{fmtDate(po.orderDate)}</span>
               </div>
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-[11.5px] text-muted-foreground">Expected</span>
-                <span className={cn("text-[12.5px] font-medium", overdue && "text-red-600 dark:text-red-400")}>
+                <span className="text-xs text-muted-foreground">Expected</span>
+                <span className={cn("text-sm font-medium", overdue && "text-red-600 dark:text-red-400")}>
                   {fmtDate(po.expectedDate)}
                   {overdue && " · Overdue"}
                 </span>
               </div>
               {po.receivedDate && (
                 <div className="flex items-center justify-between py-1.5">
-                  <span className="text-[11.5px] text-muted-foreground">Received</span>
-                  <span className="text-[12.5px] font-medium text-green-600 dark:text-green-400">{fmtDate(po.receivedDate)}</span>
+                  <span className="text-xs text-muted-foreground">Received</span>
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">{fmtDate(po.receivedDate)}</span>
                 </div>
               )}
               {po.linkedJobType && (
                 <div className="flex items-center justify-between py-1.5">
-                  <span className="text-[11.5px] text-muted-foreground">Job</span>
+                  <span className="text-xs text-muted-foreground">Job</span>
                   <div className="flex items-center gap-1.5">
                     <span className={cn(
-                      "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium",
+                      "inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium",
                       po.linkedJobType === "work-order"
                         ? "bg-violet-500/15 text-violet-600 dark:text-violet-400"
                         : "bg-blue-500/15 text-blue-600 dark:text-blue-400",
                     )}>
                       {po.linkedJobType === "work-order" ? "WO" : "Project"}
                     </span>
-                    <span className="text-[12px] font-mono font-medium">{po.linkedJobCode}</span>
-                    <span className="text-[12px] text-muted-foreground truncate max-w-32">{po.linkedJobName}</span>
+                    <span className="text-sm font-mono font-medium">{po.linkedJobCode}</span>
+                    <span className="text-sm text-muted-foreground truncate max-w-32">{po.linkedJobName}</span>
                   </div>
                 </div>
               )}
               {po.vendorOrderNumber && (
                 <div className="flex items-center justify-between py-1.5">
-                  <span className="text-[11.5px] text-muted-foreground">Vendor Order #</span>
-                  <span className="text-[12.5px] font-medium font-mono">{po.vendorOrderNumber}</span>
+                  <span className="text-xs text-muted-foreground">Vendor Order #</span>
+                  <span className="text-sm font-medium font-mono">{po.vendorOrderNumber}</span>
                 </div>
               )}
               {po.trackingNumber && (
                 <div className="flex items-center justify-between py-1.5">
-                  <span className="text-[11.5px] text-muted-foreground">Tracking #</span>
+                  <span className="text-xs text-muted-foreground">Tracking #</span>
                   <a
                     href={trackingUrl(po.trackingNumber)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 text-[12.5px] font-medium font-mono text-blue-600 dark:text-blue-400 hover:underline"
+                    className="flex items-center gap-1 text-sm font-medium font-mono text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     {po.trackingNumber}
                     <ExternalLink className="h-3 w-3 shrink-0" />
@@ -685,27 +685,27 @@ function PODrawer({
                 </div>
               )}
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-[11.5px] text-muted-foreground">PO Total</span>
-                <span className="text-[12.5px] font-medium font-mono">{currency(poTotal(po))}</span>
+                <span className="text-xs text-muted-foreground">PO Total</span>
+                <span className="text-sm font-medium font-mono">{currency(poTotal(po))}</span>
               </div>
             </div>
           </div>
 
           <fieldset>
-            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-3">Status</legend>
+            <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-3">Status</legend>
             <StatusTimeline status={po.status} />
           </fieldset>
 
           {(po.status === "sent" || po.status === "partial") && (
             <div className="rounded-lg border border-border bg-surface/30 px-4 py-3 space-y-2">
-              <div className="flex items-center justify-between text-[12px]">
+              <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Received</span>
                 <span className="font-mono tabular-nums font-semibold">{pct}%</span>
               </div>
               <div className="h-2 rounded-full bg-muted overflow-hidden">
                 <div className={cn("h-full rounded-full transition-all", pct === 100 ? "bg-green-500" : "bg-amber-500")} style={{ width: `${pct}%` }} />
               </div>
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{currency(poReceivedValue(po))} received</span>
                 <span>{currency(remaining)} remaining</span>
               </div>
@@ -713,7 +713,7 @@ function PODrawer({
           )}
 
           <fieldset>
-            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">
+            <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
               Line Items ({po.lineItems.length})
             </legend>
             <div className="rounded-lg border border-border overflow-hidden divide-y divide-border/50">
@@ -723,19 +723,19 @@ function PODrawer({
                   <div key={li.id} className="px-3.5 py-2.5 space-y-1.5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-[12.5px] font-medium leading-snug truncate">{li.description}</p>
-                        <p className="text-[11px] text-muted-foreground font-mono">{li.sku || "—"}</p>
+                        <p className="text-sm font-medium leading-snug truncate">{li.description}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{li.sku || "—"}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-[12.5px] font-mono tabular-nums">{currency(li.qtyOrdered * li.unitCost)}</p>
-                        <p className="text-[11px] text-muted-foreground">{li.qtyOrdered} × {currency(li.unitCost)}</p>
+                        <p className="text-sm font-mono tabular-nums">{currency(li.qtyOrdered * li.unitCost)}</p>
+                        <p className="text-xs text-muted-foreground">{li.qtyOrdered} × {currency(li.unitCost)}</p>
                       </div>
                     </div>
                     {(po.status === "sent" || po.status === "partial" || po.status === "received") && (
                       <LineItemProgressBar received={li.qtyReceived} ordered={li.qtyOrdered} />
                     )}
                     {po.status === "received" && lineDone && (
-                      <p className="text-[10.5px] text-green-600 dark:text-green-400 flex items-center gap-1">
+                      <p className="text-2xs text-green-600 dark:text-green-400 flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" /> Fully received
                       </p>
                     )}
@@ -747,8 +747,8 @@ function PODrawer({
 
           {po.notes && (
             <fieldset>
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Notes</legend>
-              <p className="text-[12.5px] text-muted-foreground leading-relaxed rounded-lg border border-border bg-surface/30 px-3.5 py-3">
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Notes</legend>
+              <p className="text-sm text-muted-foreground leading-relaxed rounded-lg border border-border bg-surface/30 px-3.5 py-3">
                 {po.notes}
               </p>
             </fieldset>
@@ -759,25 +759,25 @@ function PODrawer({
           <div className="flex gap-2">
             {po.status === "draft" && (
               <button type="button" onClick={onSendPO}
-                className="h-8 rounded-md bg-blue-600 px-3 text-[12.5px] font-medium text-white hover:opacity-90 transition-opacity flex items-center gap-1.5">
+                className="h-8 rounded-md bg-blue-600 px-3 text-sm font-medium text-white hover:opacity-90 transition-opacity flex items-center gap-1.5">
                 <Truck className="h-3.5 w-3.5" /> Send PO
               </button>
             )}
             {(po.status === "sent" || po.status === "partial") && (
               <button type="button" onClick={onMarkAllReceived}
-                className="h-8 rounded-md bg-green-600 px-3 text-[12.5px] font-medium text-white hover:opacity-90 transition-opacity flex items-center gap-1.5">
+                className="h-8 rounded-md bg-green-600 px-3 text-sm font-medium text-white hover:opacity-90 transition-opacity flex items-center gap-1.5">
                 <PackageCheck className="h-3.5 w-3.5" /> Mark All Received
               </button>
             )}
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={onClose}
-              className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+              className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
               Close
             </button>
             {po.status !== "received" && po.status !== "cancelled" && (
               <button type="button" onClick={onSwitchToEdit}
-                className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
+                className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
                 <Pencil className="h-3 w-3" /> Edit
               </button>
             )}
@@ -789,7 +789,7 @@ function PODrawer({
 
   // ── Edit / New mode ──────────────────────────────────────────────────────────
 
-  const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
+  const inputCls = "h-8 w-full rounded-md border border-border bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";
 
   function renderEdit() {
     return (
@@ -797,19 +797,19 @@ function PODrawer({
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
             <fieldset className="space-y-4">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">PO Details</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">PO Details</legend>
 
               <div className="grid grid-cols-2 gap-3">
                 <FormField control={form.control} name="poNumber" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">PO Number *</FormLabel>
-                    <FormControl><Input {...field} placeholder="PO-1185" className="h-8 text-[13px]" /></FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormLabel className="text-xs">PO Number *</FormLabel>
+                    <FormControl><Input {...field} placeholder="PO-1185" className="h-8 text-base" /></FormControl>
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="status" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Status *</FormLabel>
+                    <FormLabel className="text-xs">Status *</FormLabel>
                     <FormControl>
                       <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className={inputCls}>
                         {(Object.keys(STATUS_META) as POStatus[]).map((s) => (
@@ -817,37 +817,37 @@ function PODrawer({
                         ))}
                       </FormSelect>
                     </FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
               </div>
 
               <FormField control={form.control} name="vendorId" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11.5px]">Vendor *</FormLabel>
+                  <FormLabel className="text-xs">Vendor *</FormLabel>
                   <FormControl>
                     <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className={inputCls}>
                       <option value="">Select vendor…</option>
                       {vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
                     </FormSelect>
                   </FormControl>
-                  <FormMessage className="text-[11px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
 
               <div className="grid grid-cols-2 gap-3">
                 <FormField control={form.control} name="orderDate" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Order Date *</FormLabel>
-                    <FormControl><Input {...field} type="date" className="h-8 text-[13px]" /></FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormLabel className="text-xs">Order Date *</FormLabel>
+                    <FormControl><Input {...field} type="date" className="h-8 text-base" /></FormControl>
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="expectedDate" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Expected Date</FormLabel>
-                    <FormControl><Input {...field} type="date" className="h-8 text-[13px]" /></FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormLabel className="text-xs">Expected Date</FormLabel>
+                    <FormControl><Input {...field} type="date" className="h-8 text-base" /></FormControl>
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
               </div>
@@ -855,43 +855,43 @@ function PODrawer({
               <div className="grid grid-cols-2 gap-3">
                 <FormField control={form.control} name="vendorOrderNumber" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Vendor Order #</FormLabel>
-                    <FormControl><Input {...field} placeholder="e.g. ADI-SO-254001" className="h-8 text-[13px]" /></FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormLabel className="text-xs">Vendor Order #</FormLabel>
+                    <FormControl><Input {...field} placeholder="e.g. ADI-SO-254001" className="h-8 text-base" /></FormControl>
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="trackingNumber" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Tracking #</FormLabel>
-                    <FormControl><Input {...field} placeholder="e.g. 1Z999AA1…" className="h-8 text-[13px]" /></FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormLabel className="text-xs">Tracking #</FormLabel>
+                    <FormControl><Input {...field} placeholder="e.g. 1Z999AA1…" className="h-8 text-base" /></FormControl>
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
               </div>
 
               <FormField control={form.control} name="notes" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11.5px]">Notes</FormLabel>
-                  <FormControl><Textarea {...field} rows={2} placeholder="Optional notes…" className="text-[13px] resize-none" /></FormControl>
-                  <FormMessage className="text-[11px]" />
+                  <FormLabel className="text-xs">Notes</FormLabel>
+                  <FormControl><Textarea {...field} rows={2} placeholder="Optional notes…" className="text-base resize-none" /></FormControl>
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
             </fieldset>
 
             <fieldset className="space-y-3">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Linked Job</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Linked Job</legend>
               <FormField control={form.control} name="linkedJobId" render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <JobCombobox value={field.value} onChange={field.onChange} projects={projects} workOrders={workOrders} />
                   </FormControl>
-                  <FormMessage className="text-[11px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
             </fieldset>
 
             <fieldset className="space-y-3">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">
                 Line Items {lineItems.length > 0 && (
                   <span className="ml-1 normal-case font-normal text-muted-foreground">· {currency(totalVal)} total</span>
                 )}
@@ -907,35 +907,35 @@ function PODrawer({
                             value={li.description}
                             onChange={(e) => updateLineItem(li.id, "description", e.target.value)}
                             placeholder="Description"
-                            className="h-7 w-full rounded border border-border bg-background px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary"
+                            className="h-7 w-full rounded border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                           />
                           <div className="grid grid-cols-3 gap-1.5">
                             <input
                               value={li.sku}
                               onChange={(e) => updateLineItem(li.id, "sku", e.target.value)}
                               placeholder="SKU"
-                              className="h-7 rounded border border-border bg-background px-2 text-[12px] font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                              className="h-7 rounded border border-border bg-background px-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                             <div className="relative">
-                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">Qty</span>
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">Qty</span>
                               <input
                                 type="number" min="0" value={li.qtyOrdered}
                                 onChange={(e) => updateLineItem(li.id, "qtyOrdered", parseInt(e.target.value, 10) || 0)}
-                                className="h-7 w-full rounded border border-border bg-background pl-7 pr-2 text-[12.5px] tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="h-7 w-full rounded border border-border bg-background pl-7 pr-2 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
                               />
                             </div>
                             <div className="relative">
-                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">$</span>
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
                               <input
                                 type="number" min="0" step="0.01" value={li.unitCost}
                                 onChange={(e) => updateLineItem(li.id, "unitCost", parseFloat(e.target.value) || 0)}
-                                className="h-7 w-full rounded border border-border bg-background pl-5 pr-2 text-[12.5px] tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="h-7 w-full rounded border border-border bg-background pl-5 pr-2 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
                               />
                             </div>
                           </div>
                         </div>
                         <div className="shrink-0 flex flex-col items-end gap-1 pt-0.5">
-                          <p className="text-[12px] font-mono tabular-nums text-muted-foreground">
+                          <p className="text-sm font-mono tabular-nums text-muted-foreground">
                             {currency(li.qtyOrdered * li.unitCost)}
                           </p>
                           <button type="button" onClick={() => removeLineItem(li.id)}
@@ -955,42 +955,42 @@ function PODrawer({
 
               {addingCustom && (
                 <div className="rounded-lg border border-border bg-surface/30 p-3 space-y-2">
-                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Custom Item</p>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Custom Item</p>
                   <input
                     value={customItem.description}
                     onChange={(e) => setCustomItem((v) => ({ ...v, description: e.target.value }))}
                     placeholder="Description *"
-                    className="h-7 w-full rounded border border-border bg-background px-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="h-7 w-full rounded border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <div className="grid grid-cols-3 gap-1.5">
                     <input
                       value={customItem.sku}
                       onChange={(e) => setCustomItem((v) => ({ ...v, sku: e.target.value }))}
                       placeholder="SKU"
-                      className="h-7 rounded border border-border bg-background px-2 text-[12px] font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="h-7 rounded border border-border bg-background px-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                     <div className="relative">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">Qty</span>
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">Qty</span>
                       <input
                         type="number" min="1" value={customItem.qtyOrdered}
                         onChange={(e) => setCustomItem((v) => ({ ...v, qtyOrdered: parseInt(e.target.value, 10) || 1 }))}
-                        className="h-7 w-full rounded border border-border bg-background pl-7 pr-2 text-[12.5px] tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="h-7 w-full rounded border border-border bg-background pl-7 pr-2 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                     <div className="relative">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">$</span>
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
                       <input
                         type="number" min="0" step="0.01" value={customItem.unitCost}
                         onChange={(e) => setCustomItem((v) => ({ ...v, unitCost: parseFloat(e.target.value) || 0 }))}
-                        className="h-7 w-full rounded border border-border bg-background pl-5 pr-2 text-[12.5px] tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="h-7 w-full rounded border border-border bg-background pl-5 pr-2 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setAddingCustom(false)}
-                      className="h-7 rounded border border-border bg-surface px-3 text-[11.5px] hover:bg-accent transition-colors">Cancel</button>
+                      className="h-7 rounded border border-border bg-surface px-3 text-xs hover:bg-accent transition-colors">Cancel</button>
                     <button type="button" onClick={addCustom}
-                      className="h-7 rounded bg-primary px-3 text-[11.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">Add Item</button>
+                      className="h-7 rounded bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">Add Item</button>
                   </div>
                 </div>
               )}
@@ -999,11 +999,11 @@ function PODrawer({
 
           <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
             <button type="button" onClick={onClose}
-              className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+              className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
               Cancel
             </button>
             <button type="submit" disabled={isPending}
-              className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+              className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
               {isPending ? "Saving…" : mode === "new" ? "Create PO" : "Save Changes"}
             </button>
           </div>
@@ -1021,7 +1021,7 @@ function PODrawer({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="right" className="w-130 flex flex-col p-0 gap-0">
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
-          <SheetTitle className="text-[15px] pr-8">{title}</SheetTitle>
+          <SheetTitle className="text-md pr-8">{title}</SheetTitle>
         </SheetHeader>
         {mode === "view" ? renderView() : renderEdit()}
       </SheetContent>
@@ -1036,24 +1036,24 @@ function POTable({ pos, onView, onEdit }: { pos: PO[]; onView: (po: PO) => void;
     return (
       <div className="flex flex-col items-center py-16 text-center">
         <FileText className="h-8 w-8 text-muted-foreground/25 mb-3" />
-        <p className="text-[13px] font-medium">No purchase orders</p>
-        <p className="mt-1 text-[12px] text-muted-foreground">No POs match the current filters.</p>
+        <p className="text-base font-medium">No purchase orders</p>
+        <p className="mt-1 text-sm text-muted-foreground">No POs match the current filters.</p>
       </div>
     );
   }
   return (
     <div className="rounded-lg border border-border overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-[12.5px]">
+        <table className="w-full text-sm">
           <thead className="border-b border-border bg-surface/50">
             <tr>
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2 px-4">PO # / Vendor</th>
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Status</th>
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Job</th>
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Order Date</th>
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Expected</th>
-              <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Items</th>
-              <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2 pr-4">Total</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2 px-4">PO # / Vendor</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Status</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Job</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Order Date</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Expected</th>
+              <th className="text-right text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Items</th>
+              <th className="text-right text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2 pr-4">Total</th>
               <th className="py-2 pr-4 w-24" />
             </tr>
           </thead>
@@ -1071,14 +1071,14 @@ function POTable({ pos, onView, onEdit }: { pos: PO[]; onView: (po: PO) => void;
                 >
                   <td className="py-2.5 px-4">
                     <p className="font-medium">{po.poNumber}</p>
-                    <p className="text-[11.5px] text-muted-foreground">{po.vendorName}</p>
+                    <p className="text-xs text-muted-foreground">{po.vendorName}</p>
                     {po.trackingNumber && (
                       <a
                         href={trackingUrl(po.trackingNumber)}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 mt-0.5 text-[11px] font-mono text-blue-600 dark:text-blue-400 hover:underline"
+                        className="inline-flex items-center gap-1 mt-0.5 text-xs font-mono text-blue-600 dark:text-blue-400 hover:underline"
                       >
                         <Truck className="h-2.5 w-2.5" />
                         {po.trackingNumber}
@@ -1092,12 +1092,12 @@ function POTable({ pos, onView, onEdit }: { pos: PO[]; onView: (po: PO) => void;
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-1.5">
                           <Briefcase className="h-3 w-3 shrink-0 text-muted-foreground/50" />
-                          <span className="text-[11px] font-mono text-muted-foreground">{po.linkedJobCode}</span>
+                          <span className="text-xs font-mono text-muted-foreground">{po.linkedJobCode}</span>
                         </div>
-                        <p className="text-[12px] leading-snug truncate">{po.linkedJobName}</p>
+                        <p className="text-sm leading-snug truncate">{po.linkedJobName}</p>
                       </div>
                     ) : (
-                      <span className="text-[11.5px] text-muted-foreground/40 italic">General stock</span>
+                      <span className="text-xs text-muted-foreground/40 italic">General stock</span>
                     )}
                   </td>
                   <td className="py-2.5 pr-3 text-muted-foreground whitespace-nowrap">{fmtDate(po.orderDate)}</td>
@@ -1115,7 +1115,7 @@ function POTable({ pos, onView, onEdit }: { pos: PO[]; onView: (po: PO) => void;
                   <td className="py-2.5 pr-4 text-right">
                     <p className="font-mono tabular-nums font-medium">{currency(total)}</p>
                     {isOpen && pct > 0 && pct < 100 && (
-                      <p className="text-[10.5px] text-muted-foreground">{pct}% received</p>
+                      <p className="text-2xs text-muted-foreground">{pct}% received</p>
                     )}
                   </td>
                   <td className="py-2.5 pr-4">
@@ -1124,7 +1124,7 @@ function POTable({ pos, onView, onEdit }: { pos: PO[]; onView: (po: PO) => void;
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onEdit(po); }}
-                          className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-[11px] text-muted-foreground hover:text-foreground transition-all"
+                          className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-xs text-muted-foreground hover:text-foreground transition-all"
                         >
                           <Pencil className="h-3 w-3" /> Edit
                         </button>
@@ -1435,7 +1435,7 @@ function PurchaseOrdersPage() {
           <button
             type="button"
             onClick={() => { setSearch(""); setVendorFilter("all"); setJobFilter("all"); }}
-            className="flex items-center gap-1 h-7 px-2.5 rounded-md border border-border text-[11.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+            className="flex items-center gap-1 h-7 px-2.5 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
           >
             <X className="h-3 w-3" /> Clear
           </button>

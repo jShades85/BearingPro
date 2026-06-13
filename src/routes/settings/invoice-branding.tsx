@@ -20,10 +20,10 @@ function SettingsStub({ icon: Icon, title, description }: { icon: React.ElementT
         <Icon className="h-5 w-5 text-muted-foreground" />
       </div>
       <div>
-        <p className="text-[13px] font-medium">{title}</p>
-        <p className="mt-1 max-w-xs text-[12px] text-muted-foreground leading-relaxed">{description}</p>
+        <p className="text-base font-medium">{title}</p>
+        <p className="mt-1 max-w-xs text-sm text-muted-foreground leading-relaxed">{description}</p>
       </div>
-      <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">Coming soon</span>
+      <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">Coming soon</span>
     </div>
   );
 }

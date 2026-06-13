@@ -48,8 +48,8 @@ export function StatItem({ icon: Icon, label, value, accent, accentColor = "red"
         <Icon className={cn("h-3.5 w-3.5", accent ? accentCls : "text-muted-foreground")} />
       </div>
       <div>
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
-        <p className={cn("text-[14px] font-semibold tabular-nums leading-tight", accent && accentCls)}>
+        <p className="text-2xs text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className={cn("text-md font-semibold tabular-nums leading-tight", accent && accentCls)}>
           {value}
         </p>
       </div>
@@ -85,7 +85,7 @@ export function SearchInput({ value, onChange, placeholder = "Search…", classN
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-7 w-full rounded-md border border-border bg-surface pl-7 pr-2.5 text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+        className="h-7 w-full rounded-md border border-border bg-surface pl-7 pr-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
       />
     </div>
   );
@@ -114,7 +114,7 @@ export function FilterSelect({ value, onChange, children, className }: FilterSel
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger
         className={cn(
-          "h-7 w-auto min-w-27.5 gap-1.5 rounded-md border bg-surface px-2.5 text-[11.5px] focus:ring-1 focus:ring-primary",
+          "h-7 w-auto min-w-27.5 gap-1.5 rounded-md border bg-surface px-2.5 text-xs focus:ring-1 focus:ring-primary",
           isActive
             ? "border-primary/50 text-primary"
             : "border-border text-foreground",
@@ -125,7 +125,7 @@ export function FilterSelect({ value, onChange, children, className }: FilterSel
       </SelectTrigger>
       <SelectContent>
         {options.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value} className="text-[12px]">
+          <SelectItem key={opt.value} value={opt.value} className="text-sm">
             {opt.label}
           </SelectItem>
         ))}
@@ -156,7 +156,7 @@ export function PageTab({ active, onClick, children, count }: PageTabProps) {
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap",
+        "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
         active
           ? "border-primary text-foreground"
           : "border-transparent text-muted-foreground hover:text-foreground",
@@ -165,7 +165,7 @@ export function PageTab({ active, onClick, children, count }: PageTabProps) {
       {children}
       {count !== undefined && (
         <span className={cn(
-          "rounded px-1.5 py-0.5 text-[10px] font-semibold",
+          "rounded px-1.5 py-0.5 text-2xs font-semibold",
           active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
         )}>
           {count}
@@ -186,7 +186,7 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ label, cls, dot = false }: StatusBadgeProps) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium whitespace-nowrap", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", cls)}>
       {dot && <span className="h-1.5 w-1.5 rounded-full bg-current" />}
       {label}
     </span>
@@ -208,8 +208,8 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
         <Icon className="h-5 w-5 text-muted-foreground" />
       </div>
-      <p className="text-[13.5px] font-medium text-foreground">{title}</p>
-      {description && <p className="mt-1 text-[12.5px] text-muted-foreground max-w-sm">{description}</p>}
+      <p className="text-base font-medium text-foreground">{title}</p>
+      {description && <p className="mt-1 text-sm text-muted-foreground max-w-sm">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -229,7 +229,7 @@ export function DrawerFooter({ children, className }: { children: React.ReactNod
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="block text-[10.5px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
+    <p className="block text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1">
       {children}
     </p>
   );

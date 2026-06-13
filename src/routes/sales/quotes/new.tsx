@@ -213,7 +213,7 @@ function NewQuotePage() {
     }
   }
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   return (
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
@@ -221,7 +221,7 @@ function NewQuotePage() {
 
         <div>
           <Link to="/sales/quotes"
-            className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors">
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-3.5 w-3.5" />
             Quotes & Estimates
           </Link>
@@ -229,7 +229,7 @@ function NewQuotePage() {
 
         {/* Header form */}
         <div className="rounded-lg border border-border bg-card p-5">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">Quote Details</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-4">Quote Details</p>
           <div className="grid grid-cols-2 gap-x-5 gap-y-4">
 
             {/* Linked Opportunity — full width */}
@@ -313,7 +313,7 @@ function NewQuotePage() {
               <label className={labelCls}>Notes</label>
               <textarea
                 rows={3}
-                className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Add notes…"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -324,11 +324,11 @@ function NewQuotePage() {
 
         {/* Builder section */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2.5">Line Items</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2.5">Line Items</p>
           {sections.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border bg-card/50 px-5 py-8 flex flex-col items-center gap-2 text-center">
               <FileText className="h-6 w-6 text-muted-foreground/25" />
-              <p className="text-[12.5px] text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Select a template above to begin adding line items
               </p>
             </div>
@@ -350,7 +350,7 @@ function NewQuotePage() {
               <button
                 type="button"
                 onClick={() => setLaborModalOpen(true)}
-                className="flex items-center gap-2 w-full rounded-lg border border-dashed border-border px-4 py-2.5 text-[12px] text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-surface/40 transition-colors"
+                className="flex items-center gap-2 w-full rounded-lg border border-dashed border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-surface/40 transition-colors"
               >
                 <Clock className="h-3.5 w-3.5 shrink-0" />
                 Add Additional Labor
@@ -363,7 +363,7 @@ function NewQuotePage() {
 
       {/* Sticky footer */}
       <div className="shrink-0 border-t border-border bg-background/95 backdrop-blur-sm px-5 py-3 flex items-center gap-5">
-        <div className="flex items-center gap-5 text-[12px]">
+        <div className="flex items-center gap-5 text-sm">
           <div className="flex items-center gap-1.5">
             <span className="text-muted-foreground">Subtotal</span>
             <span className="font-mono font-semibold tabular-nums">{currency(subtotal)}</span>
@@ -377,14 +377,14 @@ function NewQuotePage() {
           </div>
         </div>
         {saveError && (
-          <span className="text-[11.5px] text-destructive">{saveError}</span>
+          <span className="text-xs text-destructive">{saveError}</span>
         )}
         <div className="flex-1" />
         <button
           type="button"
           onClick={() => navigate({ to: "/sales/quotes" })}
           disabled={saving}
-          className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+          className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
@@ -392,7 +392,7 @@ function NewQuotePage() {
           type="button"
           onClick={handleSaveDraft}
           disabled={saving || !linkedOppId}
-          className="flex items-center gap-2 h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="flex items-center gap-2 h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           Save as Draft

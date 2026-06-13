@@ -343,7 +343,7 @@ export function CatalogSearchModal({
     <Dialog open={open} onOpenChange={(v) => { if (!v) { onClose(); setQuery(""); } }}>
       <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-4 pt-4 pb-0">
-          <DialogTitle className="text-[14px] font-semibold">Add Item from Catalog</DialogTitle>
+          <DialogTitle className="text-md font-semibold">Add Item from Catalog</DialogTitle>
         </DialogHeader>
         <div className="px-4 pt-3 pb-2 border-b border-border">
           <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 h-8">
@@ -354,13 +354,13 @@ export function CatalogSearchModal({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name, SKU, or category…"
-              className="flex-1 bg-transparent text-[12.5px] outline-none placeholder:text-muted-foreground/50"
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
             />
           </div>
         </div>
         <div className="overflow-y-auto max-h-72">
           {filtered.length === 0 ? (
-            <div className="px-4 py-6 text-center text-[12px] text-muted-foreground">
+            <div className="px-4 py-6 text-center text-sm text-muted-foreground">
               {query.trim()
                 ? `No items match "${query}"`
                 : items.length === 0
@@ -375,19 +375,19 @@ export function CatalogSearchModal({
               className="flex w-full items-center gap-3 px-4 py-2.5 hover:bg-accent transition-colors text-left border-b border-border/40 last:border-0"
             >
               <div className="flex-1 min-w-0">
-                <div className="text-[12.5px] font-medium truncate">{item.name}</div>
-                <div className="text-[11px] text-muted-foreground font-mono">{item.sku}</div>
+                <div className="text-sm font-medium truncate">{item.name}</div>
+                <div className="text-xs text-muted-foreground font-mono">{item.sku}</div>
               </div>
               {item.category && (
-                <span className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium bg-primary/10 text-primary">
+                <span className="shrink-0 rounded px-1.5 py-0.5 text-2xs font-medium bg-primary/10 text-primary">
                   {item.category}
                 </span>
               )}
-              <span className="shrink-0 font-mono text-[12px] text-muted-foreground tabular-nums w-20 text-right">
+              <span className="shrink-0 font-mono text-sm text-muted-foreground tabular-nums w-20 text-right">
                 {currency(item.unitPrice)}
               </span>
               {item.hasLabor && item.laborHours > 0 && (
-                <span className="shrink-0 rounded px-1.5 py-0.5 text-[10px] bg-violet-500/10 text-violet-600 dark:text-violet-400">
+                <span className="shrink-0 rounded px-1.5 py-0.5 text-2xs bg-violet-500/10 text-violet-600 dark:text-violet-400">
                   +{item.laborHours}hr
                 </span>
               )}
@@ -398,12 +398,12 @@ export function CatalogSearchModal({
           <button
             type="button"
             onClick={() => { onAddItem(null); onClose(); setQuery(""); }}
-            className="flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <Plus className="h-3.5 w-3.5" /> Add custom item
           </button>
           <button type="button" onClick={onClose}
-            className="h-7 rounded-md border border-border bg-surface px-3 text-[12px] hover:bg-accent transition-colors">
+            className="h-7 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
             Cancel
           </button>
         </div>
@@ -445,7 +445,7 @@ export function LineItemRow({
             if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); onCellCommit(); }
             if (e.key === "Escape") onCellCommit();
           }}
-          className="w-full rounded border border-primary/40 bg-primary/5 px-1.5 py-0.5 text-right text-[12px] outline-none tabular-nums"
+          className="w-full rounded border border-primary/40 bg-primary/5 px-1.5 py-0.5 text-right text-sm outline-none tabular-nums"
         />
       );
     }
@@ -453,7 +453,7 @@ export function LineItemRow({
       <button
         type="button"
         onClick={() => onCellClick(item.id, field, item[field])}
-        className="w-full rounded px-1.5 py-0.5 text-right text-[12px] tabular-nums hover:bg-accent transition-colors cursor-text"
+        className="w-full rounded px-1.5 py-0.5 text-right text-sm tabular-nums hover:bg-accent transition-colors cursor-text"
       >
         {cellValue(field)}
       </button>
@@ -471,23 +471,23 @@ export function LineItemRow({
     )}>
       <div className={cn("min-w-0 pr-2", isLabor && "flex items-center gap-1.5")}>
         {isLabor && <span className="h-px w-3 shrink-0 bg-muted-foreground/30" />}
-        <span className={cn("text-[12px] truncate", isLabor ? "text-muted-foreground" : "font-medium")}>
+        <span className={cn("text-sm truncate", isLabor ? "text-muted-foreground" : "font-medium")}>
           {item.description}
         </span>
         {item.type === "custom" && (
-          <span className="ml-1.5 inline-flex shrink-0 items-center rounded px-1 py-0.5 text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <span className="ml-1.5 inline-flex shrink-0 items-center rounded px-1 py-0.5 text-2xs bg-amber-500/10 text-amber-600 dark:text-amber-400">
             custom
           </span>
         )}
       </div>
       <EditableCell field="qty" />
-      <span className={cn("text-center text-[11px]", isLabor ? "text-muted-foreground/60" : "text-muted-foreground")}>
+      <span className={cn("text-center text-xs", isLabor ? "text-muted-foreground/60" : "text-muted-foreground")}>
         {item.unit}
       </span>
       <EditableCell field="unitCost" />
       <EditableCell field="unitPrice" />
       <span className={cn(
-        "text-right font-mono text-[12px] tabular-nums font-medium px-1.5",
+        "text-right font-mono text-sm tabular-nums font-medium px-1.5",
         isLabor ? "text-muted-foreground/70" : "text-foreground",
       )}>
         {currency(ext)}
@@ -525,19 +525,19 @@ export function SectionBlock({
     <div className="rounded-lg border border-border overflow-hidden">
       <div className="flex items-center justify-between bg-surface/60 px-3 py-2 border-b border-border">
         <div className="flex items-center gap-2">
-          <span className="text-[12px] font-semibold">{section.name}</span>
-          <span className="text-[10.5px] text-muted-foreground">
+          <span className="text-sm font-semibold">{section.name}</span>
+          <span className="text-2xs text-muted-foreground">
             {sectionItems.length} {sectionItems.length === 1 ? "item" : "items"}
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[12px] text-muted-foreground tabular-nums">
+          <span className="font-mono text-sm text-muted-foreground tabular-nums">
             {subtotal > 0 ? currency(subtotal) : "—"}
           </span>
           <button
             type="button"
             onClick={() => onAddItem(section.id)}
-            className="flex items-center gap-1 rounded-md border border-border bg-background px-2 h-6 text-[11px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="flex items-center gap-1 rounded-md border border-border bg-background px-2 h-6 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
           >
             <Plus className="h-3 w-3" /> Add Item
           </button>
@@ -545,12 +545,12 @@ export function SectionBlock({
       </div>
       {sectionItems.length > 0 && (
         <div className="grid grid-cols-[1fr_64px_44px_88px_88px_88px_28px] gap-0 border-b border-border/40 bg-surface/20 px-3 py-1">
-          <span className="text-[9.5px] uppercase tracking-wide text-muted-foreground/60">Description</span>
-          <span className="text-[9.5px] uppercase tracking-wide text-muted-foreground/60 text-right">Qty</span>
-          <span className="text-[9.5px] uppercase tracking-wide text-muted-foreground/60 text-center">Unit</span>
-          <span className="text-[9.5px] uppercase tracking-wide text-muted-foreground/60 text-right">Cost</span>
-          <span className="text-[9.5px] uppercase tracking-wide text-muted-foreground/60 text-right">Price</span>
-          <span className="text-[9.5px] uppercase tracking-wide text-muted-foreground/60 text-right px-1.5">Ext.</span>
+          <span className="text-2xs uppercase tracking-wide text-muted-foreground/60">Description</span>
+          <span className="text-2xs uppercase tracking-wide text-muted-foreground/60 text-right">Qty</span>
+          <span className="text-2xs uppercase tracking-wide text-muted-foreground/60 text-center">Unit</span>
+          <span className="text-2xs uppercase tracking-wide text-muted-foreground/60 text-right">Cost</span>
+          <span className="text-2xs uppercase tracking-wide text-muted-foreground/60 text-right">Price</span>
+          <span className="text-2xs uppercase tracking-wide text-muted-foreground/60 text-right px-1.5">Ext.</span>
           <span />
         </div>
       )}
@@ -566,7 +566,7 @@ export function SectionBlock({
         />
       ))}
       {sectionItems.length === 0 && (
-        <div className="px-4 py-3 text-[11.5px] text-muted-foreground/50 italic">
+        <div className="px-4 py-3 text-xs text-muted-foreground/50 italic">
           No items — click "Add Item" to populate this section
         </div>
       )}

@@ -264,7 +264,7 @@ function stockStatus(item: StockItem): StockStatus {
 function categoryChip(cat: Category) {
   const m = categoryMeta[cat];
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium", m.cls)}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium", m.cls)}>
       {m.label}
     </span>
   );
@@ -273,7 +273,7 @@ function categoryChip(cat: Category) {
 function statusChip(status: StockStatus) {
   const m = stockStatusMeta[status];
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap", m.badgeCls)}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap", m.badgeCls)}>
       {m.label}
     </span>
   );
@@ -301,7 +301,7 @@ function StockLevelBar({ item }: { item: StockItem }) {
           style={{ left: `${minPct}%` }}
         />
       </div>
-      <div className="flex justify-between text-[10.5px] text-muted-foreground font-mono">
+      <div className="flex justify-between text-2xs text-muted-foreground font-mono">
         <span>0</span>
         <span>Min {item.minStockLevel}</span>
         <span>Max {item.maxStockLevel}</span>
@@ -314,7 +314,7 @@ function StockLevelBar({ item }: { item: StockItem }) {
 
 function MovementLog({ movements }: { movements: StockMovement[] }) {
   if (movements.length === 0) {
-    return <p className="text-[11.5px] text-muted-foreground/60 italic">No movements recorded yet.</p>;
+    return <p className="text-xs text-muted-foreground/60 italic">No movements recorded yet.</p>;
   }
   return (
     <div className="rounded-lg border border-border overflow-hidden divide-y divide-border/50">
@@ -323,27 +323,27 @@ function MovementLog({ movements }: { movements: StockMovement[] }) {
         const MIcon = meta.Icon;
         const positive = mov.qtyDelta > 0;
         return (
-          <div key={mov.id} className="flex items-start gap-2.5 px-3.5 py-2.5 text-[12px]">
+          <div key={mov.id} className="flex items-start gap-2.5 px-3.5 py-2.5 text-sm">
             <div className={cn("mt-0.5 shrink-0", meta.color)}>
               <MIcon className="h-3.5 w-3.5" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={cn(
-                  "font-mono font-semibold tabular-nums text-[12px]",
+                  "font-mono font-semibold tabular-nums text-sm",
                   positive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400",
                 )}>
                   {positive ? `+${mov.qtyDelta}` : String(mov.qtyDelta)}
                 </span>
-                <span className="text-muted-foreground text-[11.5px]">{meta.label}</span>
+                <span className="text-muted-foreground text-xs">{meta.label}</span>
                 {mov.jobReference && (
-                  <span className="text-[11px] text-blue-500 truncate max-w-36">{mov.jobReference}</span>
+                  <span className="text-xs text-blue-500 truncate max-w-36">{mov.jobReference}</span>
                 )}
               </div>
               {mov.note && (
-                <p className="text-[11px] text-muted-foreground truncate mt-0.5">{mov.note}</p>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">{mov.note}</p>
               )}
-              <p className="text-[10.5px] text-muted-foreground/70 mt-0.5 font-mono">
+              <p className="text-2xs text-muted-foreground/70 mt-0.5 font-mono">
                 {mov.createdAt} · {mov.createdBy}
               </p>
             </div>
@@ -386,7 +386,7 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
   }
 
   const delta = newQty - item.qtyOnHand;
-  const fieldCls = "h-7 w-full rounded-md border border-border bg-surface px-2 text-[12px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary";
+  const fieldCls = "h-7 w-full rounded-md border border-border bg-surface px-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -394,7 +394,7 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
         <button
           type="button"
           onClick={(e) => e.stopPropagation()}
-          className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-[11px] text-muted-foreground hover:text-foreground transition-all"
+          className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-xs text-muted-foreground hover:text-foreground transition-all"
         >
           <SlidersHorizontal className="h-3 w-3" />
           Adjust
@@ -403,12 +403,12 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
 
       <PopoverContent className="w-70 p-0" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="px-3.5 py-3 border-b border-border">
-          <p className="text-[12.5px] font-semibold">Adjust Quantity</p>
-          <p className="text-[11px] text-muted-foreground truncate mt-0.5">{item.name}</p>
+          <p className="text-sm font-semibold">Adjust Quantity</p>
+          <p className="text-xs text-muted-foreground truncate mt-0.5">{item.name}</p>
         </div>
 
         <div className="px-3.5 py-3 space-y-3">
-          <div className="flex items-center justify-between text-[12px]">
+          <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Current</span>
             <span className="font-mono font-semibold tabular-nums">
               {item.qtyOnHand} {item.unitOfMeasure}
@@ -416,27 +416,27 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
           </div>
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">New Quantity</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">New Quantity</p>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setNewQty((q) => Math.max(0, q - 1))}
-                className="h-7 w-7 shrink-0 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors text-[13px] font-medium"
+                className="h-7 w-7 shrink-0 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors text-base font-medium"
               >−</button>
               <input
                 type="number"
                 min="0"
                 value={newQty}
                 onChange={(e) => setNewQty(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                className="h-7 w-14 rounded-md border border-border bg-surface text-center text-[13px] tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
+                className="h-7 w-14 rounded-md border border-border bg-surface text-center text-base tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
               />
               <button
                 type="button"
                 onClick={() => setNewQty((q) => q + 1)}
-                className="h-7 w-7 shrink-0 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors text-[13px] font-medium"
+                className="h-7 w-7 shrink-0 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors text-base font-medium"
               >+</button>
               <span className={cn(
-                "ml-1 text-[11px] font-mono tabular-nums",
+                "ml-1 text-xs font-mono tabular-nums",
                 delta > 0 ? "text-green-600 dark:text-green-400"
                   : delta < 0 ? "text-red-600 dark:text-red-400"
                   : "text-muted-foreground",
@@ -447,7 +447,7 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
           </div>
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Type</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Type</p>
             <FormSelect value={adjType} onChange={(e) => setAdjType(e.target.value as AdjustType)} className={fieldCls}>
               <option value="cycle_count">Cycle Count</option>
               <option value="received">Received</option>
@@ -457,23 +457,23 @@ function AdjustCell({ item, onAdjust }: AdjustCellProps) {
           </div>
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Job Reference</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Job Reference</p>
             <input value={jobRef} onChange={(e) => setJobRef(e.target.value)} placeholder="e.g. PRJ-0023" className={fieldCls} />
           </div>
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Note</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Note</p>
             <input value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="Optional note…" className={fieldCls} />
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-border">
           <button type="button" onClick={() => setOpen(false)}
-            className="h-7 rounded-md border border-border bg-surface px-3 text-[12px] hover:bg-accent transition-colors">
+            className="h-7 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
             Cancel
           </button>
           <button type="button" onClick={handleConfirm}
-            className="h-7 rounded-md bg-primary px-3 text-[12px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+            className="h-7 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
             Confirm
           </button>
         </div>
@@ -495,7 +495,7 @@ function LockedLabel({ children }: { children: React.ReactNode }) {
 
 function LockedValue({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-8 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-[13px] text-foreground/70 cursor-default select-text leading-[1.6]">
+    <div className="min-h-8 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-base text-foreground/70 cursor-default select-text leading-[1.6]">
       {children}
     </div>
   );
@@ -636,13 +636,13 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
           {/* Manufacturer + badges */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded text-[11px] font-bold", mfrColor(item.id))}>
+            <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded text-xs font-bold", mfrColor(item.id))}>
               {item.manufacturerName.slice(0, 2).toUpperCase()}
             </div>
-            <span className="text-[12.5px] text-muted-foreground">{item.manufacturerName}</span>
+            <span className="text-sm text-muted-foreground">{item.manufacturerName}</span>
             <span className="ml-auto">{categoryChip(item.category)}</span>
             <span className={cn(
-              "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium",
+              "inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium",
               item.isActive ? "bg-status-won/15 text-status-won" : "bg-muted text-muted-foreground",
             )}>
               {item.isActive ? "Active" : "Inactive"}
@@ -650,22 +650,22 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
           </div>
 
           {item.description && (
-            <p className="text-[12.5px] text-muted-foreground leading-relaxed">{item.description}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
           )}
 
           {/* On Hand — primary info */}
           <fieldset className="space-y-3">
-            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">On Hand</legend>
+            <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">On Hand</legend>
             <div className="rounded-lg border border-border bg-surface/30 px-4 py-3 flex items-center justify-between gap-4">
               <div>
                 <span className={cn("text-[32px] font-bold tabular-nums leading-none", sm.qtyCls)}>
                   {item.qtyOnHand}
                 </span>
-                <span className="text-[14px] text-muted-foreground ml-1.5">{item.unitOfMeasure}</span>
+                <span className="text-md text-muted-foreground ml-1.5">{item.unitOfMeasure}</span>
               </div>
               <div className="flex flex-col items-end gap-1.5">
                 {statusChip(status)}
-                <span className="text-[11px] text-muted-foreground font-mono">{currency(valueOnHand)} value</span>
+                <span className="text-xs text-muted-foreground font-mono">{currency(valueOnHand)} value</span>
               </div>
             </div>
             <StockLevelBar item={item} />
@@ -673,34 +673,34 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
           {/* Details */}
           <fieldset className="space-y-0">
-            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Details</legend>
+            <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Details</legend>
             <div className="rounded-lg border border-border bg-surface/30 px-3 py-1 divide-y divide-border/50">
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-[11.5px] text-muted-foreground">SKU</span>
-                <span className="text-[12.5px] font-medium font-mono">{item.sku || "—"}</span>
+                <span className="text-xs text-muted-foreground">SKU</span>
+                <span className="text-sm font-medium font-mono">{item.sku || "—"}</span>
               </div>
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <MapPin className="h-3 w-3" /> Location
                 </span>
-                <span className="text-[12.5px] font-medium">{item.locationBin}</span>
+                <span className="text-sm font-medium">{item.locationBin}</span>
               </div>
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-[11.5px] text-muted-foreground">Unit Cost</span>
-                <span className="text-[12.5px] font-medium font-mono">{currency(item.unitCost)}</span>
+                <span className="text-xs text-muted-foreground">Unit Cost</span>
+                <span className="text-sm font-medium font-mono">{currency(item.unitCost)}</span>
               </div>
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-[11.5px] text-muted-foreground">Unit of Measure</span>
-                <span className="text-[12.5px] font-medium">{item.unitOfMeasure}</span>
+                <span className="text-xs text-muted-foreground">Unit of Measure</span>
+                <span className="text-sm font-medium">{item.unitOfMeasure}</span>
               </div>
             </div>
           </fieldset>
 
           {/* Movement log */}
           <fieldset className="space-y-2">
-            <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Movement Log</legend>
+            <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Movement Log</legend>
             {isLoadingMovements
-              ? <p className="text-[11.5px] text-muted-foreground/60 italic">Loading movements…</p>
+              ? <p className="text-xs text-muted-foreground/60 italic">Loading movements…</p>
               : <MovementLog movements={sortedMovements} />
             }
           </fieldset>
@@ -708,11 +708,11 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
         <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
           <button type="button" onClick={onClose}
-            className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+            className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
             Close
           </button>
           <button type="button" onClick={onSwitchToEdit}
-            className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
+            className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5">
             <Pencil className="h-3 w-3" />
             Edit Item
           </button>
@@ -731,35 +731,35 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
             {/* 1. Catalog Link */}
             <fieldset className="space-y-3">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Catalog Link</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Catalog Link</legend>
 
               {watchedCatalogId && linkedCatalogItem ? (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 px-3.5 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[12.5px] font-medium truncate">{linkedCatalogItem.name}</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">{linkedCatalogItem.sku}</p>
+                    <p className="text-sm font-medium truncate">{linkedCatalogItem.name}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{linkedCatalogItem.sku}</p>
                   </div>
                   <button type="button" onClick={handleUnlink}
-                    className="shrink-0 flex items-center gap-1 text-[11.5px] text-muted-foreground hover:text-destructive transition-colors">
+                    className="shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors">
                     <X className="h-3 w-3" /> Unlink
                   </button>
                 </div>
               ) : (
                 <div>
-                  <label className="block text-[11.5px] text-muted-foreground mb-1.5">
-                    Link to Catalog Item <span className="text-muted-foreground/60 text-[10.5px]">(optional)</span>
+                  <label className="block text-xs text-muted-foreground mb-1.5">
+                    Link to Catalog Item <span className="text-muted-foreground/60 text-2xs">(optional)</span>
                   </label>
                   <FormSelect
                     value={watchedCatalogId ?? ""}
                     onChange={(e) => handleCatalogLink(e.target.value)}
-                    className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring"
                   >
                     <option value="">Select catalog item…</option>
                     {catalogItems.map((c) => (
                       <option key={c.id} value={c.id}>{c.name} — {c.sku}</option>
                     ))}
                   </FormSelect>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Linking auto-fills and locks name, SKU, manufacturer, category, and cost.
                   </p>
                 </div>
@@ -768,12 +768,12 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
             {/* 2. Basic Info */}
             <fieldset className="space-y-4">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Basic Info</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Basic Info</legend>
 
               {isLinked && (
                 <div className="flex gap-2.5 rounded-md border border-blue-500/20 bg-blue-500/8 px-3 py-2.5">
                   <Info className="h-3.5 w-3.5 shrink-0 text-blue-500 mt-0.5" />
-                  <p className="text-[11.5px] text-muted-foreground leading-snug">
+                  <p className="text-xs text-muted-foreground leading-snug">
                     Fields marked with a lock are managed by the linked Catalog item. To edit them, update the item in Catalog.
                   </p>
                 </div>
@@ -782,25 +782,25 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
               {isLinked ? (
                 <div className="space-y-3">
                   <div>
-                    <p className="text-[11.5px] text-muted-foreground mb-1.5"><LockedLabel>Name</LockedLabel></p>
+                    <p className="text-xs text-muted-foreground mb-1.5"><LockedLabel>Name</LockedLabel></p>
                     <LockedValue>{formValues.name}</LockedValue>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-[11.5px] text-muted-foreground mb-1.5"><LockedLabel>SKU</LockedLabel></p>
+                      <p className="text-xs text-muted-foreground mb-1.5"><LockedLabel>SKU</LockedLabel></p>
                       <LockedValue><span className="font-mono">{formValues.sku || "—"}</span></LockedValue>
                     </div>
                     <div>
-                      <p className="text-[11.5px] text-muted-foreground mb-1.5"><LockedLabel>Category</LockedLabel></p>
+                      <p className="text-xs text-muted-foreground mb-1.5"><LockedLabel>Category</LockedLabel></p>
                       <LockedValue>{categoryMeta[formValues.category].label}</LockedValue>
                     </div>
                   </div>
                   <div>
-                    <p className="text-[11.5px] text-muted-foreground mb-1.5"><LockedLabel>Manufacturer</LockedLabel></p>
+                    <p className="text-xs text-muted-foreground mb-1.5"><LockedLabel>Manufacturer</LockedLabel></p>
                     <LockedValue>{formValues.manufacturerName}</LockedValue>
                   </div>
                   <div>
-                    <p className="text-[11.5px] text-muted-foreground mb-1.5"><LockedLabel>Description</LockedLabel></p>
+                    <p className="text-xs text-muted-foreground mb-1.5"><LockedLabel>Description</LockedLabel></p>
                     <LockedValue>
                       {formValues.description || <em className="text-muted-foreground/40 not-italic">No description</em>}
                     </LockedValue>
@@ -810,54 +810,54 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                 <div className="space-y-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11.5px]">Name *</FormLabel>
-                      <FormControl><Input {...field} placeholder="e.g. Axis P3245-V Fixed Dome" className="h-8 text-[13px]" /></FormControl>
-                      <FormMessage className="text-[11px]" />
+                      <FormLabel className="text-xs">Name *</FormLabel>
+                      <FormControl><Input {...field} placeholder="e.g. Axis P3245-V Fixed Dome" className="h-8 text-base" /></FormControl>
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )} />
                   <div className="grid grid-cols-2 gap-3">
                     <FormField control={form.control} name="sku" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[11.5px]">SKU</FormLabel>
-                        <FormControl><Input {...field} placeholder="e.g. AX-P3245-V" className="h-8 text-[13px]" /></FormControl>
-                        <FormMessage className="text-[11px]" />
+                        <FormLabel className="text-xs">SKU</FormLabel>
+                        <FormControl><Input {...field} placeholder="e.g. AX-P3245-V" className="h-8 text-base" /></FormControl>
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="category" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[11.5px]">Category *</FormLabel>
+                        <FormLabel className="text-xs">Category *</FormLabel>
                         <FormControl>
-                          <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring">
+                          <FormSelect value={field.value} onChange={field.onChange} onBlur={field.onBlur} className="h-8 w-full rounded-md border border-input bg-background px-3 text-base focus:outline-none focus:ring-1 focus:ring-ring">
                             {CATEGORIES.map((c) => (
                               <option key={c} value={c}>{categoryMeta[c].label}</option>
                             ))}
                           </FormSelect>
                         </FormControl>
-                        <FormMessage className="text-[11px]" />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )} />
                   </div>
                   <FormField control={form.control} name="manufacturerName" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11.5px]">Manufacturer *</FormLabel>
+                      <FormLabel className="text-xs">Manufacturer *</FormLabel>
                       <FormControl>
-                        <Input {...field} list="mfr-suggestions" placeholder="e.g. Axis Communications" className="h-8 text-[13px]" />
+                        <Input {...field} list="mfr-suggestions" placeholder="e.g. Axis Communications" className="h-8 text-base" />
                       </FormControl>
                       <datalist id="mfr-suggestions">
                         {Array.from(new Set(catalogItems.map((c) => c.manufacturerName).filter(Boolean))).map((name) => (
                           <option key={name} value={name} />
                         ))}
                       </datalist>
-                      <FormMessage className="text-[11px]" />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="description" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11.5px]">Description</FormLabel>
+                      <FormLabel className="text-xs">Description</FormLabel>
                       <FormControl>
-                        <Textarea {...field} rows={2} placeholder="Brief item description…" className="text-[13px] resize-none" />
+                        <Textarea {...field} rows={2} placeholder="Brief item description…" className="text-base resize-none" />
                       </FormControl>
-                      <FormMessage className="text-[11px]" />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )} />
                 </div>
@@ -865,16 +865,16 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
               <FormField control={form.control} name="locationBin" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11.5px]">Location / Bin *</FormLabel>
+                  <FormLabel className="text-xs">Location / Bin *</FormLabel>
                   <FormControl>
-                    <Input {...field} list="bin-suggestions" placeholder="e.g. Warehouse Shelf A1" className="h-8 text-[13px]" />
+                    <Input {...field} list="bin-suggestions" placeholder="e.g. Warehouse Shelf A1" className="h-8 text-base" />
                   </FormControl>
                   <datalist id="bin-suggestions">
                     {["Warehouse Shelf A1", "Warehouse Shelf A2", "Warehouse Shelf A3", "Warehouse Shelf A4", "Van 1", "Van 2", "Cage B"].map((b) => (
                       <option key={b} value={b} />
                     ))}
                   </datalist>
-                  <FormMessage className="text-[11px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
 
@@ -883,20 +883,20 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                   <FormControl>
                     <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
-                  <FormLabel className="text-[12.5px] font-normal cursor-pointer mt-0!">Active</FormLabel>
+                  <FormLabel className="text-sm font-normal cursor-pointer mt-0!">Active</FormLabel>
                 </FormItem>
               )} />
             </fieldset>
 
             {/* 3. Product Image */}
             <fieldset className="space-y-3">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1.5">
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1.5">
                 Product Image {isLinked && <Lock className="h-3 w-3 text-muted-foreground/50" />}
               </legend>
               {isLinked ? (
                 <div className="flex items-center gap-2.5 rounded-md border border-border/50 bg-muted/40 px-3 py-2.5">
                   <Camera className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
-                  <p className="text-[12px] text-muted-foreground/70">Managed by the linked Catalog item.</p>
+                  <p className="text-sm text-muted-foreground/70">Managed by the linked Catalog item.</p>
                 </div>
               ) : (
                 <div className="flex cursor-default items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface/50 px-6 py-8">
@@ -905,10 +905,10 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                       <Camera className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-[12.5px] font-medium text-foreground">Click to upload or drag & drop</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG up to 5MB</p>
+                      <p className="text-sm font-medium text-foreground">Click to upload or drag & drop</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">PNG, JPG up to 5MB</p>
                     </div>
-                    <p className="text-[10.5px] text-muted-foreground/60 italic">
+                    <p className="text-2xs text-muted-foreground/60 italic">
                       Image storage will be enabled when Supabase is connected
                     </p>
                   </div>
@@ -918,19 +918,19 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
             {/* 4. Pricing & Units */}
             <fieldset className="space-y-4">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Pricing & Units</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Pricing & Units</legend>
               <div className="grid grid-cols-2 gap-3">
                 {isLinked ? (
                   <>
                     <div>
-                      <p className="text-[11.5px] text-muted-foreground mb-1.5"><LockedLabel>Unit Cost</LockedLabel></p>
+                      <p className="text-xs text-muted-foreground mb-1.5"><LockedLabel>Unit Cost</LockedLabel></p>
                       <LockedValue>
                         <span className="text-muted-foreground/70 mr-0.5">$</span>
                         <span className="font-mono">{formValues.unitCost.toFixed(2)}</span>
                       </LockedValue>
                     </div>
                     <div>
-                      <p className="text-[11.5px] text-muted-foreground mb-1.5"><LockedLabel>Unit of Measure</LockedLabel></p>
+                      <p className="text-xs text-muted-foreground mb-1.5"><LockedLabel>Unit of Measure</LockedLabel></p>
                       <LockedValue>{formValues.unitOfMeasure}</LockedValue>
                     </div>
                   </>
@@ -938,26 +938,26 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
                   <>
                     <FormField control={form.control} name="unitCost" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[11.5px]">Unit Cost *</FormLabel>
+                        <FormLabel className="text-xs">Unit Cost *</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                            <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-[13px]" />
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                            <Input {...field} type="number" min="0" step="0.01" className="h-8 pl-5 text-base" />
                           </div>
                         </FormControl>
-                        <FormMessage className="text-[11px]" />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="unitOfMeasure" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[11.5px]">Unit of Measure *</FormLabel>
+                        <FormLabel className="text-xs">Unit of Measure *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="ea" list="uom-suggestions-stock" className="h-8 text-[13px]" />
+                          <Input {...field} placeholder="ea" list="uom-suggestions-stock" className="h-8 text-base" />
                         </FormControl>
                         <datalist id="uom-suggestions-stock">
                           {UNIT_SUGGESTIONS.map((u) => <option key={u} value={u} />)}
                         </datalist>
-                        <FormMessage className="text-[11px]" />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )} />
                   </>
@@ -967,33 +967,33 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
             {/* 5. Stock Levels */}
             <fieldset className="space-y-4">
-              <legend className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Stock Levels</legend>
+              <legend className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">Stock Levels</legend>
               <FormField control={form.control} name="qtyOnHand" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11.5px]">Current Qty on Hand *</FormLabel>
+                  <FormLabel className="text-xs">Current Qty on Hand *</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" min="0" className="h-8 text-[13px] w-36" />
+                    <Input {...field} type="number" min="0" className="h-8 text-base w-36" />
                   </FormControl>
-                  <FormMessage className="text-[11px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )} />
               <div className="grid grid-cols-2 gap-3">
                 <FormField control={form.control} name="minStockLevel" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Low Stock Alert Below *</FormLabel>
-                    <FormControl><Input {...field} type="number" min="0" className="h-8 text-[13px]" /></FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormLabel className="text-xs">Low Stock Alert Below *</FormLabel>
+                    <FormControl><Input {...field} type="number" min="0" className="h-8 text-base" /></FormControl>
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="maxStockLevel" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[11.5px]">Overstocked Above *</FormLabel>
-                    <FormControl><Input {...field} type="number" min="0" className="h-8 text-[13px]" /></FormControl>
-                    <FormMessage className="text-[11px]" />
+                    <FormLabel className="text-xs">Overstocked Above *</FormLabel>
+                    <FormControl><Input {...field} type="number" min="0" className="h-8 text-base" /></FormControl>
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )} />
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Stock status is calculated automatically from these values.
               </p>
             </fieldset>
@@ -1001,11 +1001,11 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
 
           <div className="shrink-0 flex items-center justify-end gap-2 border-t border-border px-5 py-3">
             <button type="button" onClick={onClose}
-              className="h-8 rounded-md border border-border bg-surface px-3 text-[12.5px] hover:bg-accent transition-colors">
+              className="h-8 rounded-md border border-border bg-surface px-3 text-sm hover:bg-accent transition-colors">
               Cancel
             </button>
             <button type="submit"
-              className="h-8 rounded-md bg-primary px-3 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+              className="h-8 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
               {item ? "Save Changes" : "Add Item"}
             </button>
           </div>
@@ -1018,7 +1018,7 @@ function StockItemDrawer({ open, item, mode, onClose, onSwitchToEdit, onSave, mo
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="right" className="w-130 flex flex-col p-0 gap-0">
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
-          <SheetTitle className="text-[15px] pr-8">
+          <SheetTitle className="text-md pr-8">
             {mode === "view" && item ? item.name : item ? "Edit Stock Item" : "New Stock Item"}
           </SheetTitle>
         </SheetHeader>
@@ -1048,12 +1048,12 @@ function ManufacturerCard({ mfr, itemCount, lowCount, outCount, onClick }: Manuf
       className="group flex flex-col rounded-lg border border-border bg-card p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
     >
       <div className="flex items-start gap-3">
-        <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[15px] font-bold tracking-tight", colorCls)}>
+        <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-md font-bold tracking-tight", colorCls)}>
           {mfr.logoInitials}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold leading-snug truncate">{mfr.name}</p>
-          <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+          <p className="text-base font-semibold leading-snug truncate">{mfr.name}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             {itemCount} {itemCount === 1 ? "item" : "items"}
           </p>
         </div>
@@ -1061,12 +1061,12 @@ function ManufacturerCard({ mfr, itemCount, lowCount, outCount, onClick }: Manuf
           <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors mt-0.5" />
           <div className="flex gap-1 mt-1">
             {outCount > 0 && (
-              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-red-500/15 text-red-600 dark:text-red-400">
+              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium bg-red-500/15 text-red-600 dark:text-red-400">
                 {outCount} out
               </span>
             )}
             {lowCount > 0 && (
-              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400">
                 {lowCount} low
               </span>
             )}
@@ -1076,7 +1076,7 @@ function ManufacturerCard({ mfr, itemCount, lowCount, outCount, onClick }: Manuf
       {mfr.categories.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1">
           {mfr.categories.map((c) => (
-            <span key={c} className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground">
+            <span key={c} className="inline-flex items-center rounded px-1.5 py-0.5 text-2xs bg-muted text-muted-foreground">
               {c}
             </span>
           ))}
@@ -1093,7 +1093,7 @@ function ItemThumbnail({ item }: { item: StockItem }) {
     return <img src={item.imageUrl} alt={item.name} className="h-8 w-8 rounded object-cover shrink-0" />;
   }
   return (
-    <div className={cn("h-8 w-8 rounded flex items-center justify-center text-[9px] font-bold shrink-0 select-none", mfrColor(item.id))}>
+    <div className={cn("h-8 w-8 rounded flex items-center justify-center text-2xs font-bold shrink-0 select-none", mfrColor(item.id))}>
       {item.name.slice(0, 2).toUpperCase()}
     </div>
   );
@@ -1114,8 +1114,8 @@ function StockItemsTable({ items, showManufacturer, onView, onEdit, onAdjust }: 
     return (
       <div className="flex flex-col items-center py-16 text-center">
         <ImagePlus className="h-8 w-8 text-muted-foreground/25 mb-3" />
-        <p className="text-[13px] font-medium">No items</p>
-        <p className="mt-1 text-[12px] text-muted-foreground">No stock items match the current filters.</p>
+        <p className="text-base font-medium">No items</p>
+        <p className="mt-1 text-sm text-muted-foreground">No stock items match the current filters.</p>
       </div>
     );
   }
@@ -1123,21 +1123,21 @@ function StockItemsTable({ items, showManufacturer, onView, onEdit, onAdjust }: 
   return (
     <div className="rounded-lg border border-border overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-[12.5px] min-w-205">
+        <table className="w-full text-sm min-w-205">
           <thead className="border-b border-border bg-surface/50">
             <tr>
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2 px-3 w-10" />
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Name / SKU</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2 px-3 w-10" />
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Name / SKU</th>
               {showManufacturer && (
-                <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Manufacturer</th>
+                <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Manufacturer</th>
               )}
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Category</th>
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Location</th>
-              <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Unit Cost</th>
-              <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">On Hand</th>
-              <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Value</th>
-              <th className="text-right text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2">Min / Max</th>
-              <th className="text-left text-[10px] uppercase tracking-wide text-muted-foreground font-medium py-2 pl-3">Status</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Category</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Location</th>
+              <th className="text-right text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Unit Cost</th>
+              <th className="text-right text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">On Hand</th>
+              <th className="text-right text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Value</th>
+              <th className="text-right text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2">Min / Max</th>
+              <th className="text-left text-2xs uppercase tracking-wide text-muted-foreground font-medium py-2 pl-3">Status</th>
               <th className="py-2 pr-3 w-36" />
             </tr>
           </thead>
@@ -1156,28 +1156,28 @@ function StockItemsTable({ items, showManufacturer, onView, onEdit, onAdjust }: 
                   </td>
                   <td className="py-2.5 pr-3">
                     <p className="font-medium leading-snug">{item.name}</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">{item.sku || "—"}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{item.sku || "—"}</p>
                   </td>
                   {showManufacturer && (
-                    <td className="py-2.5 pr-3 text-muted-foreground whitespace-nowrap text-[12px]">
+                    <td className="py-2.5 pr-3 text-muted-foreground whitespace-nowrap text-sm">
                       {item.manufacturerName}
                     </td>
                   )}
                   <td className="py-2.5 pr-3">{categoryChip(item.category)}</td>
-                  <td className="py-2.5 pr-3 text-[12px] text-muted-foreground whitespace-nowrap">{item.locationBin}</td>
+                  <td className="py-2.5 pr-3 text-sm text-muted-foreground whitespace-nowrap">{item.locationBin}</td>
                   <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-muted-foreground">
                     {currency(item.unitCost)}
                   </td>
                   <td className="py-2.5 pr-3 text-right">
-                    <span className={cn("font-mono font-semibold tabular-nums text-[13px]", sm.qtyCls)}>
+                    <span className={cn("font-mono font-semibold tabular-nums text-base", sm.qtyCls)}>
                       {item.qtyOnHand}
                     </span>
-                    <span className="text-muted-foreground text-[11px] ml-0.5">{item.unitOfMeasure}</span>
+                    <span className="text-muted-foreground text-xs ml-0.5">{item.unitOfMeasure}</span>
                   </td>
-                  <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-muted-foreground text-[12px]">
+                  <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-muted-foreground text-sm">
                     {currency(item.qtyOnHand * item.unitCost)}
                   </td>
-                  <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-muted-foreground text-[11.5px]">
+                  <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-muted-foreground text-xs">
                     {item.minStockLevel} / {item.maxStockLevel}
                   </td>
                   <td className="py-2.5 pl-3">{statusChip(status)}</td>
@@ -1187,7 +1187,7 @@ function StockItemsTable({ items, showManufacturer, onView, onEdit, onAdjust }: 
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); onEdit(item); }}
-                        className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-[11px] text-muted-foreground hover:text-foreground transition-all"
+                        className="opacity-0 group-hover:opacity-100 flex items-center gap-1 rounded border border-border bg-surface px-2 h-6 text-xs text-muted-foreground hover:text-foreground transition-all"
                       >
                         <Pencil className="h-3 w-3" />
                         Edit
@@ -1475,7 +1475,7 @@ function StockPage() {
       {/* ── Filter bar ───────────────────────────────────────────── */}
       <FilterBar>
         {drillMfr && activeMfr && (
-          <div className="flex items-center gap-1 text-[12.5px] mr-1 shrink-0">
+          <div className="flex items-center gap-1 text-sm mr-1 shrink-0">
             <button type="button" onClick={clearDrill} className="text-muted-foreground hover:text-foreground transition-colors">
               Stock
             </button>
@@ -1522,7 +1522,7 @@ function StockPage() {
           </>
         )}
 
-        <span className="ml-auto text-[11.5px] text-muted-foreground">
+        <span className="ml-auto text-xs text-muted-foreground">
           {view === "grid" && !drillMfr
             ? `${filteredMfrs.length} manufacturer${filteredMfrs.length !== 1 ? "s" : ""}`
             : `${filteredItems.length} item${filteredItems.length !== 1 ? "s" : ""}`}
@@ -1556,7 +1556,7 @@ function StockPage() {
       {!bannerDismissed && alertItems.length > 0 && (
         <div className="flex items-center gap-3 border-b border-amber-500/20 bg-amber-500/8 px-4 py-2">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-          <p className="text-[12px] text-amber-700 dark:text-amber-300 flex-1">
+          <p className="text-sm text-amber-700 dark:text-amber-300 flex-1">
             <span className="font-medium">{alertItems.length} items need attention</span>
             {outCount > 0 && <span className="ml-1 text-red-600 dark:text-red-400">— {outCount} out of stock</span>}
             {lowCount > 0 && <span className="ml-1">{outCount > 0 ? ", " : "— "}{lowCount} low stock</span>}
@@ -1564,7 +1564,7 @@ function StockPage() {
           <button
             type="button"
             onClick={() => { setView("list"); setDrillMfr(null); setStatusFilter("needs_attention"); }}
-            className="text-[11.5px] text-amber-700 dark:text-amber-300 underline underline-offset-2 hover:no-underline shrink-0"
+            className="text-xs text-amber-700 dark:text-amber-300 underline underline-offset-2 hover:no-underline shrink-0"
           >
             View affected items
           </button>
@@ -1599,7 +1599,7 @@ function StockPage() {
             })}
             {filteredMfrs.length === 0 && (
               <div className="col-span-3 flex flex-col items-center py-16 text-center">
-                <p className="text-[13px] font-medium text-muted-foreground">No manufacturers match "{gridSearch}"</p>
+                <p className="text-base font-medium text-muted-foreground">No manufacturers match "{gridSearch}"</p>
               </div>
             )}
           </div>

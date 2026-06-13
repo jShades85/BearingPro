@@ -56,11 +56,11 @@ function JoinPage() {
     return (
       <JoinShell>
         <div className="text-center">
-          <p className="text-[15px] font-semibold text-foreground">Invalid invite link</p>
-          <p className="mt-1.5 text-[13px] text-muted-foreground">
+          <p className="text-md font-semibold text-foreground">Invalid invite link</p>
+          <p className="mt-1.5 text-base text-muted-foreground">
             This invite link is no longer valid or the company doesn't exist.
           </p>
-          <Link to="/auth/login" className="mt-5 inline-block text-[12px] text-primary hover:underline">
+          <Link to="/auth/login" className="mt-5 inline-block text-sm text-primary hover:underline">
             Sign in instead
           </Link>
         </div>
@@ -80,20 +80,20 @@ function JoinPage() {
   return (
     <JoinShell>
       <div className="text-center mb-6">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-linear-to-br from-primary to-chart-2 text-[18px] font-bold text-primary-foreground shadow-glow">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-linear-to-br from-primary to-chart-2 text-lg font-bold text-primary-foreground shadow-glow">
           {initials}
         </div>
-        <h1 className="text-[17px] font-semibold text-foreground">
+        <h1 className="text-lg font-semibold text-foreground">
           You're invited to join
         </h1>
-        <p className="mt-1 text-[15px] font-medium text-primary">{tenant!.name}</p>
+        <p className="mt-1 text-md font-medium text-primary">{tenant!.name}</p>
         {search.role && (
-          <p className="mt-1 text-[13px] text-muted-foreground">
+          <p className="mt-1 text-base text-muted-foreground">
             Role: <span className="font-medium text-foreground">{search.role}</span>
           </p>
         )}
         {search.n && (
-          <p className="mt-0.5 text-[12px] text-muted-foreground">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             Invited as <span className="font-medium text-foreground">{search.n}</span>
           </p>
         )}
@@ -101,12 +101,12 @@ function JoinPage() {
 
       <button
         onClick={handleAccept}
-        className="w-full rounded-md bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
+        className="w-full rounded-md bg-primary px-4 py-2.5 text-base font-medium text-primary-foreground transition-opacity hover:opacity-90"
       >
         Accept Invitation
       </button>
 
-      <p className="mt-4 text-center text-[12px] text-muted-foreground">
+      <p className="mt-4 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link to="/auth/login" className="text-primary hover:underline">
           Sign in
@@ -124,10 +124,10 @@ function JoinShell({ children }: { children: React.ReactNode }) {
       </div>
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-chart-2 text-[11px] font-bold text-primary-foreground shadow-glow">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-chart-2 text-xs font-bold text-primary-foreground shadow-glow">
             BP
           </div>
-          <span className="text-[14px] font-semibold tracking-tight">BearingPro</span>
+          <span className="text-md font-semibold tracking-tight">BearingPro</span>
         </div>
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           {children}

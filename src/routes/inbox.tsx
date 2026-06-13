@@ -41,11 +41,11 @@ function InboxPage() {
   return (
     <div className="grid grid-cols-1 gap-6 p-5 lg:grid-cols-2">
       <section>
-        <div className="mb-3 px-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">Requests</div>
+        <div className="mb-3 px-0.5 text-2xs font-medium uppercase tracking-wider text-muted-foreground/70">Requests</div>
         <RequestsPanel />
       </section>
       <section>
-        <div className="mb-3 px-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">Activity</div>
+        <div className="mb-3 px-0.5 text-2xs font-medium uppercase tracking-wider text-muted-foreground/70">Activity</div>
         <ActivityFeed />
       </section>
     </div>
@@ -69,10 +69,10 @@ function ActivityFeed() {
             >
               <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconColor)} />
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-medium">{item.title}</div>
-                <div className="mt-0.5 text-[11.5px] text-muted-foreground">{item.description}</div>
+                <div className="text-base font-medium">{item.title}</div>
+                <div className="mt-0.5 text-xs text-muted-foreground">{item.description}</div>
               </div>
-              <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{item.time}</span>
+              <span className="shrink-0 font-mono text-2xs text-muted-foreground">{item.time}</span>
             </li>
           );
         })}
@@ -116,19 +116,19 @@ function RequestsPanel() {
             {/* Header row */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <span className={cn("inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold mb-1.5", badgeStyle[req.badge])}>
+                <span className={cn("inline-block rounded px-1.5 py-0.5 text-2xs font-semibold mb-1.5", badgeStyle[req.badge])}>
                   {req.badge}
                 </span>
-                <div className="text-[13px] font-medium leading-snug">{req.title}</div>
-                <div className="mt-0.5 text-[11.5px] text-muted-foreground">{req.description}</div>
+                <div className="text-base font-medium leading-snug">{req.title}</div>
+                <div className="mt-0.5 text-xs text-muted-foreground">{req.description}</div>
               </div>
               {s.status === "complete" && (
-                <span className="shrink-0 flex items-center gap-1 rounded bg-green-500/15 px-2 py-0.5 text-[10.5px] font-medium text-green-600 dark:text-green-400">
+                <span className="shrink-0 flex items-center gap-1 rounded bg-green-500/15 px-2 py-0.5 text-2xs font-medium text-green-600 dark:text-green-400">
                   <CheckCircle2 className="h-3 w-3" /> Complete
                 </span>
               )}
               {s.status === "flagged" && (
-                <span className="shrink-0 flex items-center gap-1 rounded bg-destructive/15 px-2 py-0.5 text-[10.5px] font-medium text-destructive">
+                <span className="shrink-0 flex items-center gap-1 rounded bg-destructive/15 px-2 py-0.5 text-2xs font-medium text-destructive">
                   <Flag className="h-3 w-3" /> Issue Flagged
                 </span>
               )}
@@ -138,21 +138,21 @@ function RequestsPanel() {
             <div className="mt-auto pt-3 flex items-center gap-3">
               <Avatar initials={req.initials} />
               <div className="flex flex-col leading-tight">
-                <span className="text-[12px] font-medium">{req.requester}</span>
-                <span className="text-[10.5px] text-muted-foreground">{req.time}</span>
+                <span className="text-sm font-medium">{req.requester}</span>
+                <span className="text-2xs text-muted-foreground">{req.time}</span>
               </div>
               <div className="ml-auto flex items-center gap-2">
                 <button
                   disabled={done}
                   onClick={() => update(req.id, { status: "complete", flagNoteOpen: false })}
-                  className="flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[11.5px] font-medium text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <CheckCircle2 className="h-3 w-3" /> Mark Complete
                 </button>
                 <button
                   disabled={done}
                   onClick={() => update(req.id, { flagNoteOpen: !s.flagNoteOpen })}
-                  className="flex h-7 items-center gap-1.5 rounded-md border border-destructive/50 bg-transparent px-2.5 text-[11.5px] font-medium text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-7 items-center gap-1.5 rounded-md border border-destructive/50 bg-transparent px-2.5 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Flag className="h-3 w-3" /> Flag Issue
                 </button>
@@ -167,18 +167,18 @@ function RequestsPanel() {
                   onChange={(e) => update(req.id, { flagNote: e.target.value })}
                   placeholder="Describe the issue…"
                   rows={2}
-                  className="w-full rounded-md border border-border bg-surface px-3 py-2 text-[12.5px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                  className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
                 />
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => update(req.id, { flagNoteOpen: false, flagNote: "" })}
-                    className="h-7 px-3 rounded-md border border-border text-[11.5px] text-muted-foreground hover:text-foreground"
+                    className="h-7 px-3 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => update(req.id, { status: "flagged", flagNoteOpen: false })}
-                    className="h-7 px-3 rounded-md bg-destructive text-[11.5px] font-medium text-destructive-foreground hover:opacity-90"
+                    className="h-7 px-3 rounded-md bg-destructive text-xs font-medium text-destructive-foreground hover:opacity-90"
                   >
                     Submit Flag
                   </button>

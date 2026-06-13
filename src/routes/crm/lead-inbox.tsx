@@ -190,7 +190,7 @@ async function convertLead(lead: DbLead, existingContactId?: string): Promise<vo
 function StatusBadge({ status }: { status: LeadStatus }) {
   const { label, cls } = statusMeta[status];
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium", cls)}>
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-medium", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -199,7 +199,7 @@ function StatusBadge({ status }: { status: LeadStatus }) {
 
 function SourceBadge({ source }: { source: LeadSource }) {
   return (
-    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium", sourceCls[source])}>
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium", sourceCls[source])}>
       {source}
     </span>
   );
@@ -297,9 +297,9 @@ function LeadInbox() {
 
       <div className="p-4">
         <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <table className="w-full text-[12.5px]">
+          <table className="w-full text-sm">
             <thead className="bg-surface/50">
-              <tr className="border-b border-border text-[10.5px] uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border text-2xs uppercase tracking-wide text-muted-foreground">
                 <th className="py-2 px-3 text-left font-medium">Name / Company</th>
                 <th className="py-2 px-3 text-left font-medium">Source</th>
                 <th className="py-2 px-3 text-left font-medium">Service</th>
@@ -319,7 +319,7 @@ function LeadInbox() {
                 >
                   <td className="py-2.5 px-3">
                     <div className="font-semibold leading-snug">{fullName(lead)}</div>
-                    <div className="text-[11px] text-muted-foreground">{lead.company_name ?? "—"}</div>
+                    <div className="text-xs text-muted-foreground">{lead.company_name ?? "—"}</div>
                   </td>
                   <td className="py-2.5 px-3">
                     {lead.source ? <SourceBadge source={lead.source} /> : <span className="text-muted-foreground">—</span>}
@@ -328,16 +328,16 @@ function LeadInbox() {
                     <span className="truncate block">{lead.service_interest ?? "—"}</span>
                   </td>
                   <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">{lead.location ?? "—"}</td>
-                  <td className="py-2.5 px-3 font-mono text-[11.5px] text-muted-foreground whitespace-nowrap">
+                  <td className="py-2.5 px-3 font-mono text-xs text-muted-foreground whitespace-nowrap">
                     {lead.created_at.slice(0, 10)}
                   </td>
                   <td className="py-2.5 px-3">
                     {lead.assignee ? (
                       <div className="flex items-center gap-1.5">
                         <Avatar initials={(lead.assignee.full_name ?? "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()} />
-                        <span className="text-[11.5px]">{lead.assignee.full_name?.split(" ")[0]}</span>
+                        <span className="text-xs">{lead.assignee.full_name?.split(" ")[0]}</span>
                       </div>
-                    ) : <span className="text-muted-foreground text-[11px]">—</span>}
+                    ) : <span className="text-muted-foreground text-xs">—</span>}
                   </td>
                   <td className="py-2.5 px-3"><StatusBadge status={lead.status} /></td>
                   <td className="py-2.5 px-3 pr-3 text-right">
@@ -349,7 +349,7 @@ function LeadInbox() {
                             setConvertModalLead(lead);
                           }}
                           disabled={lead.status === "converted" || lead.status === "dismissed" || convertMutation.isPending}
-                          className="h-6 rounded px-2 text-[11px] font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-35 disabled:cursor-default transition-opacity"
+                          className="h-6 rounded px-2 text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-35 disabled:cursor-default transition-opacity"
                         >
                           Convert
                         </button>
@@ -359,7 +359,7 @@ function LeadInbox() {
                             statusMutation.mutate({ id: lead.id, status: "dismissed" });
                           }}
                           disabled={lead.status === "dismissed" || lead.status === "converted"}
-                          className="h-6 rounded px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-35 disabled:cursor-default transition-colors"
+                          className="h-6 rounded px-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-35 disabled:cursor-default transition-colors"
                         >
                           Dismiss
                         </button>
@@ -370,7 +370,7 @@ function LeadInbox() {
               ))}
               {filteredLeads.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-[12.5px] text-muted-foreground">
+                  <td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
                     {leads.length === 0 ? "No leads yet — create the first one." : "No leads match the current filters."}
                   </td>
                 </tr>
@@ -450,26 +450,26 @@ function LeadDrawer({
   return (
     <SheetContent className="sm:max-w-[440px] flex flex-col p-0 gap-0">
       <SheetHeader className="border-b border-border px-5 py-4">
-        <SheetTitle className="text-[15px] font-semibold">{fullName(lead)}</SheetTitle>
-        <p className="text-[12.5px] text-muted-foreground -mt-1">{lead.company_name ?? "—"}</p>
+        <SheetTitle className="text-md font-semibold">{fullName(lead)}</SheetTitle>
+        <p className="text-sm text-muted-foreground -mt-1">{lead.company_name ?? "—"}</p>
       </SheetHeader>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 text-[12.5px]">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 text-sm">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Source</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Source</p>
             {lead.source ? <SourceBadge source={lead.source} /> : <span>—</span>}
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Status</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Status</p>
             <StatusBadge status={lead.status} />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Date Received</p>
-            <span className="font-mono text-[12px]">{lead.created_at.slice(0, 10)}</span>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Date Received</p>
+            <span className="font-mono text-sm">{lead.created_at.slice(0, 10)}</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Assigned To</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Assigned To</p>
             {lead.assignee ? (
               <div className="flex items-center gap-1.5">
                 <Avatar initials={repInitials} />
@@ -479,21 +479,21 @@ function LeadDrawer({
           </div>
         </div>
 
-        <div className="space-y-3 text-[12.5px]">
+        <div className="space-y-3 text-sm">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Service Interested In</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Service Interested In</p>
             <span>{lead.service_interest ?? "—"}</span>
           </div>
           {lead.location && (
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Location</p>
+              <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Location</p>
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <MapPin className="h-3.5 w-3.5 shrink-0" />{lead.location}
               </span>
             </div>
           )}
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Contact</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1">Contact</p>
             <div className="flex flex-col gap-1 text-muted-foreground">
               {lead.phone && <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 shrink-0" />{lead.phone}</span>}
               {lead.email && <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 shrink-0" />{lead.email}</span>}
@@ -502,7 +502,7 @@ function LeadDrawer({
         </div>
 
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
+          <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Notes</p>
           <textarea
             value={notes}
             onChange={(e) => canWrite && setNotes(e.target.value)}
@@ -510,12 +510,12 @@ function LeadDrawer({
             readOnly={!canWrite}
             placeholder={canWrite ? "Add notes…" : ""}
             rows={3}
-            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
+            className="w-full resize-none rounded-md border border-border bg-surface px-2.5 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary read-only:cursor-default read-only:opacity-70"
           />
         </div>
 
         {lead.status === "converted" && lead.converted_at && (
-          <div className="rounded-md bg-teal-500/10 border border-teal-500/20 px-3 py-2.5 text-[12px] text-teal-600 dark:text-teal-400">
+          <div className="rounded-md bg-teal-500/10 border border-teal-500/20 px-3 py-2.5 text-sm text-teal-600 dark:text-teal-400">
             Converted on {lead.converted_at.slice(0, 10)} — contact and opportunity created.
           </div>
         )}
@@ -526,7 +526,7 @@ function LeadDrawer({
           {lead.status !== "converted" && lead.status !== "dismissed" && (
             <button
               onClick={() => onStatusChange(lead.status === "new" ? "contacted" : "qualified")}
-              className="w-full h-8 rounded-md bg-accent text-foreground text-[12.5px] font-medium hover:opacity-90 transition-opacity"
+              className="w-full h-8 rounded-md bg-accent text-foreground text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Mark as {lead.status === "new" ? "Contacted" : "Qualified"}
             </button>
@@ -534,14 +534,14 @@ function LeadDrawer({
           <button
             onClick={onConvert}
             disabled={lead.status === "converted" || lead.status === "dismissed" || converting}
-            className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
+            className="w-full h-8 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-default transition-opacity"
           >
             {converting ? "Converting…" : "Convert to Contact + Opportunity"}
           </button>
           <button
             onClick={() => onStatusChange("dismissed")}
             disabled={lead.status === "dismissed" || lead.status === "converted"}
-            className="w-full h-8 rounded-md border border-destructive text-destructive text-[12.5px] font-medium hover:bg-destructive/10 disabled:opacity-40 disabled:cursor-default transition-colors"
+            className="w-full h-8 rounded-md border border-destructive text-destructive text-sm font-medium hover:bg-destructive/10 disabled:opacity-40 disabled:cursor-default transition-colors"
           >
             Dismiss Lead
           </button>
@@ -578,24 +578,24 @@ function ConvertModal({
       <DialogHeader>
         <DialogTitle>Convert Lead</DialogTitle>
       </DialogHeader>
-      <div className="mt-1 space-y-4 text-[12.5px]">
+      <div className="mt-1 space-y-4 text-sm">
         <p className="text-muted-foreground">
           Link <span className="font-medium text-foreground">{fullName(lead)}</span> to an existing contact, or create a new one.
         </p>
 
         <div>
-          <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Search contacts</label>
+          <label className="block text-2xs uppercase tracking-wider text-muted-foreground mb-1.5">Search contacts</label>
           <input
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSelected("new"); }}
-            className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+            className="w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
             placeholder="Search by name…"
           />
         </div>
 
         <div className="space-y-1.5">
           {isFetching && (
-            <p className="text-[12px] text-muted-foreground px-1">Searching…</p>
+            <p className="text-sm text-muted-foreground px-1">Searching…</p>
           )}
           {matches.map((c) => (
             <label
@@ -615,12 +615,12 @@ function ConvertModal({
               />
               <div>
                 <p className="font-medium leading-snug">{c.full_name}</p>
-                {c.email && <p className="text-[11px] text-muted-foreground">{c.email}</p>}
+                {c.email && <p className="text-xs text-muted-foreground">{c.email}</p>}
               </div>
             </label>
           ))}
           {!isFetching && search.trim().length > 1 && matches.length === 0 && (
-            <p className="text-[12px] text-muted-foreground px-1">No existing contacts match "{search}".</p>
+            <p className="text-sm text-muted-foreground px-1">No existing contacts match "{search}".</p>
           )}
           <label
             className={cn(
@@ -644,7 +644,7 @@ function ConvertModal({
           <button
             type="button"
             onClick={onClose}
-            className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
           >
             Cancel
           </button>
@@ -652,7 +652,7 @@ function ConvertModal({
             type="button"
             disabled={converting}
             onClick={() => onConvert(selected === "new" ? undefined : selected)}
-            className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {converting ? "Converting…" : "Convert"}
           </button>
@@ -675,7 +675,7 @@ function NewLeadModal({
 }) {
   const [saving, setSaving] = useState(false);
 
-  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-[10px] uppercase tracking-wider text-muted-foreground mb-1";
+  const inputCls  = "w-full h-8 rounded-md border border-border bg-surface px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50";  const labelCls  = "block text-2xs uppercase tracking-wider text-muted-foreground mb-1";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -746,10 +746,10 @@ function NewLeadModal({
           <input name="location" className={inputCls} placeholder="City, State" />
         </div>
         <div className="col-span-2 flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-[12.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <button type="button" onClick={onClose} className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             Cancel
           </button>
-          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
+          <button type="submit" disabled={saving} className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
             {saving ? "Adding…" : "Add Lead"}
           </button>
         </div>

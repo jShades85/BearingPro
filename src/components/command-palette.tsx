@@ -79,7 +79,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
               <CommandItem key={n.to} value={`${n.label} ${n.group}`} onSelect={() => go(n.to)}>
                 <n.icon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                 <span>{n.label}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground">{n.group}</span>
+                <span className="ml-auto text-2xs text-muted-foreground">{n.group}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -108,7 +108,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
               >
                 <Building2 className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                 <span>{c.name}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground">{c.industry}</span>
+                <span className="ml-auto text-2xs text-muted-foreground">{c.industry}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -125,7 +125,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
               >
                 <Briefcase className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                 <span>{p.name}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground">{p.code}</span>
+                <span className="ml-auto text-2xs text-muted-foreground">{p.code}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -142,7 +142,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
               >
                 <Users className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                 <span>{c.name}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground">{c.company}</span>
+                <span className="ml-auto text-2xs text-muted-foreground">{c.company}</span>
               </CommandItem>
             ))}
           </CommandGroup>

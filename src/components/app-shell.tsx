@@ -164,14 +164,14 @@ function AppShellContent() {
         )}
       >
         <div className={cn("flex min-h-14 items-center gap-2 py-3 border-b border-sidebar-border", collapsed ? "justify-center px-0" : "px-3")}>
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-primary to-chart-2 text-[10px] font-bold text-primary-foreground shadow-glow">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-primary to-chart-2 text-2xs font-bold text-primary-foreground shadow-glow">
             {tenant?.name ? tenant.name.split(" ").map((w: string) => w[0]).filter((c: string) => /[a-zA-Z0-9]/.test(c)).join("").slice(0, 4).toUpperCase() : "BP"}
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="text-[13px] font-semibold tracking-tight">{tenant?.name ?? "BearingPro"}</span>
+              <span className="text-base font-semibold tracking-tight">{tenant?.name ?? "BearingPro"}</span>
               {tenant?.trade_type && (
-                <span className="text-[10px] text-muted-foreground">{tenant.trade_type}</span>
+                <span className="text-2xs text-muted-foreground">{tenant.trade_type}</span>
               )}
             </div>
           )}
@@ -185,7 +185,7 @@ function AppShellContent() {
               <div key={i} className="mb-4">
                 {section.title && !collapsed && (
                   <div className={cn(
-                    "px-2 pb-1.5 text-[10px] font-medium uppercase tracking-wider",
+                    "px-2 pb-1.5 text-2xs font-medium uppercase tracking-wider",
                     locked ? "text-muted-foreground/30" : "text-muted-foreground/70",
                   )}>
                     {section.title}
@@ -196,7 +196,7 @@ function AppShellContent() {
                     const active = !locked && (item.to === "/" ? pathname === "/" : pathname.startsWith(item.to));
                     const Icon = item.icon;
                     const itemCls = cn(
-                      "group flex h-7 items-center gap-2.5 rounded-md px-2 text-[13px] transition-colors",
+                      "group flex h-7 items-center gap-2.5 rounded-md px-2 text-base transition-colors",
                       locked
                         ? "cursor-not-allowed text-sidebar-foreground/30"
                         : active
@@ -209,12 +209,12 @@ function AppShellContent() {
                         <Icon className={cn("h-3.5 w-3.5 shrink-0", active && "text-primary")} />
                         {!collapsed && <span className="truncate">{item.label}</span>}
                         {!collapsed && item.badge && (
-                          <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground">
                             {item.badge}
                           </span>
                         )}
                         {!collapsed && item.to === "/inbox" && pendingRequestCount > 0 && (
-                          <span className="ml-auto rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                          <span className="ml-auto rounded bg-red-500 px-1.5 py-0.5 text-2xs font-medium text-white">
                             {pendingRequestCount}
                           </span>
                         )}
@@ -246,7 +246,7 @@ function AppShellContent() {
             {(() => {
               const name = user?.user_metadata?.full_name || user?.email || "?";
               return (
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-2xs font-semibold text-white"
                   style={{ background: avatarGradient(name) }}>
                   {avatarInitials(name)}
                 </div>
@@ -255,8 +255,8 @@ function AppShellContent() {
             {!collapsed && (
               <>
                 <div className="flex min-w-0 flex-col leading-tight">
-                  <span className="truncate text-[12px] font-medium">{user?.email ?? "—"}</span>
-                  <span className="text-[10px] text-muted-foreground">{roleName ?? "—"}</span>
+                  <span className="truncate text-sm font-medium">{user?.email ?? "—"}</span>
+                  <span className="text-2xs text-muted-foreground">{roleName ?? "—"}</span>
                 </div>
                 <div className="ml-auto flex items-center gap-0.5">
                   <button
@@ -276,18 +276,18 @@ function AppShellContent() {
                       </button>
                     </PopoverTrigger>
                     <PopoverContent side="top" align="end" className="w-44 p-3">
-                      <p className="text-[12px] font-medium text-foreground">Sign out?</p>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">You'll need to sign back in.</p>
+                      <p className="text-sm font-medium text-foreground">Sign out?</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">You'll need to sign back in.</p>
                       <div className="mt-3 flex gap-2">
                         <button
                           onClick={() => setSignOutOpen(false)}
-                          className="flex-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent transition-colors"
+                          className="flex-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-accent transition-colors"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleSignOut}
-                          className="flex-1 rounded-md bg-red-500 px-2 py-1 text-[11px] font-medium text-white hover:bg-red-600 transition-colors"
+                          className="flex-1 rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-white hover:bg-red-600 transition-colors"
                         >
                           Sign out
                         </button>
@@ -314,11 +314,11 @@ function AppShellContent() {
           <div className="flex flex-1 flex-col items-center justify-center">
             {meta.title && (
               <div className="flex items-center gap-1.5">
-                <span className="text-[13px] font-medium text-foreground">{meta.title}</span>
+                <span className="text-base font-medium text-foreground">{meta.title}</span>
                 {meta.subtitle && (
                   <>
                     <span className="text-muted-foreground/40">·</span>
-                    <span className="text-[12px] text-muted-foreground">{meta.subtitle}</span>
+                    <span className="text-sm text-muted-foreground">{meta.subtitle}</span>
                   </>
                 )}
               </div>
@@ -327,20 +327,20 @@ function AppShellContent() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPaletteOpen(true)}
-              className="flex h-7 min-w-[220px] items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[11.5px] text-muted-foreground hover:text-foreground"
+              className="flex h-7 min-w-[220px] items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs text-muted-foreground hover:text-foreground"
             >
               <Search className="h-3 w-3 shrink-0" />
               <span className="flex-1 text-left">Search...</span>
               <span className="hidden items-center gap-1 sm:flex">
-                <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px] font-mono leading-none">⌘K</kbd>
-                <span className="text-[10px] text-muted-foreground/40">/</span>
-                <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px] font-mono leading-none">Ctrl K</kbd>
+                <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-2xs font-mono leading-none">⌘K</kbd>
+                <span className="text-2xs text-muted-foreground/40">/</span>
+                <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-2xs font-mono leading-none">Ctrl K</kbd>
               </span>
             </button>
             {meta.onNew && (permsLoading || !moduleFromPath(pathname) || can(moduleFromPath(pathname)!, "write")) && (
               <button
                 onClick={meta.onNew}
-                className="flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground shadow-glow hover:opacity-90"
+                className="flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-glow hover:opacity-90"
               >
                 <Plus className="h-3.5 w-3.5" />
                 {meta.newLabel ?? "New"}
