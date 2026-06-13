@@ -626,39 +626,42 @@ function KanbanCard({
         className={cn("absolute bottom-2 left-0 top-2 w-0.75 rounded-r-full", priorityBar[opp.priority])}
       />
 
-      {/* header: priority flag (urgent/high) + hover-reveal stage-move control */}
-      {(flagged || showMove) && (
-        <div className="mb-1 flex items-start gap-2">
-          {flagged && <PriorityDot p={opp.priority} />}
-          {showMove && (
-            <div className="relative ml-auto">
-              <button
-                onClick={onOpenSelector}
-                aria-label="Move to stage"
-                className="-mr-1 -mt-1 shrink-0 rounded p-1 text-muted-foreground/50 opacity-0 transition hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
-              >
-                <ChevronsUpDown className="h-3.5 w-3.5" />
-              </button>
-              {selectorOpen && (
-                <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-md border border-border bg-popover py-1 shadow-lg">
-                  {stageOrder.map((s) => (
-                    <button
-                      key={s}
-                      onClick={(e) => { e.stopPropagation(); onMove(s); }}
-                      className={cn("flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-accent", s === opp.stage && "bg-accent/60")}
-                    >
-                      <StageBadge stage={s} />
-                    </button>
-                  ))}
-                </div>
-              )}
+      {/* stage-move control — absolute so it never reserves layout space
+          (otherwise low/med cards show an empty header gap). Hover/focus reveal. */}
+      {showMove && (
+        <div className="absolute right-1.5 top-1.5 z-10">
+          <button
+            onClick={onOpenSelector}
+            aria-label="Move to stage"
+            className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 opacity-0 transition hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+          >
+            <ChevronsUpDown className="h-3.5 w-3.5" />
+          </button>
+          {selectorOpen && (
+            <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-md border border-border bg-popover py-1 shadow-lg">
+              {stageOrder.map((s) => (
+                <button
+                  key={s}
+                  onClick={(e) => { e.stopPropagation(); onMove(s); }}
+                  className={cn("flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-accent", s === opp.stage && "bg-accent/60")}
+                >
+                  <StageBadge stage={s} />
+                </button>
+              ))}
             </div>
           )}
         </div>
       )}
 
+      {/* priority flag — only urgent/high; no empty row for low/med */}
+      {flagged && (
+        <div className="mb-1.5">
+          <PriorityDot p={opp.priority} />
+        </div>
+      )}
+
       {/* deal name + parties */}
-      <div className="text-sm font-semibold leading-snug line-clamp-2">{opp.title}</div>
+      <div className={cn("text-sm font-semibold leading-snug line-clamp-2", showMove && "pr-7")}>{opp.title}</div>
       <div className="mt-1 truncate text-xs text-muted-foreground">{opp.company} · {opp.contact}</div>
 
       {/* footer: value (hero) + owner */}
