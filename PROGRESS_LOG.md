@@ -160,6 +160,63 @@ No RLS changes needed — both FKs reference tenant-scoped tables and existing p
 
 ---
 
+## Planned Feature — Per-Phase Project Billing
+
+**⏸ BLOCKED on catalog/inventory phase attribute — do not build until that lands. See "Dependency" below.**
+
+**The billing model (decided Session 039):**
+
+- **Project = the billable unit.** The customer signed one contract for one project. Every invoice anchors to the project (`invoices.linked_project_id`), and all invoices for a project must reconcile to its contract total.
+- **Phase (task) = the schedulable + costable unit.** Phases are `work_orders` rows (the "Phases & Tasks" tab). They are *not* billed individually as separate contracts — they determine *when* you bill and *which* line items go on each invoice.
+- **A phase completing is a billing _prompt_, not a billing _event_.** Completing a phase surfaces "bill this phase?" — a human confirms. The invoice is still cut against the project.
+- **Per-phase invoicing:** when a phase is done, invoice the parts **and** labor allocated to that phase (the `project_line_items` where `phase = X`), then mark those rows billed so they can't be billed twice.
+- **Optional deposit:** a project-level `deposit_amount` (nullable — different tenants bill differently; some take a deposit, some don't). A deposit invoice anchors to the *project*, not a phase, because it's collected before any phase completes (funds material procurement). Default behavior: deposit is applied as a credit against the final invoice (make adjustable later).
+
+**Why project-not-phase is the billable unit:** the deposit proves it — you bill a deposit before any phase is done, so that money can't belong to a phase. One invoice can also span multiple phases, and a phase like "commissioning" may carry no client-facing line value. The contract is the anchor; phases are the clock.
+
+### Dependency (the reason this is blocked)
+
+Per-phase billing needs line items reliably grouped by phase. Today `project_line_items.phase` is **free text** (typed by hand in PartsPanel, defaults to `"Procurement"`) and is *not* linked to the actual `work_orders` phases. Grouping by a hand-typed string is fragile — a typo ("rough in" vs "Rough-In") silently splits a phase's parts across two invoices.
+
+**The fix comes from the planned catalog/inventory work:** attach a phase attribute to each inventoriable product so that adding a product to a project auto-assigns its phase. For this to feed billing cleanly:
+
+- **Phase must be one shared controlled list** referenced by *both* catalog items and project tasks — not free text on either side.
+- **Catalog phase is a default, overridable per project line item** — the same product is usually the same phase, but allow per-job exceptions.
+
+Once catalog items carry a structured phase and it flows onto `project_line_items` automatically, per-phase billing becomes a reliable "group by phase" operation.
+
+### Schema additions (when unblocked)
+
+```sql
+ALTER TABLE projects ADD COLUMN deposit_amount numeric(12,2);   -- optional deposit
+
+ALTER TABLE project_line_items
+  ADD COLUMN invoiced_at timestamptz,
+  ADD COLUMN invoice_id  uuid references invoices(id);          -- double-bill guard / audit trail
+
+ALTER TABLE invoices
+  ADD COLUMN kind text not null default 'progress'
+    check (kind in ('deposit','progress','final'));             -- distinguish deposit vs phase invoices
+```
+
+> `invoices.linked_work_order_id` **already exists** (migration `20260610000022`) — the phase→invoice link is in place.
+
+### Build order (when unblocked)
+
+1. **Tier 1 (small, ~30–45 min, can ship independently):** migration above + type regen; `deposit_amount` field on project Edit drawer; "Bill Deposit" button → creates `kind='deposit'` invoice anchored to project.
+2. **Tier 2 (focused session, needs catalog phase done first):**
+   - "Generate Invoice for Phase" action on each phase row → pulls unbilled `project_line_items` for that phase → creates `kind='progress'` invoice (project + work-order linked) → copies rows to `invoice_line_items` → stamps `invoiced_at` / `invoice_id`
+   - Double-bill guard: exclude already-invoiced rows; "invoiced" badge in PartsPanel
+   - Reconciliation strip on project: contract total vs deposit + billed + remaining
+
+### Terminology note
+
+Planned rename "Work Orders" → "Tasks" — change the **UI label only**; keep the DB table named `work_orders` (it's referenced across routes, RLS, types, and FK joins; a real table rename is a large mechanical refactor for zero functional gain).
+
+**Estimated scope:** Tier 1 small; Tier 2 medium and blocked on catalog phase work.
+
+---
+
 ## Module Status
 
 | Module | Status | Notes |
