@@ -391,7 +391,7 @@ Worked through the Fable design checklist + drawer standardization. All changes 
 
 **Focus rings (`qw-focus-flash`):** Swapped all **195 `focus:ring` → `focus-visible:ring`** across 38 files — ring only shows on keyboard nav, not mouse clicks. `focus:outline-none` left intact.
 
-**Drawer standardization (new `DRAWER_DESIGN_SPEC.md`):**
+**Drawer standardization (new `docs/DRAWER_DESIGN_SPEC.md`):**
 - New shared **`<DrawerHeader>`** (`src/components/ui/drawer-header.tsx`): slots for `leading` (avatar), `eyebrow` (record code), `title`, `subtitle`, `onEdit`, `actions`, and a children badge row. Edit + Close render as a **matched icon pair** (bare `h-7 w-7` pencil + X, centered together) — fixes the earlier bordered-Edit-vs-floating-X misalignment.
 - `SheetContent` gained a **`hideClose`** prop; drawers using `DrawerHeader` pass it so the header owns the X.
 - Migrated **14 of 15 drawers** to `DrawerHeader` (contacts reference + 13 others). Remaining: `finance/invoices` (uses a justify-between header) + moving inventory view-drawer Edit from footer → header (both documented in the spec's status table).
