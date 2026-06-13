@@ -7,7 +7,8 @@ import {
   Building2, Eye, Home, Mail, MapPin, Pencil, Phone,
 } from "lucide-react";
 import { FilterBar, SearchInput, FilterSelect } from "@/components/ui/page-components";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { DrawerHeader } from "@/components/ui/drawer-header";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -360,26 +361,14 @@ function ContactDrawer({
 
   return (
     <SheetContent className="sm:max-w-[460px] flex flex-col p-0 gap-0">
-      <SheetHeader className="border-b border-border px-5 py-4 pr-12">
-        <div className="flex items-center gap-3">
-          <Avatar initials={getInitials(c.full_name)} className="!h-11 !w-11 !text-md !rounded-xl" />
-          <div className="flex-1 min-w-0">
-            <SheetTitle className="text-md font-semibold leading-tight">{c.full_name}</SheetTitle>
-            <p className="text-sm text-muted-foreground">
-              {c.title}{!isResidential && c.company ? ` · ${c.company.name}` : ""}
-            </p>
-          </div>
-          {mode === "view" && canWrite && (
-            <button
-              onClick={onSwitchToEdit}
-              className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
-            >
-              <Pencil className="h-3 w-3" /> Edit
-            </button>
-          )}
-        </div>
+      <DrawerHeader
+        leading={<Avatar initials={getInitials(c.full_name)} className="!h-11 !w-11 !text-md !rounded-xl" />}
+        title={c.full_name}
+        subtitle={`${c.title}${!isResidential && c.company ? ` · ${c.company.name}` : ""}`}
+        onEdit={mode === "view" && canWrite ? onSwitchToEdit : undefined}
+      >
         {c.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
+          <div className="flex flex-wrap gap-1">
             {c.tags.map((tag) => (
               <span key={tag} className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground">
                 {tag}
@@ -387,7 +376,7 @@ function ContactDrawer({
             ))}
           </div>
         )}
-      </SheetHeader>
+      </DrawerHeader>
 
       {mode === "view" ? (
         <ContactViewBody contact={c} isResidential={isResidential} />
